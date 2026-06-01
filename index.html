@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniBurkina Hub — Plateforme GED de l'Université Thomas SANKARA</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#042C53">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="description" content="Système de Gestion Électronique de Documents académiques par OCR — vers une plateforme de digitalisation intégrée des universités du Burkina Faso.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════════
+       DESIGN SYSTEM — UniBurkina Hub v3.0
+    ═══════════════════════════════════════════════════ */
+    :root {
+      --bleu-nuit:    #042C53;
+      --bleu-roi:     #185FA5;
+      --bleu-ciel:    #2E86D4;
+      --or:           #C89A2E;
+      --or-clair:     #F0C84A;
+      --creme:        #FBF8F3;
+      --blanc:        #FFFFFF;
+      --gris-doux:    #EDF2F7;
+      --gris-texte:   #4A5568;
+      --vert-succes:  #1D9E75;
+      --rouge-alerte: #C0392B;
+      --shadow-bleue: 0 8px 40px rgba(4,44,83,.14);
+      --shadow-or:    0 4px 24px rgba(200,154,46,.22);
+      --radius:       16px;
+      --radius-sm:    10px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--creme);
+      color: var(--bleu-nuit);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    /* ══ NAVBAR ══════════════════════════════════════════ */
+    .navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .85rem 5%;
+      background: rgba(4,44,83,.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(200,154,46,.25);
+      transition: all .3s;
+    }
+    .navbar.scrolled {
+      padding: .6rem 5%;
+      box-shadow: 0 4px 32px rgba(4,44,83,.3);
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: .7rem;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--or), var(--or-clair));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; font-weight: 800; color: var(--bleu-nuit);
+      flex-shrink: 0;
+    }
+    .nav-logo-text { display: flex; flex-direction: column; }
+    .nav-logo-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem; color: var(--blanc); line-height: 1;
+    }
+    .nav-logo-sub {
+      font-size: .62rem; color: var(--or-clair); letter-spacing: .12em;
+      text-transform: uppercase; opacity: .85;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 1.6rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,.82); text-decoration: none;
+      font-size: .87rem; font-weight: 500; letter-spacing: .02em;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--or-clair); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--or), var(--or-clair)) !important;
+      color: var(--bleu-nuit) !important;
+      padding: .45rem 1.1rem; border-radius: 8px; font-weight: 700 !important;
+    }
+    .nav-burger {
+      display: none; flex-direction: column; gap: 5px; cursor: pointer;
+      padding: .3rem; background: none; border: none;
+    }
+    .nav-burger span {
+      display: block; width: 24px; height: 2px; background: var(--blanc);
+      transition: all .3s; border-radius: 2px;
+    }
+
+    /* ══ HERO ════════════════════════════════════════════ */
+    .hero {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 40%, rgba(46,134,212,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 20% 80%, rgba(200,154,46,.12) 0%, transparent 60%),
+        linear-gradient(160deg, #042C53 0%, #0A4480 55%, #0D5499 100%);
+      display: flex; align-items: center;
+      padding: 6rem 5% 4rem;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 2px 2px, rgba(255,255,255,.04) 1px, transparent 0);
+      background-size: 40px 40px;
+    }
+    /* Cercles décoratifs animés */
+    .hero-orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); pointer-events: none;
+    }
+    .hero-orb-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(200,154,46,.22) 0%, transparent 70%);
+      top: -100px; right: -100px;
+      animation: float 8s ease-in-out infinite;
+    }
+    .hero-orb-2 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(46,134,212,.25) 0%, transparent 70%);
+      bottom: 50px; left: 5%;
+      animation: float 11s ease-in-out infinite reverse;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50%       { transform: translateY(-30px) scale(1.05); }
+    }
+
+    .hero-content {
+      position: relative; z-index: 1;
+      max-width: 680px;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      background: rgba(200,154,46,.18); border: 1px solid rgba(200,154,46,.35);
+      border-radius: 999px; padding: .35rem .9rem;
+      color: var(--or-clair); font-size: .78rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 1.8rem;
+      animation: fadeDown .6s ease both;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--or-clair); }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.6rem);
+      color: var(--blanc); line-height: 1.15;
+      margin-bottom: 1.4rem;
+      animation: fadeUp .7s ease both .1s;
+    }
+    .hero h1 em {
+      font-style: italic; color: var(--or-clair);
+    }
+    .hero-desc {
+      font-size: clamp(.95rem, 1.8vw, 1.12rem);
+      color: rgba(255,255,255,.78); max-width: 540px;
+      margin-bottom: 2.4rem;
+      animation: fadeUp .7s ease both .2s;
+    }
+    .hero-actions {
+      display: flex; flex-wrap: wrap; gap: 1rem;
+      animation: fadeUp .7s ease both .3s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--or), var(--or-clair));
+      color: var(--bleu-nuit); font-weight: 700; font-size: .95rem;
+      padding: .8rem 2rem; border-radius: var(--radius-sm);
+      text-decoration: none; border: none; cursor: pointer;
+      box-shadow: var(--shadow-or);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(200,154,46,.4); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--blanc); font-weight: 600; font-size: .95rem;
+      padding: .8rem 2rem; border-radius: var(--radius-sm);
+      text-decoration: none;
+      border: 1.5px solid rgba(255,255,255,.35);
+      transition: all .2s;
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.7); }
+
+    /* Stats flottantes */
+    .hero-stats {
+      position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; gap: 1rem;
+      animation: fadeLeft .8s ease both .4s;
+    }
+    .stat-card {
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: var(--radius);
+      padding: 1.2rem 1.6rem; min-width: 180px;
+      transition: transform .3s;
+    }
+    .stat-card:hover { transform: scale(1.04); }
+    .stat-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem; color: var(--or-clair); line-height: 1;
+      margin-bottom: .25rem;
+    }
+    .stat-label { font-size: .78rem; color: rgba(255,255,255,.65); }
+
+    /* ══ CAROUSEL ════════════════════════════════════════ */
+    .carousel-section {
+      background: var(--bleu-nuit); padding: 0;
+      overflow: hidden;
+    }
+    .ticker-wrapper {
+      display: flex; align-items: center;
+      border-top: 1px solid rgba(200,154,46,.2);
+      border-bottom: 1px solid rgba(200,154,46,.2);
+      padding: .9rem 0; overflow: hidden;
+    }
+    .ticker-label {
+      background: linear-gradient(135deg, var(--or), var(--or-clair));
+      color: var(--bleu-nuit); font-weight: 800; font-size: .75rem;
+      letter-spacing: .1em; text-transform: uppercase;
+      padding: .4rem 1.2rem; white-space: nowrap; flex-shrink: 0;
+      z-index: 1;
+    }
+    .ticker-track {
+      display: flex; animation: ticker 28s linear infinite;
+      gap: 3rem;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+    .ticker-item {
+      white-space: nowrap; color: rgba(255,255,255,.75);
+      font-size: .85rem; display: flex; align-items: center; gap: .6rem;
+      flex-shrink: 0;
+    }
+    .ticker-item .dot { color: var(--or-clair); }
+    @keyframes ticker {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* ══ FEATURES ════════════════════════════════════════ */
+    .section { padding: 5.5rem 5%; }
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-tag {
+      display: inline-block;
+      background: rgba(24,95,165,.1);
+      color: var(--bleu-roi); font-size: .75rem; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase;
+      padding: .3rem .9rem; border-radius: 999px; margin-bottom: .9rem;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      color: var(--bleu-nuit); margin-bottom: .8rem; line-height: 1.2;
+    }
+    .section-desc {
+      color: var(--gris-texte); max-width: 560px;
+      margin: 0 auto; font-size: 1rem;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--blanc);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid rgba(4,44,83,.08);
+      box-shadow: 0 2px 16px rgba(4,44,83,.06);
+      transition: all .3s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: ''; position: absolute;
+      inset: 0; border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--bleu-roi), var(--bleu-ciel));
+      opacity: 0; transition: opacity .3s;
+    }
+    .feature-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-bleue); }
+    .feature-card:hover::before { opacity: .04; }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.2rem;
+    }
+    .feature-card h3 {
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--bleu-nuit); margin-bottom: .5rem;
+    }
+    .feature-card p { font-size: .88rem; color: var(--gris-texte); line-height: 1.6; }
+
+    /* ══ CARROUSEL TÉMOIGNAGES ═══════════════════════════ */
+    .testimony-section {
+      background: linear-gradient(135deg, var(--bleu-nuit) 0%, #0A3D6E 100%);
+      padding: 5.5rem 5%;
+      position: relative; overflow: hidden;
+    }
+    .testimony-section::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(255,255,255,.03) 1px, transparent 0);
+      background-size: 30px 30px;
+    }
+    .testimony-section .section-title { color: var(--blanc); }
+    .testimony-section .section-tag {
+      background: rgba(200,154,46,.2); color: var(--or-clair);
+    }
+    .testimony-section .section-desc { color: rgba(255,255,255,.65); }
+
+    .carousel-container { position: relative; overflow: hidden; }
+    .carousel-track {
+      display: flex; transition: transform .5s cubic-bezier(.25,.46,.45,.94);
+    }
+    .testimony-card {
+      min-width: 100%; padding: 0 1rem;
+    }
+    .testimony-inner {
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      max-width: 720px; margin: 0 auto;
+      position: relative;
+    }
+    .testimony-inner::before {
+      content: '"';
+      font-family: 'DM Serif Display', serif;
+      font-size: 8rem; line-height: .7;
+      color: var(--or); opacity: .2;
+      position: absolute; top: 1rem; left: 2rem;
+      pointer-events: none;
+    }
+    .testimony-text {
+      font-size: 1.1rem; color: rgba(255,255,255,.9);
+      line-height: 1.75; font-style: italic; margin-bottom: 1.8rem;
+      position: relative; z-index: 1;
+    }
+    .testimony-author {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .testimony-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--or), var(--or-clair));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; color: var(--bleu-nuit); font-size: 1rem; flex-shrink: 0;
+    }
+    .testimony-name { font-weight: 700; color: var(--blanc); font-size: .95rem; }
+    .testimony-role { font-size: .78rem; color: rgba(255,255,255,.55); }
+
+    .carousel-controls {
+      display: flex; justify-content: center; align-items: center; gap: 1rem;
+      margin-top: 2rem;
+    }
+    .carousel-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      color: var(--blanc); cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .carousel-btn:hover { background: rgba(200,154,46,.3); border-color: var(--or); }
+    .carousel-dots { display: flex; gap: .5rem; }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.3); border: none; cursor: pointer;
+      transition: all .3s; padding: 0;
+    }
+    .carousel-dot.active { background: var(--or-clair); width: 24px; border-radius: 4px; }
+
+    /* ══ WORKFLOW ════════════════════════════════════════ */
+    .workflow-section { background: var(--gris-doux); }
+    .workflow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0; position: relative;
+    }
+    .workflow-steps::before {
+      content: '';
+      position: absolute; top: 42px; left: 10%; right: 10%; height: 2px;
+      background: linear-gradient(90deg, var(--or), var(--bleu-roi), var(--or));
+      z-index: 0;
+    }
+    .workflow-step {
+      text-align: center; padding: 1.5rem 1rem; position: relative; z-index: 1;
+    }
+    .step-number {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--bleu-roi), var(--bleu-nuit));
+      color: var(--blanc); font-weight: 800; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem; border: 3px solid var(--creme);
+      box-shadow: 0 4px 16px rgba(4,44,83,.25);
+    }
+    .step-icon {
+      font-size: 1.4rem; margin-bottom: .5rem; display: block;
+    }
+    .step-title { font-weight: 700; color: var(--bleu-nuit); font-size: .95rem; margin-bottom: .3rem; }
+    .step-desc { font-size: .82rem; color: var(--gris-texte); line-height: 1.5; }
+
+    /* ══ PARTENAIRES ═════════════════════════════════════ */
+    .partners-section {
+      background: var(--blanc); padding: 4rem 5%;
+    }
+    .partners-grid {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      align-items: center; gap: 2rem 3.5rem; margin-top: 2.5rem;
+    }
+    .partner-item {
+      display: flex; flex-direction: column; align-items: center; gap: .6rem;
+      text-decoration: none;
+      padding: 1.2rem 1.8rem; border-radius: var(--radius);
+      border: 1.5px solid rgba(4,44,83,.1);
+      transition: all .3s;
+      min-width: 160px; text-align: center;
+    }
+    .partner-item:hover {
+      border-color: var(--or);
+      box-shadow: 0 4px 20px rgba(200,154,46,.15);
+      transform: translateY(-3px);
+    }
+    .partner-icon { font-size: 2.2rem; }
+    .partner-name {
+      font-weight: 700; color: var(--bleu-nuit); font-size: .85rem; line-height: 1.3;
+    }
+    .partner-sub { font-size: .72rem; color: var(--gris-texte); }
+    .partner-link-badge {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .7rem; color: var(--bleu-roi); font-weight: 600; margin-top: .3rem;
+    }
+
+    /* ══ APROPOS DÉVELOPPEUR ═════════════════════════════ */
+    .dev-section {
+      background: linear-gradient(135deg, #FBF8F3 0%, #EEF4FF 100%);
+      padding: 5.5rem 5%;
+    }
+    .dev-card {
+      background: var(--blanc);
+      border-radius: 24px; overflow: hidden;
+      box-shadow: var(--shadow-bleue);
+      display: grid; grid-template-columns: 1fr 1.4fr;
+      max-width: 960px; margin: 0 auto;
+    }
+    .dev-visual {
+      background: linear-gradient(160deg, var(--bleu-nuit) 0%, var(--bleu-roi) 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 3rem 2rem; gap: 1.2rem; text-align: center;
+    }
+    .dev-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--or), var(--or-clair));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.4rem; font-weight: 800; color: var(--bleu-nuit);
+      border: 4px solid rgba(255,255,255,.25);
+      box-shadow: 0 8px 32px rgba(0,0,0,.2);
+    }
+    .dev-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem; color: var(--blanc); line-height: 1.2;
+    }
+    .dev-ine { font-size: .72rem; color: rgba(255,255,255,.5); }
+    .dev-university {
+      font-size: .8rem; color: var(--or-clair); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .dev-content { padding: 2.5rem 2.8rem; }
+    .dev-content h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem; color: var(--bleu-nuit); margin-bottom: .8rem;
+    }
+    .dev-content p {
+      color: var(--gris-texte); font-size: .92rem; line-height: 1.7;
+      margin-bottom: 1.4rem;
+    }
+    .dev-tags {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.8rem;
+    }
+    .dev-tag {
+      background: rgba(24,95,165,.1); color: var(--bleu-roi);
+      font-size: .75rem; font-weight: 600; padding: .25rem .7rem;
+      border-radius: 999px;
+    }
+    .dev-links { display: flex; flex-wrap: wrap; gap: .8rem; }
+    .dev-link {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .55rem 1.2rem; border-radius: 8px; font-size: .85rem;
+      font-weight: 600; text-decoration: none; transition: all .2s;
+    }
+    .dev-link-blog {
+      background: var(--bleu-nuit); color: var(--blanc);
+    }
+    .dev-link-blog:hover { background: var(--bleu-roi); transform: translateY(-1px); }
+    .dev-link-email {
+      border: 1.5px solid rgba(4,44,83,.2); color: var(--bleu-nuit);
+    }
+    .dev-link-email:hover { border-color: var(--bleu-roi); color: var(--bleu-roi); }
+
+    /* ══ CTA FINAL ═══════════════════════════════════════ */
+    .cta-section {
+      background: linear-gradient(135deg, var(--bleu-nuit) 0%, #0A3D6E 60%, #042C53 100%);
+      padding: 6rem 5%; text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-section::after {
+      content: 'UBH';
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: 'DM Serif Display', serif;
+      font-size: 28vw; color: rgba(255,255,255,.02);
+      white-space: nowrap; pointer-events: none;
+    }
+    .cta-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      color: var(--blanc); margin-bottom: 1rem;
+      position: relative; z-index: 1;
+    }
+    .cta-section h2 em { font-style: italic; color: var(--or-clair); }
+    .cta-section p {
+      color: rgba(255,255,255,.68); max-width: 520px;
+      margin: 0 auto 2.5rem; font-size: 1rem;
+      position: relative; z-index: 1;
+    }
+    .cta-buttons {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;
+      position: relative; z-index: 1;
+    }
+
+    /* ══ FOOTER ══════════════════════════════════════════ */
+    footer {
+      background: #021B34; padding: 3.5rem 5% 2rem;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr;
+      gap: 2.5rem; margin-bottom: 2.5rem;
+    }
+    .footer-brand .nav-logo-name {
+      font-size: 1.3rem; display: block; margin-bottom: .3rem;
+    }
+    .footer-brand p {
+      font-size: .82rem; color: rgba(255,255,255,.45); line-height: 1.65;
+      margin-top: .7rem;
+    }
+    .footer-col h4 {
+      font-weight: 700; color: var(--blanc); font-size: .88rem;
+      margin-bottom: 1rem; letter-spacing: .04em;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: .6rem; }
+    .footer-col ul li a {
+      color: rgba(255,255,255,.45); text-decoration: none;
+      font-size: .83rem; transition: color .2s;
+    }
+    .footer-col ul li a:hover { color: var(--or-clair); }
+    .footer-divider {
+      border: none; border-top: 1px solid rgba(255,255,255,.07);
+      margin-bottom: 1.5rem;
+    }
+    .footer-bottom {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      align-items: center; gap: .8rem;
+    }
+    .footer-copy { font-size: .78rem; color: rgba(255,255,255,.3); }
+    .footer-or {
+      width: 80px; height: 2px;
+      background: linear-gradient(90deg, var(--or), transparent);
+      border-radius: 2px;
+    }
+
+    /* ══ ANIMATIONS ══════════════════════════════════════ */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeLeft {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .fade-in { opacity: 0; transform: translateY(30px); transition: all .7s ease; }
+    .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+    /* ══ RESPONSIVE ══════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .hero-stats { display: none; }
+      .hero { justify-content: center; text-align: center; }
+      .hero-actions { justify-content: center; }
+      .hero-content { max-width: 100%; }
+      .workflow-steps::before { display: none; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .dev-card { grid-template-columns: 1fr; }
+      .dev-visual { padding: 2.5rem 2rem; }
+    }
+    @media (max-width: 640px) {
+      .navbar { padding: .75rem 4%; }
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 64px; left: 0; right: 0;
+        background: rgba(4,44,83,.97); backdrop-filter: blur(16px);
+        padding: 1.5rem 5%; gap: 1.2rem; z-index: 999;
+        border-bottom: 1px solid rgba(200,154,46,.2);
+      }
+      .nav-burger { display: flex; }
+      .hero { padding: 6rem 4% 3.5rem; }
+      .section { padding: 4rem 4%; }
+      .testimony-inner { padding: 2rem 1.5rem; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-col:nth-child(2), .footer-col:nth-child(3) { display: none; }
+      .workflow-steps { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ BANNIÈRE DÉMO ══════════════════════════════════════ -->
+<div id="demo-banner" style="background:linear-gradient(135deg,#C89A2E,#F0C84A);color:#042C53;text-align:center;padding:.7rem 1rem;font-size:.85rem;font-weight:700;position:sticky;top:0;z-index:9999;">
+  🚀 <strong>Version Démo GitHub Pages</strong> — La plateforme complète tourne en local (FastAPI + PostgreSQL + PaddleOCR).
+  Connexion & inscription disponibles sur le serveur UTS uniquement.
+  <a href="https://github.com/AVOGAN-KOUDJO/uniburkina-hub" target="_blank" rel="noopener" style="color:#042C53;margin-left:1rem;text-decoration:underline;">📦 Voir le code source →</a>
+</div>
+
+<!-- ══ NAVBAR ══════════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">U</div>
+    <div class="nav-logo-text">
+      <span class="nav-logo-name">UniBurkina Hub</span>
+      <span class="nav-logo-sub">UTS · Burkina Faso</span>
+    </div>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+    <li><a href="#comment-ca-marche">Comment ça marche</a></li>
+    <li><a href="https://www.uts.bf" target="_blank" rel="noopener">Site UTS ↗</a></li>
+    <li><a href="#developpeur">À propos</a></li>
+    <li><a href="#demo-banner">S'inscrire</a></li>
+    <li><a href="#demo-banner" class="nav-cta">Se connecter</a></li>
+  </ul>
+  <button class="nav-burger" id="navBurger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+
+<!-- ══ HERO ════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span></span>
+      Mémoire de fin de cycle · Soutenance Juillet 2026
+    </div>
+    <h1>
+      La bibliothèque académique<br>
+      <em>de demain</em>, aujourd'hui.
+    </h1>
+    <p class="hero-desc">
+      UniBurkina Hub transforme les photocopies, les fichiers épars et les réseaux informels
+      en une plateforme centralisée, intelligente et accessible à toute la communauté universitaire
+      de l'Université Thomas SANKARA.
+    </p>
+    <div class="hero-actions">
+      <a href="#demo-banner" class="btn-primary">🎓 Rejoindre la plateforme</a>
+      <a href="#demo-banner" class="btn-outline">Se connecter →</a>
+    </div>
+  </div>
+
+  <!-- Stats flottantes -->
+  <div class="hero-stats">
+    <div class="stat-card">
+      <div class="stat-value">6</div>
+      <div class="stat-label">Microservices intégrés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">OCR</div>
+      <div class="stat-label">PaddleOCR + détection layout</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">6</div>
+      <div class="stat-label">Formats de sortie supportés</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">100%</div>
+      <div class="stat-label">Open · Burkina Faso</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ TICKER / FIL D'INFOS ════════════════════════════════ -->
+<div class="carousel-section">
+  <div class="ticker-wrapper">
+    <div class="ticker-label">📢 Actualités</div>
+    <div style="overflow:hidden;flex:1;">
+      <div class="ticker-track" id="ticker">
+        <div class="ticker-item"><span class="dot">◆</span> UniBurkina Hub v3.0 — Moteur PaddleOCR entièrement intégré et opérationnel</div>
+        <div class="ticker-item"><span class="dot">◆</span> Soutenance de fin de cycle prévue en Juillet 2026 à l'UTS</div>
+        <div class="ticker-item"><span class="dot">◆</span> 6 microservices opérationnels — Auth, GED, OCR, Search, Forum, Frontend</div>
+        <div class="ticker-item"><span class="dot">◆</span> Nouveau : streaming SSE temps réel pour la progression OCR image par image</div>
+        <div class="ticker-item"><span class="dot">◆</span> Score de confiance OCR par image (0–100%) disponible dans l'OCR Studio</div>
+        <div class="ticker-item"><span class="dot">◆</span> Génération de documents en PDF, DOCX, XLSX, PPTX, TXT et Markdown</div>
+        <div class="ticker-item"><span class="dot">◆</span> Forum académique avec modération et signalements intégrés</div>
+        <!-- Doublon pour boucle infinie -->
+        <div class="ticker-item"><span class="dot">◆</span> UniBurkina Hub v3.0 — Moteur PaddleOCR entièrement intégré et opérationnel</div>
+        <div class="ticker-item"><span class="dot">◆</span> Soutenance de fin de cycle prévue en Juillet 2026 à l'UTS</div>
+        <div class="ticker-item"><span class="dot">◆</span> 6 microservices opérationnels — Auth, GED, OCR, Search, Forum, Frontend</div>
+        <div class="ticker-item"><span class="dot">◆</span> Nouveau : streaming SSE temps réel pour la progression OCR image par image</div>
+        <div class="ticker-item"><span class="dot">◆</span> Score de confiance OCR par image (0–100%) disponible dans l'OCR Studio</div>
+        <div class="ticker-item"><span class="dot">◆</span> Génération de documents en PDF, DOCX, XLSX, PPTX, TXT et Markdown</div>
+        <div class="ticker-item"><span class="dot">◆</span> Forum académique avec modération et signalements intégrés</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ FONCTIONNALITÉS ══════════════════════════════════════ -->
+<section class="section" id="fonctionnalites">
+  <div class="section-header fade-in">
+    <div class="section-tag">Ce que nous offrons</div>
+    <h2 class="section-title">Une plateforme pensée pour chaque acteur de l'université</h2>
+    <p class="section-desc">
+      Des outils adaptés aux étudiants, délégués, enseignants et administrateurs —
+      une seule plateforme pour tous les documents académiques.
+    </p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card fade-in">
+      <div class="feature-icon" style="background: linear-gradient(135deg,#E8F5FF,#BDE3FF);">📷</div>
+      <h3>OCR Intelligent (PaddleOCR)</h3>
+      <p>Transformez vos photos de cours, TD et examens en documents numériques éditables grâce à notre moteur PaddleOCR avec détection de layout automatique.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon" style="background: linear-gradient(135deg,#FFF8E8,#FFE8A3);">📚</div>
+      <h3>Bibliothèque centralisée</h3>
+      <p>Accédez aux TD, cours, examens et corrigés classés par UFR, filière et module — fini les groupes WhatsApp désorganisés.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon" style="background: linear-gradient(135deg,#E8FFEF,#B3F5CB);">✅</div>
+      <h3>Workflow de validation</h3>
+      <p>Chaque document passe par un processus de validation : délégué → sous-administrateur → classement officiel. Qualité garantie.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon" style="background: linear-gradient(135deg,#F5E8FF,#DDB3F5);">💬</div>
+      <h3>Forum académique</h3>
+      <p>Posez vos questions, partagez vos connaissances. Un espace de discussion modéré pour toute la communauté étudiante.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon" style="background: linear-gradient(135deg,#FFE8E8,#FFB3B3);">🔍</div>
+      <h3>Recherche plein texte</h3>
+      <p>Elasticsearch intégré : retrouvez instantanément n'importe quel document ou sujet de forum par mots-clés, filière ou type.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon" style="background: linear-gradient(135deg,#E8F5FF,#A3D4FF);">📊</div>
+      <h3>Multi-formats de sortie</h3>
+      <p>Exportez vos documents OCR en PDF, Word, Excel, PowerPoint, Texte ou Markdown selon vos besoins. 6 formats supportés.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ TÉMOIGNAGES (Carrousel) ══════════════════════════════ -->
+<section class="testimony-section" id="temoignages">
+  <div class="section-header fade-in">
+    <div class="section-tag">Témoignages</div>
+    <h2 class="section-title">Ce que disent les membres de la communauté</h2>
+    <p class="section-desc">
+      Des étudiants, délégués et enseignants de l'UTS partagent leur vision d'une université numérique.
+    </p>
+  </div>
+
+  <div class="carousel-container fade-in">
+    <div class="carousel-track" id="testimonyTrack">
+
+      <div class="testimony-card">
+        <div class="testimony-inner">
+          <p class="testimony-text">
+            "Avant, je passais des heures à chercher les anciens examens dans des groupes WhatsApp désorganisés.
+            Avec UniBurkina Hub, tout est centralisé, classé, et accessible en quelques clics. C'est une révolution
+            pour notre façon d'étudier."
+          </p>
+          <div class="testimony-author">
+            <div class="testimony-avatar">FK</div>
+            <div>
+              <div class="testimony-name">Fatoumata K.</div>
+              <div class="testimony-role">Étudiante en Licence 3 — UFR Droit, UTS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimony-card">
+        <div class="testimony-inner">
+          <p class="testimony-text">
+            "En tant que délégué, ma mission principale est de faire circuler les ressources pédagogiques.
+            L'OCR Studio m'a changé la vie : je scanne un document, le texte est extrait automatiquement,
+            et je le soumets directement à la plateforme pour validation. Simple, rapide, fiable."
+          </p>
+          <div class="testimony-author">
+            <div class="testimony-avatar">OB</div>
+            <div>
+              <div class="testimony-name">Oumarou B.</div>
+              <div class="testimony-role">Délégué de promotion — Informatique L2, UTS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimony-card">
+        <div class="testimony-inner">
+          <p class="testimony-text">
+            "La digitalisation des ressources universitaires est un impératif pour l'Afrique de demain.
+            Ce projet incarne exactement la vision que nous devons avoir : des outils conçus
+            par des Burkinabè, pour des Burkinabè, adaptés à notre contexte réel."
+          </p>
+          <div class="testimony-author">
+            <div class="testimony-avatar">PT</div>
+            <div>
+              <div class="testimony-name">Prof. Pascal T.</div>
+              <div class="testimony-role">Enseignant-chercheur — UFR Sciences Appliquées, UTS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimony-card">
+        <div class="testimony-inner">
+          <p class="testimony-text">
+            "Ce qui me touche dans ce projet, c'est l'ambition. Passer d'une liste WhatsApp à un vrai
+            système de gestion documentaire avec OCR, forum, validation et notifications —
+            c'est le saut qualitatif que mérite notre université."
+          </p>
+          <div class="testimony-author">
+            <div class="testimony-avatar">AK</div>
+            <div>
+              <div class="testimony-name">Aminata K.</div>
+              <div class="testimony-role">Sous-administratrice — Service pédagogique, UTS</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="carousel-controls">
+      <button class="carousel-btn" id="prevTestimony">←</button>
+      <div class="carousel-dots" id="testimonyDots"></div>
+      <button class="carousel-btn" id="nextTestimony">→</button>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ COMMENT ÇA MARCHE ════════════════════════════════════ -->
+<section class="section workflow-section" id="comment-ca-marche">
+  <div class="section-header fade-in">
+    <div class="section-tag">Processus</div>
+    <h2 class="section-title">De la photo à la bibliothèque — en 6 étapes</h2>
+    <p class="section-desc">
+      Un workflow complet et sécurisé, du scan initial jusqu'à la mise à disposition des étudiants.
+    </p>
+  </div>
+
+  <div class="workflow-steps fade-in">
+    <div class="workflow-step">
+      <div class="step-number">1</div>
+      <span class="step-icon">📸</span>
+      <div class="step-title">Photographier</div>
+      <div class="step-desc">Le délégué photographie le document (TD, cours, examen)</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">2</div>
+      <span class="step-icon">🔬</span>
+      <div class="step-title">OCR PaddleOCR</div>
+      <div class="step-desc">Extraction automatique du texte avec détection de layout</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">3</div>
+      <span class="step-icon">✏️</span>
+      <div class="step-title">Corriger</div>
+      <div class="step-desc">Relecture et correction manuelle si nécessaire</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">4</div>
+      <span class="step-icon">📄</span>
+      <div class="step-title">Générer</div>
+      <div class="step-desc">Export en PDF, DOCX ou autre format selon le besoin</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">5</div>
+      <span class="step-icon">🛡️</span>
+      <div class="step-title">Valider</div>
+      <div class="step-desc">Révision par le sous-administrateur ou chef de département</div>
+    </div>
+    <div class="workflow-step">
+      <div class="step-number">6</div>
+      <span class="step-icon">🌐</span>
+      <div class="step-title">Publier</div>
+      <div class="step-desc">Disponible pour tous les étudiants de la filière</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ PARTENAIRES / LIENS ══════════════════════════════════ -->
+<section class="partners-section" id="liens">
+  <div class="section-header fade-in">
+    <div class="section-tag">Écosystème</div>
+    <h2 class="section-title">Nos liens institutionnels</h2>
+    <p class="section-desc">
+      UniBurkina Hub s'inscrit dans l'écosystème académique burkinabè
+      et utilise des technologies open-source éprouvées.
+    </p>
+  </div>
+
+  <div class="partners-grid fade-in">
+    <a href="https://www.uts.bf" target="_blank" rel="noopener" class="partner-item">
+      <div class="partner-icon">🏛️</div>
+      <div class="partner-name">Université Thomas SANKARA</div>
+      <div class="partner-sub">Ouagadougou, Burkina Faso</div>
+      <div class="partner-link-badge">🔗 Site officiel</div>
+    </a>
+    <a href="https://www.messri.bf" target="_blank" rel="noopener" class="partner-item">
+      <div class="partner-icon">📋</div>
+      <div class="partner-name">MESSRI</div>
+      <div class="partner-sub">Ministère Enseignement Supérieur</div>
+      <div class="partner-link-badge">🔗 Portail MESSRI</div>
+    </a>
+    <a href="https://github.com/PaddlePaddle/PaddleOCR" target="_blank" rel="noopener" class="partner-item">
+      <div class="partner-icon">🔬</div>
+      <div class="partner-name">PaddleOCR</div>
+      <div class="partner-sub">Moteur OCR open-source</div>
+      <div class="partner-link-badge">🔗 GitHub</div>
+    </a>
+    <a href="https://fastapi.tiangolo.com" target="_blank" rel="noopener" class="partner-item">
+      <div class="partner-icon">⚡</div>
+      <div class="partner-name">FastAPI</div>
+      <div class="partner-sub">Framework backend Python</div>
+      <div class="partner-link-badge">🔗 Documentation</div>
+    </a>
+    <a href="https://www.elastic.co" target="_blank" rel="noopener" class="partner-item">
+      <div class="partner-icon">🔍</div>
+      <div class="partner-name">Elasticsearch</div>
+      <div class="partner-sub">Moteur de recherche full-text</div>
+      <div class="partner-link-badge">🔗 elastic.co</div>
+    </a>
+    <a href="https://getbootstrap.com" target="_blank" rel="noopener" class="partner-item">
+      <div class="partner-icon">🎨</div>
+      <div class="partner-name">Bootstrap 5</div>
+      <div class="partner-sub">Framework UI & templates</div>
+      <div class="partner-link-badge">🔗 getbootstrap.com</div>
+    </a>
+  </div>
+</section>
+
+
+<!-- ══ À PROPOS DU DÉVELOPPEUR ══════════════════════════════ -->
+<section class="dev-section" id="developpeur">
+  <div class="section-header fade-in">
+    <div class="section-tag">Le développeur</div>
+    <h2 class="section-title">Un étudiant burkinabè,<br>une vision pour son université</h2>
+  </div>
+
+  <div class="dev-card fade-in">
+    <div class="dev-visual">
+      <div class="dev-avatar">A</div>
+      <div class="dev-name">AVOGAN Koudjo<br>Augustin Sandaogo</div>
+      <div class="dev-ine">INE N01213620231</div>
+      <div class="dev-university">UTS — Université Thomas SANKARA</div>
+      <div class="dev-university" style="color:rgba(255,255,255,.5);font-size:.72rem;margin-top:.3rem;">Soutenance · Juillet 2026</div>
+    </div>
+    <div class="dev-content">
+      <h3>À l'origine du projet</h3>
+      <p>
+        Étudiant en fin de cycle à l'Université Thomas SANKARA, j'ai vécu de l'intérieur la
+        frustration de voir des ressources précieuses se perdre dans des groupes WhatsApp, des
+        photocopies de mauvaise qualité et des réseaux informels fragiles.
+      </p>
+      <p>
+        UniBurkina Hub est ma réponse à ce problème : un système complet de Gestion Électronique
+        de Documents académiques, conçu spécifiquement pour le contexte des universités burkinabè —
+        sans Docker, sans infrastructure cloud coûteuse, mais avec toute la rigueur d'une architecture
+        microservices moderne.
+      </p>
+      <div class="dev-tags">
+        <span class="dev-tag">FastAPI</span>
+        <span class="dev-tag">PaddleOCR</span>
+        <span class="dev-tag">PostgreSQL</span>
+        <span class="dev-tag">Elasticsearch</span>
+        <span class="dev-tag">Python 3.11</span>
+        <span class="dev-tag">Bootstrap 5</span>
+        <span class="dev-tag">JWT Auth</span>
+        <span class="dev-tag">SSE Streaming</span>
+      </div>
+      <div class="dev-links">
+        <a href="https://avoganaugustin.dev" target="_blank" rel="noopener" class="dev-link dev-link-blog">
+          ✍️ Blog du développeur
+        </a>
+        <a href="mailto:avoganaugustin5@gmail.com" class="dev-link dev-link-email">
+          ✉️ avoganaugustin5@gmail.com
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ CTA FINAL ════════════════════════════════════════════ -->
+<section class="cta-section">
+  <h2>Rejoignez <em>la bibliothèque<br>de votre université.</em></h2>
+  <p>
+    Inscrivez-vous en 2 minutes et accédez à des centaines de ressources académiques
+    organisées, validées et prêtes à télécharger.
+  </p>
+  <div class="cta-buttons">
+    <a href="#demo-banner" class="btn-primary">🎓 Créer un compte gratuitement</a>
+    <a href="#demo-banner" class="btn-outline">J'ai déjà un compte →</a>
+  </div>
+</section>
+
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="nav-logo" style="margin-bottom:.8rem;display:inline-flex;">
+        <div class="nav-logo-icon">U</div>
+        <div class="nav-logo-text">
+          <span class="nav-logo-name">UniBurkina Hub</span>
+          <span class="nav-logo-sub">UTS · Burkina Faso</span>
+        </div>
+      </a>
+      <p>
+        Système modulaire de Gestion Électronique de Documents académiques par OCR —
+        vers une plateforme de digitalisation intégrée des universités du Burkina Faso.<br><br>
+        Mémoire de fin de cycle · Soutenance Juillet 2026.
+      </p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Plateforme</h4>
+      <ul>
+        <li><a href="#demo-banner">Se connecter</a></li>
+        <li><a href="#demo-banner">S'inscrire</a></li>
+        <li><a href="#fonctionnalites">OCR Studio</a></li>
+        <li><a href="#fonctionnalites">Validation Hub</a></li>
+        <li><a href="#">Statut des services</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Liens utiles</h4>
+      <ul>
+        <li><a href="https://www.uts.bf" target="_blank" rel="noopener">Université Thomas SANKARA ↗</a></li>
+        <li><a href="https://www.messri.bf" target="_blank" rel="noopener">MESSRI ↗</a></li>
+        <li><a href="https://avoganaugustin.dev" target="_blank" rel="noopener">Blog du développeur ↗</a></li>
+        <li><a href="https://github.com/PaddlePaddle/PaddleOCR" target="_blank" rel="noopener">PaddleOCR ↗</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="mailto:avoganaugustin5@gmail.com">📧 avoganaugustin5@gmail.com</a></li>
+        <li><a href="https://www.uts.bf" target="_blank">🏛️ UTS — Ouagadougou, BF</a></li>
+        <li><a href="https://avoganaugustin.dev" target="_blank">✍️ Blog technique</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="footer-divider">
+
+  <div class="footer-bottom">
+    <div class="footer-copy">
+      © 2025–2026 AVOGAN Koudjo Augustin Sandaogo · INE N01213620231 · UTS Burkina Faso
+    </div>
+    <div class="footer-or"></div>
+    <div class="footer-copy">
+      UniBurkina Hub v3.0 · Moteur OCR : PaddleOCR
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══ SCRIPTS ══════════════════════════════════════════════ -->
+<script>
+  /* ── Navbar scroll ─────────────────────────────────── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  /* ── Burger menu ────────────────────────────────────── */
+  const burger = document.getElementById('navBurger');
+  const navLinks = document.getElementById('navLinks');
+  burger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+    const spans = burger.querySelectorAll('span');
+    const isOpen = navLinks.classList.contains('open');
+    spans[0].style.transform = isOpen ? 'rotate(45deg) translate(5px,5px)' : '';
+    spans[1].style.opacity   = isOpen ? '0' : '1';
+    spans[2].style.transform = isOpen ? 'rotate(-45deg) translate(5px,-5px)' : '';
+  });
+
+  /* ── Carrousel témoignages ──────────────────────────── */
+  const track    = document.getElementById('testimonyTrack');
+  const dotsWrap = document.getElementById('testimonyDots');
+  const cards    = track.querySelectorAll('.testimony-card');
+  let   current  = 0;
+  let   autoplay;
+
+  // Créer les dots
+  cards.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+
+  function goTo(idx) {
+    current = (idx + cards.length) % cards.length;
+    track.style.transform = `translateX(-${current * 100}%)`;
+    dotsWrap.querySelectorAll('.carousel-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+  }
+
+  document.getElementById('prevTestimony').addEventListener('click', () => {
+    goTo(current - 1); resetAuto();
+  });
+  document.getElementById('nextTestimony').addEventListener('click', () => {
+    goTo(current + 1); resetAuto();
+  });
+
+  function startAuto() { autoplay = setInterval(() => goTo(current + 1), 5500); }
+  function resetAuto()  { clearInterval(autoplay); startAuto(); }
+  startAuto();
+
+  /* ── Scroll reveal ──────────────────────────────────── */
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+  /* ── Ticker pause on hover ──────────────────────────── */
+  const ticker = document.getElementById('ticker');
+  if (ticker) {
+    ticker.parentElement.addEventListener('mouseenter', () => ticker.style.animationPlayState = 'paused');
+    ticker.parentElement.addEventListener('mouseleave', () => ticker.style.animationPlayState = 'running');
+  }
+
+  /* ── Liens nav mobile : fermer au clic ─────────────── */
+  navLinks.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => navLinks.classList.remove('open'));
+  });
+</script>
+
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js")
+        .then(r => console.log("SW registered:", r.scope))
+        .catch(e => console.warn("SW registration failed:", e));
+    });
+  }
+</script>
+</body>
+</html>

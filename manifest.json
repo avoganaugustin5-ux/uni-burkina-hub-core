@@ -1,0 +1,39 @@
+{
+  "name": "UniBurkina Hub",
+  "short_name": "UniBurkina",
+  "description": "Plateforme GED Académique — Université Thomas SANKARA, Burkina Faso",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#042C53",
+  "theme_color": "#042C53",
+  "orientation": "portrait-primary",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "À propos",
+      "url": "/#developpeur",
+      "description": "Découvrir le projet"
+    },
+    {
+      "name": "Fonctionnalités",
+      "url": "/#fonctionnalites",
+      "description": "Voir les fonctionnalités"
+    }
+  ]
+}
