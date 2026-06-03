@@ -1,0 +1,169 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: uniburkina_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: uniburkina_admin
+      POSTGRES_PASSWORD: UTS_Burkina2025!
+      POSTGRES_DB: uniburkina_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - uniburkina_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U uniburkina_admin -d uniburkina_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: uniburkina_minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: uniburkina_minio
+      MINIO_ROOT_PASSWORD: MinIO_UTS2025!
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - uniburkina_net
+
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    container_name: uniburkina_elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - uniburkina_net
+
+  service-auth:
+    build: ./service-auth
+    container_name: uniburkina_auth
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://uniburkina_admin:UTS_Burkina2025!@postgres:5432/uniburkina_db
+      SECRET_KEY: uniburkina_super_secret_key_uts_2025
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 480
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - uniburkina_net
+    volumes:
+      - ./service-auth:/app
+
+  service-ged:
+    build: ./service-ged
+    container_name: uniburkina_ged
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://uniburkina_admin:UTS_Burkina2025!@postgres:5432/uniburkina_db
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: uniburkina_minio
+      MINIO_SECRET_KEY: MinIO_UTS2025!
+      MINIO_BUCKET: documents-academiques
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - uniburkina_net
+    volumes:
+      - ./service-ged:/app
+
+  service-ocr:
+    build: ./service-ocr
+    container_name: uniburkina_ocr
+    restart: always
+    environment:
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: uniburkina_minio
+      MINIO_SECRET_KEY: MinIO_UTS2025!
+      MINIO_BUCKET: documents-academiques
+      TESSERACT_LANG: fra+eng
+    ports:
+      - "8003:8003"
+    networks:
+      - uniburkina_net
+    volumes:
+      - ./service-ocr:/app
+
+  service-search:
+    build: ./service-search
+    container_name: uniburkina_search
+    restart: always
+    environment:
+      ELASTIC_URL: http://elasticsearch:9200
+      ELASTIC_INDEX: ressources_academiques
+    ports:
+      - "8004:8004"
+    depends_on:
+      - elasticsearch
+    networks:
+      - uniburkina_net
+    volumes:
+      - ./service-search:/app
+
+  service-forum:
+    build: ./service-forum
+    container_name: uniburkina_forum
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://uniburkina_admin:UTS_Burkina2025!@postgres:5432/uniburkina_db
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - uniburkina_net
+    volumes:
+      - ./service-forum:/app
+
+  frontend:
+    build: ./frontend
+    container_name: uniburkina_frontend
+    restart: always
+    environment:
+      AUTH_SERVICE_URL: http://service-auth:8001
+      GED_SERVICE_URL: http://service-ged:8002
+      OCR_SERVICE_URL: http://service-ocr:8003
+      SEARCH_SERVICE_URL: http://service-search:8004
+      FORUM_SERVICE_URL: http://service-forum:8005
+    ports:
+      - "8000:8000"
+    depends_on:
+      - service-auth
+      - service-ged
+    networks:
+      - uniburkina_net
+    volumes:
+      - ./frontend:/app
+
+volumes:
+  postgres_data:
+  minio_data:
+  elastic_data:
+
+networks:
+  uniburkina_net:
+    driver: bridge

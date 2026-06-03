@@ -1,0 +1,24 @@
+# Venvs Python (trop lourds)
+*/venv/
+*/.venv/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Fichiers .env (SECRETS - jamais sur GitHub)
+.env
+*.env
+
+# Modèles PaddleOCR (trop lourds)
+.paddleocr/
+inference/
+
+# Données MinIO locales
+minio-data/
+storage/
+
+# Logs
+*.log
+logs/

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Accès refusé — UniBurkina Hub</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --navy:     #042C53;
+    --blue:     #185FA5;
+    --blue-50:  #E6F1FB;
+    --gold:     #C89A2E;
+    --gold-bg:  #FDF6E3;
+    --surface:  #F4F7FB;
+    --border:   #CDD8E4;
+    --text:     #0B1B2C;
+    --text-2:   #3E5A72;
+    --text-3:   #6E8EA6;
+    --red:      #D84315;
+    --red-bg:   #FFF3F0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--surface);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  /* Fond décoratif */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 55% 45% at 0% 100%, rgba(4,44,83,.06) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 35% at 100% 0%, rgba(200,154,46,.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Carte centrale */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 3rem 3.5rem;
+    text-align: center;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 32px rgba(4,44,83,.09);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Icône */
+  .icon-wrap {
+    width: 72px; height: 72px;
+    border-radius: 18px;
+    background: var(--red-bg);
+    border: 1px solid rgba(216,67,21,.15);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  .icon-wrap i {
+    font-size: 36px;
+    color: var(--red);
+  }
+
+  /* Code erreur */
+  .error-code {
+    font-family: 'Playfair Display', serif;
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--red);
+    line-height: 1;
+    margin-bottom: .25rem;
+    opacity: .15;
+    position: absolute;
+    top: 1.5rem; right: 2rem;
+    user-select: none;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: .6rem;
+  }
+
+  .subtitle {
+    font-size: .92rem;
+    color: var(--text-2);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  /* Info box */
+  .info-box {
+    background: var(--blue-50);
+    border: 1px solid rgba(24,95,165,.15);
+    border-radius: 10px;
+    padding: .85rem 1.1rem;
+    font-size: .82rem;
+    color: var(--text-2);
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    text-align: left;
+    margin-bottom: 2rem;
+  }
+  .info-box i {
+    font-size: 16px;
+    color: var(--blue);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Boutons */
+  .btn-group {
+    display: flex;
+    gap: .75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.3rem;
+    border-radius: 9px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: .88rem; font-weight: 600;
+    cursor: pointer; border: none;
+    text-decoration: none;
+    transition: opacity .15s, transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+  }
+  .btn-primary:hover { opacity: .88; }
+  .btn-outline {
+    background: transparent;
+    color: var(--blue);
+    border: 1px solid var(--border);
+  }
+  .btn-outline:hover { background: var(--blue-50); border-color: var(--blue); }
+
+  /* Branding footer */
+  .brand {
+    margin-top: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    color: var(--text-3);
+    font-size: .75rem;
+  }
+  .brand-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: .6;
+  }
+
+  @media (max-width: 520px) {
+    .card { padding: 2rem 1.5rem; }
+    .error-code { font-size: 2.5rem; top: 1rem; right: 1.2rem; }
+    .btn-group { flex-direction: column; }
+    .btn { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Code 403 décoratif -->
+  <span class="error-code">403</span>
+
+  <!-- Icône -->
+  <div class="icon-wrap">
+    <i class="ti ti-lock-access"></i>
+  </div>
+
+  <h1>Accès refusé</h1>
+  <p class="subtitle">
+    Vous n'avez pas les droits nécessaires pour accéder à cette page.
+    Votre rôle ne correspond pas aux permissions requises.
+  </p>
+
+  <div class="info-box">
+    <i class="ti ti-info-circle"></i>
+    <span>
+      Si vous pensez qu'il s'agit d'une erreur, contactez votre
+      <strong>administrateur</strong> ou reconnectez-vous avec
+      le bon compte.
+    </span>
+  </div>
+
+  <div class="btn-group">
+    <a href="/login" class="btn btn-primary">
+      <i class="ti ti-login"></i> Se reconnecter
+    </a>
+    <a href="javascript:history.back()" class="btn btn-outline">
+      <i class="ti ti-arrow-left"></i> Page précédente
+    </a>
+  </div>
+</div>
+
+<!-- Branding -->
+<div class="brand">
+  <span>UniBurkina Hub</span>
+  <div class="brand-dot"></div>
+  <span>UTS — Université Thierno Saïdou</span>
+  <div class="brand-dot"></div>
+  <span>2025–2026</span>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniBurkina Hub — Connexion</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue-950: #021E3A; --blue-900: #042C53; --blue-800: #0C447C;
+      --blue-700: #185FA5; --blue-600: #2272C3; --blue-300: #6EB3F0;
+      --blue-100: #B5D4F4; --blue-50: #E6F1FB;
+      --teal: #0E7490; --teal-bg: #E0F4F7; --teal-border: #B2E4EE;
+      --gold: #C89A2E; --gold-light: #F0D98B; --gold-faint: #FDF6E3;
+      --surface: #F4F7FA; --surface-2: #EBF0F6;
+      --border: #CDD8E4; --border-2: #B0C4D8;
+      --text: #0B1B2C; --text-2: #3E5A72; --text-3: #6E8EA6;
+      --success: #1D9E75; --danger: #D85A30;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Source Sans 3', sans-serif; font-weight: 400;
+      background: var(--surface); color: var(--text);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 0% 100%, rgba(4,44,83,.08) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 100% 0%, rgba(200,154,46,.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .auth-shell {
+      display: flex; width: 900px; max-width: calc(100vw - 2rem);
+      min-height: 580px; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 4px 40px rgba(4,44,83,.13), 0 1px 4px rgba(0,0,0,.06);
+      border: 0.5px solid var(--border); position: relative; z-index: 1;
+    }
+    .panel-left {
+      width: 300px; flex-shrink: 0; background: var(--blue-900);
+      display: flex; flex-direction: column; padding: 2.25rem 2rem;
+      position: relative; overflow: hidden;
+    }
+    .panel-left::before, .panel-left::after {
+      content: ''; position: absolute; border-radius: 50%;
+      border: 1px solid rgba(200,154,46,.12);
+    }
+    .panel-left::before { width: 280px; height: 280px; bottom: -80px; right: -100px; }
+    .panel-left::after  { width: 160px; height: 160px; bottom: -10px; right: -50px; border-color: rgba(200,154,46,.08); }
+    .brand-logo {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+    }
+    .brand-logo i { font-size: 22px; color: var(--gold-light); }
+    .brand-name { font-family: 'Playfair Display', serif; font-size: 1.45rem; font-weight: 600; color: #fff; line-height: 1.15; margin-bottom: .2rem; }
+    .brand-tagline { font-size: .72rem; font-weight: 500; color: var(--blue-300); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2rem; }
+    .brand-divider { width: 36px; height: 2px; background: var(--gold); border-radius: 2px; margin-bottom: 2rem; opacity: .7; }
+    .feat-list { flex: 1; display: flex; flex-direction: column; gap: 1.1rem; }
+    .feat-item { display: flex; align-items: flex-start; gap: .75rem; }
+    .feat-icon { width: 30px; height: 30px; flex-shrink: 0; border-radius: 7px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); display: flex; align-items: center; justify-content: center; }
+    .feat-icon i { font-size: 15px; color: var(--gold-light); }
+    .feat-text strong { display: block; font-size: .78rem; font-weight: 600; color: #E8F3FC; margin-bottom: .1rem; }
+    .feat-text span { font-size: .7rem; color: #7BAFD4; line-height: 1.35; }
+    .panel-footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.07); font-size: .68rem; color: #4A6C8A; line-height: 1.5; }
+    .panel-footer strong { color: #7BAFD4; }
+    .panel-right { flex: 1; background: #fff; display: flex; align-items: center; justify-content: center; padding: 2.5rem 2.25rem; overflow-y: auto; }
+    .auth-card { width: 100%; max-width: 380px; }
+    .auth-tabs { display: flex; background: var(--surface-2); border-radius: 10px; padding: 4px; margin-bottom: 1.75rem; border: 0.5px solid var(--border); }
+    .tab-btn { flex: 1; border: none; background: transparent; padding: .45rem .5rem; border-radius: 7px; font-family: 'Source Sans 3', sans-serif; font-size: .82rem; font-weight: 500; color: var(--text-2); cursor: pointer; transition: background .15s, color .15s, box-shadow .15s; display: flex; align-items: center; justify-content: center; gap: .3rem; }
+    .tab-btn i { font-size: 14px; }
+    .tab-btn.active { background: #fff; color: var(--blue-800); box-shadow: 0 1px 3px rgba(4,44,83,.1); }
+    .form-panel { display: none; }
+    .form-panel.active { display: block; }
+    .form-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 600; color: var(--text); margin-bottom: .2rem; }
+    .form-subtitle { font-size: .8rem; color: var(--text-3); margin-bottom: 1.4rem; }
+    .step-bar { display: flex; gap: 5px; margin-bottom: 1.4rem; }
+    .step-seg { height: 3px; border-radius: 2px; flex: 1; background: var(--surface-2); transition: background .3s; }
+    .step-seg.done { background: var(--blue-700); }
+    .step-seg.current { background: var(--blue-300); }
+    label.field-label { display: block; font-size: .78rem; font-weight: 600; color: var(--text); margin-bottom: .28rem; }
+    .input-wrap { position: relative; margin-bottom: .9rem; }
+    .input-wrap i.input-icon { position: absolute; left: .65rem; top: 50%; transform: translateY(-50%); font-size: 16px; color: var(--text-3); pointer-events: none; }
+    .input-wrap input, .input-wrap select { width: 100%; height: 40px; border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 0 .85rem 0 2.1rem; font-family: 'Source Sans 3', sans-serif; font-size: .85rem; color: var(--text); transition: border-color .15s, box-shadow .15s; -webkit-appearance: none; }
+    .input-wrap input:focus, .input-wrap select:focus { outline: none; border-color: var(--blue-700); box-shadow: 0 0 0 3px rgba(24,95,165,.1); }
+    .eye-toggle { position: absolute; right: .65rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-3); font-size: 16px; padding: 0; line-height: 1; }
+    .eye-toggle:hover { color: var(--blue-700); }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+
+    /* Role grid — 2 cols + Chef pleine largeur */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-bottom: .9rem; }
+    .role-card { border: 1.5px solid var(--border); border-radius: 8px; padding: .55rem .6rem; cursor: pointer; display: flex; align-items: center; gap: .5rem; transition: border-color .15s, background .15s; user-select: none; }
+    .role-card i { font-size: 17px; color: var(--blue-700); }
+    .role-card span { font-size: .78rem; font-weight: 500; color: var(--text); }
+    .role-card:hover { border-color: var(--blue-300); background: var(--blue-50); }
+    .role-card.selected { border-color: var(--blue-700); background: var(--blue-50); }
+    .role-card.selected span { color: var(--blue-800); }
+    /* Chef de département — style teal distinct */
+    .role-card[data-role="CHEF_DEPARTEMENT"] { grid-column: 1 / -1; }
+    .role-card[data-role="CHEF_DEPARTEMENT"] i { color: var(--teal); }
+    .role-card[data-role="CHEF_DEPARTEMENT"]:hover { border-color: var(--teal); background: var(--teal-bg); }
+    .role-card[data-role="CHEF_DEPARTEMENT"].selected { border-color: var(--teal); background: var(--teal-bg); }
+    .role-card[data-role="CHEF_DEPARTEMENT"].selected span { color: var(--teal); }
+
+    /* Champ département (visible uniquement pour Chef) */
+    .field-chef { display: none; }
+    .field-chef.visible { display: block; }
+    .chef-badge { display: inline-flex; align-items: center; gap: .3rem; background: var(--teal-bg); color: var(--teal); border: 1px solid var(--teal-border); border-radius: 5px; font-size: .65rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; padding: .2rem .5rem; margin-bottom: .4rem; }
+
+    .btn-primary-auth { width: 100%; height: 42px; background: var(--blue-800); color: #fff; border: none; border-radius: 9px; font-family: 'Source Sans 3', sans-serif; font-size: .88rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .4rem; transition: background .15s, transform .1s; margin-top: .25rem; }
+    .btn-primary-auth:hover { background: var(--blue-700); }
+    .btn-primary-auth:active { transform: scale(.98); }
+    .btn-primary-auth:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    .btn-secondary-auth { width: 100%; height: 42px; background: transparent; color: var(--blue-800); border: 1px solid var(--border-2); border-radius: 9px; font-family: 'Source Sans 3', sans-serif; font-size: .88rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: .4rem; transition: background .15s, border-color .15s; margin-top: .5rem; }
+    .btn-secondary-auth:hover { background: var(--surface); border-color: var(--blue-300); }
+    .link-row { text-align: center; margin-top: .9rem; font-size: .78rem; color: var(--text-3); }
+    .link-row a { color: var(--blue-700); text-decoration: none; font-weight: 600; }
+    .link-row a:hover { text-decoration: underline; }
+    .forgot-link { display: block; text-align: right; font-size: .72rem; color: var(--text-3); text-decoration: none; margin-top: -.5rem; margin-bottom: .9rem; }
+    .forgot-link:hover { color: var(--blue-700); }
+    .alert-auth { border-radius: 8px; padding: .7rem .9rem; font-size: .8rem; margin-bottom: 1rem; display: none; align-items: flex-start; gap: .5rem; }
+    .alert-auth.show { display: flex; }
+    .alert-auth.error { background: rgba(216,90,48,.08); border: 1px solid rgba(216,90,48,.2); color: #993C1D; }
+    .alert-auth.success { background: rgba(29,158,117,.08); border: 1px solid rgba(29,158,117,.2); color: #0F6E56; }
+    .alert-auth i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sep { display: flex; align-items: center; gap: .75rem; font-size: .72rem; color: var(--text-3); margin: .9rem 0; }
+    .sep::before, .sep::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    @media (max-width: 700px) {
+      .auth-shell { flex-direction: column; min-height: auto; }
+      .panel-left { width: 100%; padding: 1.5rem; }
+      .feat-list { flex-direction: row; flex-wrap: wrap; gap: .75rem; }
+      .feat-item { flex: 1; min-width: 140px; }
+      .panel-right { padding: 1.75rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="auth-shell">
+
+  <!-- ══ LEFT PANEL ══ -->
+  <div class="panel-left">
+    <div>
+      <div class="brand-logo"><i class="ti ti-school"></i></div>
+      <div class="brand-name">UniBurkina<br>Hub</div>
+      <div class="brand-tagline">Plateforme universitaire</div>
+      <div class="brand-divider"></div>
+      <div class="feat-list">
+        <div class="feat-item">
+          <div class="feat-icon"><i class="ti ti-file-certificate"></i></div>
+          <div class="feat-text"><strong>GED Académique</strong><span>Dépôt & validation de documents officiels</span></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon"><i class="ti ti-scan"></i></div>
+          <div class="feat-text"><strong>Paddle OCR</strong><span>Numérisation automatique des documents</span></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon"><i class="ti ti-messages"></i></div>
+          <div class="feat-text"><strong>Forum par filière</strong><span>Questions, réponses & modération</span></div>
+        </div>
+        <div class="feat-item">
+          <div class="feat-icon"><i class="ti ti-search"></i></div>
+          <div class="feat-text"><strong>Recherche full-text</strong><span>Indexation Elasticsearch 8</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-footer"><strong>UTS Burkina Faso</strong><br>Université Thierno Saïdou — 2025–2026</div>
+  </div>
+
+  <!-- ══ RIGHT PANEL ══ -->
+  <div class="panel-right">
+    <div class="auth-card">
+
+      <!-- Tabs -->
+      <div class="auth-tabs" role="tablist">
+        <button class="tab-btn active" id="tab-login" role="tab" aria-selected="true" onclick="switchTab('login')">
+          <i class="ti ti-login"></i>Connexion
+        </button>
+        <button class="tab-btn" id="tab-register" role="tab" aria-selected="false" onclick="switchTab('register')">
+          <i class="ti ti-user-plus"></i>Inscription
+        </button>
+      </div>
+
+      <!-- ─── LOGIN PANEL ─── -->
+      <div class="form-panel active" id="panel-login">
+        <h1 class="form-title">Bon retour</h1>
+        <p class="form-subtitle">Connectez-vous à votre espace universitaire</p>
+        <div class="alert-auth error" id="login-error"><i class="ti ti-alert-circle"></i><span id="login-error-msg">Identifiants incorrects.</span></div>
+        <div class="alert-auth success" id="login-success"><i class="ti ti-circle-check"></i><span>Connexion réussie. Redirection en cours…</span></div>
+        <form id="form-login" onsubmit="doLogin(event)" novalidate>
+          <label class="field-label" for="login-email">Adresse email</label>
+          <div class="input-wrap">
+            <i class="ti ti-mail input-icon"></i>
+            <input type="email" id="login-email" placeholder="prenom.nom@universite.bf" autocomplete="email" required>
+          </div>
+          <label class="field-label" for="login-pwd">Mot de passe</label>
+          <div class="input-wrap">
+            <i class="ti ti-lock input-icon"></i>
+            <input type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="eye-toggle" onclick="togglePwd('login-pwd', this)"><i class="ti ti-eye"></i></button>
+          </div>
+          <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+          <button type="submit" class="btn-primary-auth" id="login-btn">
+            <div class="spinner" id="login-spinner"></div>
+            <span id="login-btn-label">Se connecter</span>
+            <i class="ti ti-arrow-right" id="login-btn-icon"></i>
+          </button>
+        </form>
+        <div class="link-row">Pas encore de compte ? <a href="#" onclick="switchTab('register'); return false;">S'inscrire →</a></div>
+      </div>
+
+      <!-- ─── REGISTER PANEL ─── -->
+      <div class="form-panel" id="panel-register">
+
+        <!-- Étape 1 — Identité -->
+        <div id="reg-step-1" class="reg-step">
+          <div class="step-bar">
+            <div class="step-seg current"></div><div class="step-seg"></div><div class="step-seg"></div>
+          </div>
+          <h2 class="form-title">Votre identité</h2>
+          <p class="form-subtitle">Étape 1 sur 3 — Informations personnelles</p>
+          <div class="alert-auth error" id="step1-error"><i class="ti ti-alert-circle"></i><span id="step1-error-msg">Veuillez remplir tous les champs.</span></div>
+          <div class="field-row">
+            <div>
+              <label class="field-label" for="reg-prenom">Prénom</label>
+              <div class="input-wrap"><i class="ti ti-user input-icon"></i><input type="text" id="reg-prenom" placeholder="Koudjo" required></div>
+            </div>
+            <div>
+              <label class="field-label" for="reg-nom">Nom</label>
+              <div class="input-wrap"><i class="ti ti-user input-icon"></i><input type="text" id="reg-nom" placeholder="AVOGAN" required></div>
+            </div>
+          </div>
+          <label class="field-label" for="reg-username">Nom d'utilisateur</label>
+          <div class="input-wrap"><i class="ti ti-at input-icon"></i><input type="text" id="reg-username" placeholder="k.avogan" autocomplete="username" required></div>
+          <label class="field-label" for="reg-email">Adresse email institutionnelle</label>
+          <div class="input-wrap"><i class="ti ti-mail input-icon"></i><input type="email" id="reg-email" placeholder="prenom.nom@universite.bf" required></div>
+          <label class="field-label" for="reg-pwd">Mot de passe</label>
+          <div class="input-wrap">
+            <i class="ti ti-lock input-icon"></i>
+            <input type="password" id="reg-pwd" placeholder="8 caractères minimum" required>
+            <button type="button" class="eye-toggle" onclick="togglePwd('reg-pwd', this)"><i class="ti ti-eye"></i></button>
+          </div>
+          <label class="field-label" for="reg-pwd2">Confirmer le mot de passe</label>
+          <div class="input-wrap"><i class="ti ti-lock input-icon"></i><input type="password" id="reg-pwd2" placeholder="••••••••" required></div>
+          <button type="button" class="btn-primary-auth" onclick="goStep2()">Continuer <i class="ti ti-arrow-right"></i></button>
+          <div class="link-row">Déjà inscrit ? <a href="#" onclick="switchTab('login'); return false;">Se connecter →</a></div>
+        </div>
+
+        <!-- Étape 2 — Affiliation -->
+        <div id="reg-step-2" class="reg-step" style="display:none;">
+          <div class="step-bar">
+            <div class="step-seg done"></div><div class="step-seg current"></div><div class="step-seg"></div>
+          </div>
+          <h2 class="form-title">Votre affiliation</h2>
+          <p class="form-subtitle">Étape 2 sur 3 — Rôle & établissement</p>
+          <div class="alert-auth error" id="step2-error"><i class="ti ti-alert-circle"></i><span id="step2-error-msg">Veuillez sélectionner un rôle.</span></div>
+
+          <label class="field-label">Rôle</label>
+          <div class="role-grid" id="role-grid">
+            <div class="role-card" data-role="ETUDIANT" onclick="selectRole(this)" tabindex="0">
+              <i class="ti ti-books"></i><span>Étudiant</span>
+            </div>
+            <div class="role-card" data-role="ENSEIGNANT" onclick="selectRole(this)" tabindex="0">
+              <i class="ti ti-chalkboard"></i><span>Enseignant</span>
+            </div>
+            <div class="role-card" data-role="DELEGUE" onclick="selectRole(this)" tabindex="0">
+              <i class="ti ti-users"></i><span>Délégué</span>
+            </div>
+            <div class="role-card" data-role="SOUS_ADMIN" onclick="selectRole(this)" tabindex="0">
+              <i class="ti ti-shield-half"></i><span>Sous-admin</span>
+            </div>
+            <!-- Chef de département — pleine largeur, style teal -->
+            <div class="role-card" data-role="CHEF_DEPARTEMENT" onclick="selectRole(this)" tabindex="0">
+              <i class="ti ti-chart-bar"></i><span>Chef de département</span>
+            </div>
+          </div>
+
+          <!-- Champ département — visible uniquement si rôle CHEF_DEPARTEMENT -->
+          <div class="field-chef" id="field-chef">
+            <label class="field-label">
+              <span class="chef-badge"><i class="ti ti-chart-bar" style="font-size:10px"></i>Chef de département</span><br>
+              Département supervisé
+            </label>
+            <div class="input-wrap">
+              <i class="ti ti-building input-icon"></i>
+              <select id="reg-dept"><option value="">Sélectionnez d'abord une université</option></select>
+            </div>
+          </div>
+
+          <label class="field-label" for="reg-univ">Université</label>
+          <div class="input-wrap">
+            <i class="ti ti-building-community input-icon"></i>
+            <select id="reg-univ" onchange="onUnivChange()" required>
+              <option value="">Chargement…</option>
+            </select>
+          </div>
+
+          <!-- Filière — cachée pour Chef de département -->
+          <div id="field-filiere">
+            <label class="field-label" for="reg-filiere">Filière</label>
+            <div class="input-wrap">
+              <i class="ti ti-certificate input-icon"></i>
+              <select id="reg-filiere">
+                <option value="">Sélectionnez d'abord une université</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="button" class="btn-primary-auth" onclick="goStep3()">Continuer <i class="ti ti-arrow-right"></i></button>
+          <button type="button" class="btn-secondary-auth" onclick="goStep(1)"><i class="ti ti-arrow-left"></i> Retour</button>
+        </div>
+
+        <!-- Étape 3 — Confirmation -->
+        <div id="reg-step-3" class="reg-step" style="display:none;">
+          <div class="step-bar">
+            <div class="step-seg done"></div><div class="step-seg done"></div><div class="step-seg current"></div>
+          </div>
+          <h2 class="form-title">Confirmation</h2>
+          <p class="form-subtitle">Étape 3 sur 3 — Vérification & création du compte</p>
+          <div class="alert-auth error" id="step3-error"><i class="ti ti-alert-circle"></i><span id="step3-error-msg">Une erreur est survenue.</span></div>
+          <div class="alert-auth success" id="reg-success"><i class="ti ti-circle-check"></i><span>Compte créé avec succès ! Connexion en cours…</span></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem;">
+            <div style="font-size:.72rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;">Récapitulatif</div>
+            <div style="display:grid;gap:.4rem;font-size:.82rem;">
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-3);">Nom complet</span><strong id="sum-name">—</strong></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-3);">Email</span><strong id="sum-email" style="word-break:break-all;">—</strong></div>
+              <div style="display:flex;justify-content:space-between;"><span style="color:var(--text-3);">Rôle</span><strong id="sum-role">—</strong></div>
+              <div style="display:flex;justify-content:space-between;" id="sum-filiere-row"><span style="color:var(--text-3);">Filière</span><strong id="sum-filiere">—</strong></div>
+              <div style="display:flex;justify-content:space-between;display:none;" id="sum-dept-row"><span style="color:var(--text-3);">Département</span><strong id="sum-dept">—</strong></div>
+            </div>
+          </div>
+          <label class="field-label" for="reg-ine">Numéro INE (optionnel)</label>
+          <div class="input-wrap"><i class="ti ti-id-badge input-icon"></i><input type="text" id="reg-ine" placeholder="N01213620231"></div>
+          <button type="button" class="btn-primary-auth" id="reg-btn" onclick="doRegister()">
+            <div class="spinner" id="reg-spinner"></div>
+            <span id="reg-btn-label">Créer mon compte</span>
+            <i class="ti ti-check" id="reg-btn-icon"></i>
+          </button>
+          <button type="button" class="btn-secondary-auth" onclick="goStep(2)"><i class="ti ti-arrow-left"></i> Retour</button>
+        </div>
+
+      </div><!-- END register panel -->
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:8001';
+  const FRONTEND = 'http://localhost:8000';
+
+  /* État inscription */
+  const reg = {
+    prenom:'', nom:'', email:'', mot_de_passe:'', username:'',
+    role:'', univ_id:'', filiere_id:'', dept_id:''
+  };
+  let currentStep = 1;
+
+  /* ══ UTILS ══ */
+  function showAlert(id, type, msg) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'alert-auth ' + type + ' show';
+    const sp = el.querySelector('span');
+    if (sp && msg) sp.textContent = msg;
+  }
+  function hideAlert(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  }
+  function togglePwd(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const icon = btn.querySelector('i');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'ti ti-eye-off'; }
+    else { inp.type = 'password'; icon.className = 'ti ti-eye'; }
+  }
+
+  /* ══ TABS ══ */
+  function switchTab(tab) {
+    ['login','register'].forEach(t => {
+      document.getElementById('tab-'+t).classList.toggle('active', t === tab);
+      document.getElementById('panel-'+t).classList.toggle('active', t === tab);
+    });
+    hideAlert('login-error'); hideAlert('login-success');
+    if (tab === 'register') loadUniversites();
+  }
+
+  /* ══ LOGIN ══ */
+  async function doLogin(e) {
+    e.preventDefault();
+    hideAlert('login-error'); hideAlert('login-success');
+    const email        = document.getElementById('login-email').value.trim();
+    const mot_de_passe = document.getElementById('login-pwd').value;
+    if (!email || !mot_de_passe) { showAlert('login-error', 'error', 'Veuillez remplir tous les champs.'); return; }
+
+    document.getElementById('login-btn').disabled = true;
+    document.getElementById('login-spinner').style.display = 'block';
+    document.getElementById('login-btn-icon').style.display = 'none';
+    document.getElementById('login-btn-label').textContent = 'Connexion…';
+
+    try {
+      const res  = await fetch(API_BASE + '/auth/login', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email, mot_de_passe })
+      });
+      const data = await res.json();
+      if (res.ok && data.access_token) {
+        showAlert('login-success', 'success', '');
+        await setTokenCookie(data.access_token, data.role || 'ETUDIANT');
+      } else {
+        let msg = 'Identifiants incorrects.';
+        if (data.detail) {
+          if (typeof data.detail === 'string') msg = data.detail;
+          else if (Array.isArray(data.detail)) msg = data.detail.map(e => e.msg || JSON.stringify(e)).join(' | ');
+          else msg = JSON.stringify(data.detail);
+        }
+        showAlert('login-error', 'error', msg);
+      }
+    } catch {
+      showAlert('login-error', 'error', 'Impossible de contacter le serveur. Vérifiez que service-auth tourne sur :8001.');
+    } finally {
+      document.getElementById('login-btn').disabled = false;
+      document.getElementById('login-spinner').style.display = 'none';
+      document.getElementById('login-btn-icon').style.display = '';
+      document.getElementById('login-btn-label').textContent = 'Se connecter';
+    }
+  }
+
+  async function setTokenCookie(token, role) {
+    try {
+      const r = await fetch(FRONTEND + '/set-token', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        credentials: 'include',
+        body: JSON.stringify({ token, role })
+      });
+      if (r.ok) {
+        const data = await r.json();
+        setTimeout(() => { window.location.href = data.redirect_url || '/etudiant/dashboard'; }, 600);
+      } else {
+        showAlert('login-error', 'error', 'Erreur lors de la pose du cookie. Réessayez.');
+      }
+    } catch {
+      showAlert('login-error', 'error', "Impossible de contacter le frontend (:8000).");
+    }
+  }
+
+  /* ══ REGISTER — STEP 1 ══ */
+  function goStep2() {
+    hideAlert('step1-error');
+    reg.prenom       = document.getElementById('reg-prenom').value.trim();
+    reg.nom          = document.getElementById('reg-nom').value.trim();
+    reg.username     = document.getElementById('reg-username').value.trim();
+    reg.email        = document.getElementById('reg-email').value.trim();
+    reg.mot_de_passe = document.getElementById('reg-pwd').value;
+    const pwd2       = document.getElementById('reg-pwd2').value;
+    if (!reg.prenom || !reg.nom || !reg.username || !reg.email || !reg.mot_de_passe)
+      return showAlert('step1-error', 'error', 'Veuillez remplir tous les champs.');
+    if (reg.mot_de_passe.length < 8)
+      return showAlert('step1-error', 'error', 'Le mot de passe doit contenir au moins 8 caractères.');
+    if (reg.mot_de_passe !== pwd2)
+      return showAlert('step1-error', 'error', 'Les mots de passe ne correspondent pas.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reg.email))
+      return showAlert('step1-error', 'error', 'Adresse email invalide.');
+    goStep(2);
+  }
+
+  /* ══ REGISTER — STEP 2 ══ */
+  function selectRole(card) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    reg.role = card.dataset.role;
+    const isChef = reg.role === 'CHEF_DEPARTEMENT';
+    document.getElementById('field-chef').classList.toggle('visible', isChef);
+    document.getElementById('field-filiere').style.display = isChef ? 'none' : '';
+    // Si université déjà choisie, recharger depts
+    if (isChef && document.getElementById('reg-univ').value) {
+      chargerDepts(document.getElementById('reg-univ').value, null);
+    }
+  }
+
+  async function loadUniversites() {
+    const sel = document.getElementById('reg-univ');
+    sel.innerHTML = '<option value="">Chargement…</option>';
+    try {
+      const res  = await fetch(API_BASE + '/auth/universites');
+      const data = await res.json();
+      const univs = Array.isArray(data) ? data : (data.universites || data.items || []);
+      sel.innerHTML = '<option value="">Sélectionnez une université</option>';
+      univs.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id_univ; opt.textContent = u.nom_univ;
+        sel.appendChild(opt);
+      });
+    } catch {
+      sel.innerHTML = '<option value="">Erreur de chargement</option>';
+    }
+  }
+
+  /* ══ CHANGEMENT UNIVERSITÉ — 3 STRATÉGIES EN CASCADE ══
+     FIX : chaque stratégie ne s'exécute que si la précédente a échoué.
+           Déduplication par Set(id_filiere) pour éviter les doublons. */
+  async function onUnivChange() {
+    const univId = document.getElementById('reg-univ').value;
+    const selF   = document.getElementById('reg-filiere');
+    const selD   = document.getElementById('reg-dept');
+    selF.innerHTML = '<option value="">Chargement…</option>';
+    selD.innerHTML = '<option value="">Chargement…</option>';
+
+    if (!univId) {
+      selF.innerHTML = '<option value="">Sélectionnez d\'abord une université</option>';
+      selD.innerHTML = '<option value="">Sélectionnez d\'abord une université</option>';
+      return;
+    }
+
+    let filieres     = [];
+    let ufrsCharges  = null;
+
+    /* ── Stratégie 1 : endpoint dédié /universites/{id}/filieres ── */
+    try {
+      const r1 = await fetch(API_BASE + '/auth/universites/' + univId + '/filieres');
+      if (r1.ok) {
+        const d1 = await r1.json();
+        filieres = Array.isArray(d1) ? d1 : (d1.items || d1.filieres || []);
+      }
+    } catch(e1) { /* endpoint absent, continuer */ }
+
+    /* ── Stratégie 2 : UFRs → filières (avec déduplication) ──
+       Ne s'exécute QUE si stratégie 1 a retourné zéro résultat. */
+    if (filieres.length === 0) {
+      try {
+        const rU = await fetch(API_BASE + '/auth/ufrs?id_univ=' + univId);
+        if (rU.ok) {
+          const dU = await rU.json();
+          ufrsCharges = Array.isArray(dU) ? dU : (dU.items || []);
+          const vus = new Set(); // ← anti-doublon par id_filiere
+          for (const ufr of ufrsCharges) {
+            const rF = await fetch(API_BASE + '/auth/filieres?id_ufr=' + ufr.id_ufr);
+            if (rF.ok) {
+              const dF = await rF.json();
+              const fs = Array.isArray(dF) ? dF : (dF.items || []);
+              for (const f of fs) {
+                if (!vus.has(f.id_filiere)) {
+                  vus.add(f.id_filiere);
+                  filieres.push(f);
+                }
+              }
+            }
+          }
+        }
+      } catch(e2) { /* continuer */ }
+    }
+
+    /* ── Stratégie 3 : toutes les filières (fallback absolu) ──
+       Ne s'exécute QUE si les deux premières ont échoué. */
+    if (filieres.length === 0) {
+      try {
+        const rAll = await fetch(API_BASE + '/auth/filieres');
+        if (rAll.ok) {
+          const dAll = await rAll.json();
+          filieres = Array.isArray(dAll) ? dAll : (dAll.items || []);
+        }
+      } catch(e3) { /* rien */ }
+    }
+
+    /* Remplissage unique du select filières */
+    if (filieres.length === 0) {
+      selF.innerHTML = '<option value="">Aucune filière trouvée</option>';
+    } else {
+      selF.innerHTML = '<option value="">Sélectionnez une filière</option>';
+      filieres.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id_filiere; opt.textContent = f.nom_filiere;
+        selF.appendChild(opt);
+      });
+    }
+
+    /* Charger les UFRs pour le select département Chef de département */
+    await chargerDepts(univId, ufrsCharges);
+  }
+
+  /* ══ CHARGER DÉPARTEMENTS (UFRs) pour Chef de département ══ */
+  async function chargerDepts(univId, ufrsDejaCharges) {
+    const selD = document.getElementById('reg-dept');
+    try {
+      let ufrs = ufrsDejaCharges;
+      if (!ufrs) {
+        const r = await fetch(API_BASE + '/auth/ufrs?id_univ=' + univId);
+        if (r.ok) {
+          const d = await r.json();
+          ufrs = Array.isArray(d) ? d : (d.items || []);
+        }
+      }
+      if (ufrs && ufrs.length > 0) {
+        selD.innerHTML = '<option value="">Sélectionnez votre département</option>';
+        ufrs.forEach(u => {
+          const opt = document.createElement('option');
+          opt.value = u.id_ufr; opt.textContent = u.nom_ufr;
+          selD.appendChild(opt);
+        });
+      } else {
+        selD.innerHTML = '<option value="">Aucun département trouvé</option>';
+      }
+    } catch {
+      selD.innerHTML = '<option value="">Erreur de chargement</option>';
+    }
+  }
+
+  /* ══ STEP 2 → 3 ══ */
+  function goStep3() {
+    hideAlert('step2-error');
+    if (!reg.role) return showAlert('step2-error', 'error', 'Veuillez sélectionner un rôle.');
+    reg.univ_id = document.getElementById('reg-univ').value;
+    if (!reg.univ_id) return showAlert('step2-error', 'error', 'Veuillez sélectionner une université.');
+
+    if (reg.role === 'CHEF_DEPARTEMENT') {
+      reg.dept_id = document.getElementById('reg-dept').value;
+      if (!reg.dept_id) return showAlert('step2-error', 'error', 'Veuillez sélectionner votre département.');
+      reg.filiere_id = '';
+    } else {
+      reg.filiere_id = document.getElementById('reg-filiere').value;
+      reg.dept_id    = '';
+    }
+
+    const roleLabels = {
+      ETUDIANT:'Étudiant', ENSEIGNANT:'Enseignant', DELEGUE:'Délégué',
+      SOUS_ADMIN:'Sous-admin', CHEF_DEPARTEMENT:'Chef de département'
+    };
+    document.getElementById('sum-name').textContent  = reg.prenom + ' ' + reg.nom;
+    document.getElementById('sum-email').textContent = reg.email;
+    document.getElementById('sum-role').textContent  = roleLabels[reg.role] || reg.role;
+
+    if (reg.role === 'CHEF_DEPARTEMENT') {
+      const selD = document.getElementById('reg-dept');
+      document.getElementById('sum-dept').textContent = selD.options[selD.selectedIndex]?.text || '—';
+      document.getElementById('sum-dept-row').style.display   = 'flex';
+      document.getElementById('sum-filiere-row').style.display = 'none';
+    } else {
+      const selF = document.getElementById('reg-filiere');
+      document.getElementById('sum-filiere').textContent = selF.options[selF.selectedIndex]?.text || '—';
+      document.getElementById('sum-filiere-row').style.display = 'flex';
+      document.getElementById('sum-dept-row').style.display   = 'none';
+    }
+    goStep(3);
+  }
+
+  /* ══ REGISTER — STEP 3 ══ */
+  async function doRegister() {
+    hideAlert('step3-error'); hideAlert('reg-success');
+    document.getElementById('reg-btn').disabled = true;
+    document.getElementById('reg-spinner').style.display = 'block';
+    document.getElementById('reg-btn-icon').style.display = 'none';
+    document.getElementById('reg-btn-label').textContent = 'Création…';
+
+    const payload = {
+      prenom: reg.prenom, nom: reg.nom, email: reg.email,
+      username: reg.username, mot_de_passe: reg.mot_de_passe,
+      confirm_mot_de_passe: reg.mot_de_passe, role: reg.role,
+      id_filiere: reg.filiere_id ? parseInt(reg.filiere_id) : null,
+    };
+    // Note : id_ufr (département) n'est pas encore dans le payload API standard
+    // Si ton service-auth l'accepte, décommenter la ligne suivante :
+    // if (reg.dept_id) payload.id_ufr = parseInt(reg.dept_id);
+
+    try {
+      const res  = await fetch(API_BASE + '/auth/register', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (res.ok || res.status === 201) {
+        showAlert('reg-success', 'success', '');
+        setTimeout(async () => {
+          try {
+            const lr = await fetch(API_BASE + '/auth/login', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ email: reg.email, mot_de_passe: reg.mot_de_passe })
+            });
+            const ld = await lr.json();
+            if (lr.ok && ld.access_token) await setTokenCookie(ld.access_token, ld.role || 'ETUDIANT');
+            else switchTab('login');
+          } catch { switchTab('login'); }
+        }, 1500);
+      } else {
+        const msg = data.detail || JSON.stringify(data);
+        showAlert('step3-error', 'error', typeof msg === 'string' ? msg : 'Erreur lors de la création du compte.');
+      }
+    } catch {
+      showAlert('step3-error', 'error', 'Impossible de contacter le serveur.');
+    } finally {
+      document.getElementById('reg-btn').disabled = false;
+      document.getElementById('reg-spinner').style.display = 'none';
+      document.getElementById('reg-btn-icon').style.display = '';
+      document.getElementById('reg-btn-label').textContent = 'Créer mon compte';
+    }
+  }
+
+  /* ══ NAVIGATION ÉTAPES ══ */
+  function goStep(n) {
+    document.querySelectorAll('.reg-step').forEach((el, i) => {
+      el.style.display = (i + 1 === n) ? 'block' : 'none';
+    });
+    currentStep = n;
+  }
+
+  /* Keyboard: role-card */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList.contains('role-card')) selectRole(e.target);
+  });
+</script>
+</body>
+</html>

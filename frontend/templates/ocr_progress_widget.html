@@ -1,0 +1,303 @@
+<!-- ============================================================
+     UniBurkina Hub — Widget Progression OCR Temps Réel (SSE)
+     Version 1.0 — À intégrer dans ocr_studio.html
+     ============================================================
+
+     INTÉGRATION :
+     1. Coller ce bloc HTML là où tu veux la barre de progression
+        (idéalement juste sous le bouton "Retranscrire").
+     2. Copier la section <script> dans le JS de ocr_studio.html
+        (ou garder ce fichier comme référence et adapter).
+     3. Remplacer l'appel fetch vers /api/ocr/retranscrire par
+        la fonction lancerRetranscriptionSSE() ci-dessous.
+
+     DÉPENDANCES : Bootstrap 5 (déjà présent dans le projet)
+     ============================================================ -->
+
+
+<!-- ── BLOC HTML — Progression temps réel ──────────────────────────────────── -->
+<div id="ocr-progress-zone" class="d-none mt-4">
+
+  <!-- En-tête statut global -->
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <span id="ocr-progress-label" class="fw-semibold text-primary">
+      Analyse en cours…
+    </span>
+    <span id="ocr-score-badge" class="badge rounded-pill d-none"
+          style="background:#042C53; font-size:.85rem;">
+      Confiance : <strong id="ocr-score-val">—</strong>%
+    </span>
+  </div>
+
+  <!-- Barre de progression globale -->
+  <div class="progress mb-3" style="height:10px; border-radius:8px;">
+    <div id="ocr-progress-bar"
+         class="progress-bar progress-bar-striped progress-bar-animated"
+         role="progressbar" style="width:0%; background:#042C53;"
+         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+    </div>
+  </div>
+
+  <!-- Détail image par image -->
+  <div id="ocr-progress-images" class="vstack gap-2"></div>
+
+  <!-- Message d'état -->
+  <p id="ocr-progress-msg" class="text-muted small mt-2 mb-0"></p>
+</div>
+<!-- ── FIN BLOC HTML ─────────────────────────────────────────────────────────── -->
+
+
+<script>
+// ============================================================
+// UniBurkina Hub — OCR Progress SSE Controller
+// Remplace l'appel fetch classique vers /api/ocr/retranscrire
+// ============================================================
+
+/**
+ * Lance la retranscription en streaming SSE.
+ *
+ * @param {FileList|File[]} fichiers   - Les fichiers image à OCRiser
+ * @param {string}          langue     - Code langue ("fra" par défaut)
+ * @param {string}          ordre      - Ordre des images ("0,2,1" ou "")
+ * @param {Function}        onDone     - Callback(result) appelé à la fin
+ *                                       result = objet de l'event "done"
+ * @param {Function}        onError    - Callback(message) en cas d'erreur
+ */
+async function lancerRetranscriptionSSE(fichiers, langue, ordre, onDone, onError) {
+
+  // ── 1. Préparer FormData ─────────────────────────────────────────────────
+  const formData = new FormData();
+  for (const f of fichiers) formData.append("files", f);
+  formData.append("langue", langue || "fra");
+  formData.append("ordre",  ordre  || "");
+
+  // ── 2. Afficher la zone de progression ───────────────────────────────────
+  const zone      = document.getElementById("ocr-progress-zone");
+  const bar       = document.getElementById("ocr-progress-bar");
+  const label     = document.getElementById("ocr-progress-label");
+  const msg       = document.getElementById("ocr-progress-msg");
+  const imgZone   = document.getElementById("ocr-progress-images");
+  const scoreBadge = document.getElementById("ocr-score-badge");
+  const scoreVal  = document.getElementById("ocr-score-val");
+
+  zone.classList.remove("d-none");
+  scoreBadge.classList.add("d-none");
+  imgZone.innerHTML = "";
+  bar.style.width  = "0%";
+  bar.setAttribute("aria-valuenow", 0);
+  label.textContent = "Connexion au moteur OCR…";
+  msg.textContent   = "";
+
+  // Créer les lignes image (une par fichier)
+  const total = fichiers.length;
+  const lignes = [];
+  for (let i = 0; i < total; i++) {
+    const nom  = fichiers[i].name || `Image ${i + 1}`;
+    const div  = document.createElement("div");
+    div.className = "d-flex align-items-center gap-2 p-2 rounded"
+                  + " border border-light-subtle bg-light-subtle";
+    div.innerHTML = `
+      <span id="ocr-img-icon-${i}" class="fs-5">🕐</span>
+      <div class="flex-grow-1 overflow-hidden">
+        <div class="d-flex justify-content-between">
+          <span class="text-truncate small fw-medium" title="${nom}">${nom}</span>
+          <span id="ocr-img-score-${i}" class="badge bg-secondary ms-2 d-none">—%</span>
+        </div>
+        <div id="ocr-img-phase-${i}" class="text-muted" style="font-size:.75rem;">
+          En attente…
+        </div>
+      </div>`;
+    imgZone.appendChild(div);
+    lignes.push(div);
+  }
+
+  // ── 3. Appel fetch POST → stream SSE manuel ───────────────────────────────
+  // Note : EventSource ne supporte pas POST, on utilise fetch + ReadableStream
+  let reader;
+  try {
+    const resp = await fetch("/api/ocr/retranscrire-stream", {
+      method:      "POST",
+      body:        formData,
+      credentials: "include",   // cookie JWT HTTPOnly
+    });
+
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error(`HTTP ${resp.status} — ${txt.slice(0, 200)}`);
+    }
+
+    reader = resp.body.getReader();
+  } catch (err) {
+    label.textContent = "❌ Erreur de connexion";
+    bar.classList.add("bg-danger");
+    bar.classList.remove("progress-bar-animated");
+    if (onError) onError(err.message);
+    return;
+  }
+
+  // ── 4. Lire le flux SSE ligne par ligne ───────────────────────────────────
+  const decoder = new TextDecoder("utf-8");
+  let buffer    = "";
+  let eventType = "message";
+
+  function traiterLigne(ligne) {
+    if (ligne.startsWith("event:")) {
+      eventType = ligne.slice(6).trim();
+    } else if (ligne.startsWith("data:")) {
+      const raw = ligne.slice(5).trim();
+      let data;
+      try { data = JSON.parse(raw); } catch { return; }
+
+      if (eventType === "progress") {
+        _gererProgress(data, total, bar, label, msg);
+      } else if (eventType === "done") {
+        _gererDone(data, bar, label, msg, scoreBadge, scoreVal);
+        if (onDone) onDone(data);
+      } else if (eventType === "error") {
+        label.textContent = "❌ " + (data.message || "Erreur OCR");
+        bar.classList.add("bg-danger");
+        bar.classList.remove("progress-bar-animated");
+        if (onError) onError(data.message);
+      }
+      eventType = "message"; // reset
+    }
+  }
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lignesBuffer = buffer.split("\n");
+    buffer = lignesBuffer.pop(); // garder l'éventuelle ligne incomplète
+
+    for (const ligne of lignesBuffer) {
+      traiterLigne(ligne);
+    }
+  }
+  // Vider le buffer restant
+  if (buffer.trim()) traiterLigne(buffer);
+}
+
+
+// ── Handlers internes ────────────────────────────────────────────────────────
+
+function _gererProgress(data, total, bar, label, msg) {
+  const { image_index, phase, nom, texte, moteur, score, has_figures } = data;
+  const idx = image_index;
+
+  // Calcul progression : chaque image vaut (1/total) * 100%, on avance par phase
+  const phasePct = { debut: 0.1, gemini: 0.4, paddleocr: 0.4, correction: 0.7, termine: 1.0 };
+  const imgPct   = (phasePct[phase] || 0) / total;
+  const pctTotal = Math.round(((idx + imgPct) / total) * 100);
+
+  bar.style.width = pctTotal + "%";
+  bar.setAttribute("aria-valuenow", pctTotal);
+
+  // Label global
+  const phaseLabels = {
+    debut:      "Chargement image",
+    gemini:     "Lecture Gemini Vision",
+    paddleocr:  "Analyse PaddleOCR",
+    correction: "Correction IA",
+    termine:    "Image terminée",
+  };
+  label.textContent = `Image ${idx + 1}/${total} — ${phaseLabels[phase] || phase}`;
+
+  // Mise à jour ligne image
+  const icon  = document.getElementById(`ocr-img-icon-${idx}`);
+  const phase_el = document.getElementById(`ocr-img-phase-${idx}`);
+  const scoreEl  = document.getElementById(`ocr-img-score-${idx}`);
+
+  if (!icon || !phase_el) return;
+
+  if (phase === "termine") {
+    icon.textContent = score >= 70 ? "✅" : score >= 40 ? "⚠️" : "❌";
+    phase_el.textContent = _moteurLabel(moteur)
+      + (has_figures ? " · tableaux/figures détectés" : "");
+    phase_el.className = "text-success";
+
+    if (scoreEl) {
+      scoreEl.classList.remove("d-none", "bg-secondary");
+      scoreEl.classList.add(score >= 70 ? "bg-success" : score >= 40 ? "bg-warning" : "bg-danger");
+      scoreEl.textContent = score + "%";
+    }
+
+    msg.textContent = texte
+      ? texte.slice(0, 120) + (texte.length > 120 ? "…" : "")
+      : "Aucun texte extrait pour cette image.";
+  } else {
+    const phaseIcons = {
+      debut: "🕐", gemini: "🔍", paddleocr: "⚙️", correction: "✨"
+    };
+    icon.textContent = phaseIcons[phase] || "⏳";
+    phase_el.textContent = phaseLabels[phase] || phase;
+    phase_el.className   = "text-muted";
+  }
+}
+
+
+function _gererDone(data, bar, label, msg, scoreBadge, scoreVal) {
+  bar.style.width = "100%";
+  bar.setAttribute("aria-valuenow", 100);
+  bar.classList.remove("progress-bar-animated", "progress-bar-striped");
+  bar.style.background = data.score_global >= 70 ? "#198754"
+                       : data.score_global >= 40 ? "#ffc107" : "#dc3545";
+
+  const moteur = data.moteur_ocr || "paddleocr";
+  label.textContent = `✅ ${data.nb_images} image(s) traitée(s) par ${_moteurLabel(moteur)}`;
+  label.className   = "fw-semibold text-success";
+
+  msg.textContent   = `${data.nb_mots} mots extraits.`;
+
+  // Badge confiance globale
+  scoreBadge.classList.remove("d-none");
+  scoreVal.textContent = data.score_global;
+  scoreBadge.style.background = data.score_global >= 70 ? "#198754"
+                               : data.score_global >= 40 ? "#ffc107" : "#dc3545";
+}
+
+
+function _moteurLabel(moteur) {
+  return {
+    "gemini-vision":               "Gemini Vision",
+    "paddleocr+gemini-correction": "PaddleOCR + correction IA",
+    "paddleocr":                   "PaddleOCR",
+    "mixte":                       "Gemini Vision + PaddleOCR",
+    "echec":                       "Échec OCR",
+  }[moteur] || moteur;
+}
+
+
+// ============================================================
+// EXEMPLE D'INTÉGRATION dans ocr_studio.html
+// ============================================================
+//
+// Remplace le bloc fetch actuel vers /api/ocr/retranscrire par :
+//
+//   btnRetranscrire.addEventListener("click", async () => {
+//     const fichiers = inputImages.files;
+//     if (!fichiers.length) return;
+//
+//     btnRetranscrire.disabled = true;
+//
+//     await lancerRetranscriptionSSE(
+//       fichiers,
+//       selectLangue.value || "fra",
+//       "",                          // ordre : laisser vide pour garder l'ordre d'upload
+//       (result) => {
+//         // Callback fin de traitement
+//         currentIdOcr = result.id_ocr;
+//         textareaCorrige.value = result.texte_corrige || result.texte_consolide;
+//         btnRetranscrire.disabled = false;
+//         activerEtape(2);           // Passer à l'étape "Correction"
+//       },
+//       (errMsg) => {
+//         btnRetranscrire.disabled = false;
+//         afficherToast("Erreur OCR : " + errMsg, "danger");
+//       }
+//     );
+//   });
+//
+// ============================================================
+</script>

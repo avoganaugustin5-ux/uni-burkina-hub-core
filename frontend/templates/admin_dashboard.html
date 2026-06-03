@@ -1,0 +1,1674 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UniBurkina Hub — Administration</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --navy:      #042C53;
+  --navy-2:    #0C3D6E;
+  --blue:      #185FA5;
+  --blue-2:    #2272C3;
+  --blue-50:   #E6F1FB;
+  --blue-100:  #B5D4F4;
+  --gold:      #C89A2E;
+  --gold-light:#F0D98B;
+  --gold-bg:   #FDF6E3;
+  --surface:   #F4F7FB;
+  --surface-2: #EBF0F6;
+  --white:     #FFFFFF;
+  --border:    #CDD8E4;
+  --border-2:  #B0C4D8;
+  --text:      #0B1B2C;
+  --text-2:    #3E5A72;
+  --text-3:    #6E8EA6;
+  --green:     #1D9E75;
+  --green-bg:  #E8F8F3;
+  --orange:    #E67E22;
+  --orange-bg: #FEF3E8;
+  --red:       #D84315;
+  --red-bg:    #FDECEA;
+  --sidebar-w: 245px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;background:var(--surface);color:var(--text);min-height:100vh;display:flex;}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sidebar-w);background:var(--navy);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden;
+}
+.sidebar::before{
+  content:'';position:absolute;bottom:-60px;right:-60px;
+  width:200px;height:200px;border-radius:50%;
+  border:1px solid rgba(200,154,46,.1);pointer-events:none;
+}
+.sb-brand{padding:1.4rem 1.2rem .9rem;border-bottom:1px solid rgba(255,255,255,.07);}
+.sb-logo{display:flex;align-items:center;gap:.55rem;margin-bottom:.25rem;}
+.sb-emblem{
+  width:34px;height:34px;border-radius:8px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.sb-emblem i{font-size:17px;color:var(--gold-light);}
+.sb-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:#fff;line-height:1.2;}
+.sb-role{
+  font-size:.59rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-light);
+  margin-top:.2rem;padding:.15rem .5rem;background:rgba(200,154,46,.15);
+  border-radius:4px;display:inline-block;
+}
+.sb-nav{flex:1;padding:.6rem 0;overflow-y:auto;scrollbar-width:none;}
+.sb-nav::-webkit-scrollbar{display:none;}
+.sb-section{
+  font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(255,255,255,.28);padding:.5rem 1.2rem .2rem;margin-top:.15rem;
+}
+.sb-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.52rem 1.2rem;color:rgba(255,255,255,.6);
+  cursor:pointer;font-size:.81rem;font-weight:500;
+  transition:background .14s,color .14s;
+  border-left:3px solid transparent;text-decoration:none;
+}
+.sb-item i{font-size:17px;flex-shrink:0;}
+.sb-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.sb-item.active{background:rgba(24,95,165,.28);color:#fff;border-left-color:var(--gold);}
+.sb-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:.59rem;font-weight:700;padding:.1rem .38rem;
+  border-radius:10px;min-width:18px;text-align:center;
+}
+.sb-footer{padding:.7rem 1.2rem;border-top:1px solid rgba(255,255,255,.07);}
+.sb-user{display:flex;align-items:center;gap:.55rem;}
+.sb-avatar{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--blue),var(--navy-2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+.sb-user-name{font-size:.77rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
+.sb-user-email{font-size:.62rem;color:rgba(255,255,255,.38);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
+.sb-logout{margin-left:auto;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:17px;padding:0;transition:color .14s;}
+.sb-logout:hover{color:var(--red);}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh;}
+
+/* ── Topbar ── */
+.topbar{
+  height:54px;background:var(--white);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 1.6rem;gap:1rem;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-title{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--text);}
+.topbar-crumb{font-size:.73rem;color:var(--text-3);display:flex;align-items:center;gap:.25rem;margin-top:.1rem;}
+.topbar-crumb i{font-size:13px;}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.6rem;}
+.topbar-btn{
+  width:33px;height:33px;border-radius:8px;border:1px solid var(--border);
+  background:var(--white);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text-2);font-size:16px;
+  transition:background .14s,border-color .14s;text-decoration:none;position:relative;
+}
+.topbar-btn:hover{background:var(--surface);border-color:var(--blue-100);}
+.notif-dot::after{
+  content:'';position:absolute;top:5px;right:5px;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--red);border:1.5px solid var(--white);
+}
+
+/* ── Content ── */
+.content{padding:1.6rem;flex:1;}
+
+/* ── Section header ── */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;}
+.section-title{font-family:'Playfair Display',serif;font-size:1.08rem;font-weight:700;color:var(--text);}
+.section-sub{font-size:.76rem;color:var(--text-3);margin-top:.1rem;}
+
+/* ── KPI Cards ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.6rem;}
+.kpi-card{
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  padding:1.1rem 1.2rem;position:relative;overflow:hidden;
+  transition:box-shadow .2s,transform .2s;cursor:default;
+}
+.kpi-card:hover{box-shadow:0 4px 18px rgba(4,44,83,.08);transform:translateY(-2px);}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;}
+.kpi-card.blue::before{background:var(--blue);}
+.kpi-card.gold::before{background:var(--gold);}
+.kpi-card.green::before{background:var(--green);}
+.kpi-card.red::before{background:var(--red);}
+.kpi-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:.7rem;font-size:19px;}
+.kpi-card.blue .kpi-icon{background:var(--blue-50);color:var(--blue);}
+.kpi-card.gold .kpi-icon{background:var(--gold-bg);color:var(--gold);}
+.kpi-card.green .kpi-icon{background:var(--green-bg);color:var(--green);}
+.kpi-card.red .kpi-icon{background:var(--red-bg);color:var(--red);}
+.kpi-val{font-size:1.8rem;font-weight:700;color:var(--text);line-height:1;margin-bottom:.18rem;}
+.kpi-label{font-size:.74rem;color:var(--text-3);font-weight:500;}
+.kpi-trend{font-size:.68rem;font-weight:600;margin-top:.35rem;display:flex;align-items:center;gap:.2rem;}
+.kpi-trend.up{color:var(--green);}
+.kpi-trend.warn{color:var(--orange);}
+.kpi-trend.neutral{color:var(--text-3);}
+
+/* ── Cards Row ── */
+.cards-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.6rem;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.card-header{
+  padding:.85rem 1.2rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:.86rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:.4rem;}
+.card-title i{font-size:16px;color:var(--blue);}
+.card-action{
+  font-size:.73rem;color:var(--blue);font-weight:600;cursor:pointer;
+  background:none;border:none;display:flex;align-items:center;gap:.2rem;
+  transition:opacity .14s;text-decoration:none;
+}
+.card-action:hover{opacity:.7;}
+.card-body{padding:.9rem 1.2rem;}
+
+/* ── Full card ── */
+.card-full{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:1.6rem;}
+
+/* ── Table ── */
+.data-table{width:100%;border-collapse:collapse;}
+.data-table th{
+  font-size:.7rem;font-weight:700;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:.5rem .8rem;border-bottom:1px solid var(--border);
+  text-align:left;white-space:nowrap;background:var(--surface);
+}
+.data-table td{
+  font-size:.81rem;color:var(--text);
+  padding:.58rem .8rem;border-bottom:1px solid var(--surface-2);vertical-align:middle;
+}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table tr:hover td{background:var(--surface);}
+
+/* ── Tabs inside section ── */
+.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.2rem;}
+.tab-btn{
+  padding:.55rem 1.1rem;font-size:.8rem;font-weight:600;
+  color:var(--text-3);cursor:pointer;background:none;border:none;
+  border-bottom:2px solid transparent;transition:color .14s,border-color .14s;
+  font-family:'Source Sans 3',sans-serif;
+}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:.22rem;padding:.18rem .52rem;border-radius:20px;font-size:.69rem;font-weight:700;}
+.badge.green{background:var(--green-bg);color:var(--green);}
+.badge.orange{background:var(--orange-bg);color:var(--orange);}
+.badge.red{background:var(--red-bg);color:var(--red);}
+.badge.blue{background:var(--blue-50);color:var(--blue);}
+.badge.gold{background:var(--gold-bg);color:var(--gold);}
+.badge.gray{background:var(--surface-2);color:var(--text-3);}
+
+/* ── Buttons ── */
+.btn{
+  display:inline-flex;align-items:center;gap:.32rem;
+  padding:.38rem .82rem;border-radius:8px;
+  font-size:.78rem;font-weight:600;cursor:pointer;border:none;
+  font-family:'Source Sans 3',sans-serif;transition:opacity .14s,transform .1s;
+}
+.btn:active{transform:scale(.97);}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover:not(:disabled){background:var(--navy-2);}
+.btn-outline{background:transparent;color:var(--blue);border:1px solid var(--border);}
+.btn-outline:hover{background:var(--blue-50);border-color:var(--blue-100);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover:not(:disabled){opacity:.85;}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover:not(:disabled){opacity:.85;}
+.btn-sm{padding:.26rem .58rem;font-size:.72rem;}
+.btn-xs{padding:.16rem .42rem;font-size:.68rem;border-radius:6px;}
+
+/* ── Search bar ── */
+.search-bar{position:relative;flex:1;max-width:260px;}
+.search-bar i{position:absolute;left:.6rem;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-3);pointer-events:none;}
+.search-bar input{
+  width:100%;height:33px;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);padding:0 .75rem 0 1.9rem;
+  font-size:.79rem;color:var(--text);font-family:'Source Sans 3',sans-serif;
+}
+.search-bar input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.1);}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(4,44,83,.45);z-index:200;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:14px;width:500px;max-width:calc(100vw - 2rem);box-shadow:0 10px 50px rgba(4,44,83,.22);overflow:hidden;}
+.modal-wide{width:640px;}
+.modal-head{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:700;color:var(--text);}
+.modal-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-3);transition:color .14s;}
+.modal-close:hover{color:var(--red);}
+.modal-body{padding:1.2rem 1.4rem;}
+.modal-foot{padding:.85rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.55rem;}
+
+/* ── Field ── */
+.field{margin-bottom:.85rem;}
+.field label{display:block;font-size:.74rem;font-weight:600;color:var(--text);margin-bottom:.26rem;}
+.field input,.field select,.field textarea{
+  width:100%;border:1px solid var(--border);border-radius:8px;
+  background:var(--surface);padding:.48rem .75rem;
+  font-size:.81rem;color:var(--text);font-family:'Source Sans 3',sans-serif;
+  transition:border-color .14s,box-shadow .14s;
+}
+.field input{height:38px;}
+.field textarea{resize:vertical;min-height:80px;}
+.field select{height:38px;}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(24,95,165,.1);background:var(--white);
+}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+
+/* ── Alert in modal ── */
+.modal-alert{
+  border-radius:8px;padding:.65rem .9rem;font-size:.79rem;margin-bottom:.9rem;
+  display:none;align-items:flex-start;gap:.45rem;
+}
+.modal-alert.show{display:flex;}
+.modal-alert.error{background:rgba(216,67,21,.08);border:1px solid rgba(216,67,21,.2);color:#C62828;}
+.modal-alert.success{background:rgba(29,158,117,.08);border:1px solid rgba(29,158,117,.2);color:#0F6E56;}
+.modal-alert i{font-size:15px;flex-shrink:0;margin-top:1px;}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;
+  background:var(--text);color:#fff;border-radius:10px;
+  padding:.72rem 1.1rem;font-size:.81rem;font-weight:500;
+  display:flex;align-items:center;gap:.48rem;
+  box-shadow:0 4px 24px rgba(0,0,0,.22);z-index:999;
+  transform:translateY(80px);opacity:0;
+  transition:transform .28s,opacity .28s;
+}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+.toast.info{background:var(--blue);}
+
+/* ── Spinner ── */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Empty ── */
+.empty{text-align:center;padding:2rem 1rem;color:var(--text-3);}
+.empty i{font-size:34px;margin-bottom:.45rem;display:block;}
+.empty p{font-size:.8rem;}
+
+/* ── Validation action row ── */
+.val-actions{display:flex;gap:.4rem;align-items:center;}
+
+/* ── Audit row color ── */
+.audit-row-create td{border-left:3px solid var(--green);}
+.audit-row-delete td{border-left:3px solid var(--red);}
+.audit-row-update td{border-left:3px solid var(--blue);}
+.audit-row-login td{border-left:3px solid var(--gold);}
+
+/* ── Select small ── */
+select.sel-sm{height:32px;border:1px solid var(--border);border-radius:7px;padding:0 .55rem;font-size:.77rem;background:var(--surface);font-family:'Source Sans 3',sans-serif;}
+select.sel-sm:focus{outline:none;border-color:var(--blue);}
+
+/* ── Responsive ── */
+@media(max-width:960px){.kpi-grid{grid-template-columns:1fr 1fr;}.cards-row{grid-template-columns:1fr;}}
+@media(max-width:620px){.sidebar{transform:translateX(-100%);}.main{margin-left:0;}.kpi-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">
+      <div class="sb-emblem"><i class="ti ti-school"></i></div>
+      <div class="sb-name">UniBurkina<br>Hub</div>
+    </div>
+    <div class="sb-role">Administrateur Central</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <a class="sb-item active" onclick="showSection('dashboard')">
+      <i class="ti ti-layout-dashboard"></i> Tableau de bord
+    </a>
+
+    <div class="sb-section">Gestion académique</div>
+    <a class="sb-item" onclick="showSection('universites')">
+      <i class="ti ti-building-community"></i> Universités / UFR
+    </a>
+    <a class="sb-item" onclick="showSection('filieres')">
+      <i class="ti ti-certificate"></i> Filières / Modules
+    </a>
+    <a class="sb-item" onclick="showSection('utilisateurs')">
+      <i class="ti ti-users"></i> Utilisateurs
+    </a>
+
+    <div class="sb-section">Documents</div>
+    <a class="sb-item" onclick="showSection('documents')">
+      <i class="ti ti-files"></i> Documents GED
+      <span class="sb-badge" id="badge-pending" style="display:none">!</span>
+    </a>
+
+    <div class="sb-section">Système</div>
+    <a class="sb-item" onclick="showSection('audit')">
+      <i class="ti ti-list-check"></i> Journal d'audit
+    </a>
+    <a class="sb-item" onclick="showSection('services')">
+      <i class="ti ti-activity"></i> État des services
+    </a>
+
+    <div class="sb-section">API Swagger</div>
+    <a class="sb-item" href="http://localhost:8001/docs" target="_blank">
+      <i class="ti ti-shield-lock"></i> Auth :8001
+      <i class="ti ti-external-link" style="font-size:11px;margin-left:auto;opacity:.5;"></i>
+    </a>
+    <a class="sb-item" href="http://localhost:8002/docs" target="_blank">
+      <i class="ti ti-file-stack"></i> GED :8002
+      <i class="ti ti-external-link" style="font-size:11px;margin-left:auto;opacity:.5;"></i>
+    </a>
+    <a class="sb-item" href="http://localhost:8003/docs" target="_blank">
+      <i class="ti ti-scan"></i> OCR :8003
+      <i class="ti ti-external-link" style="font-size:11px;margin-left:auto;opacity:.5;"></i>
+    </a>
+    <a class="sb-item" href="http://localhost:8004/docs" target="_blank">
+      <i class="ti ti-search"></i> Search :8004
+      <i class="ti ti-external-link" style="font-size:11px;margin-left:auto;opacity:.5;"></i>
+    </a>
+    <a class="sb-item" href="http://localhost:8005/docs" target="_blank">
+      <i class="ti ti-message-circle"></i> Forum :8005
+      <i class="ti ti-external-link" style="font-size:11px;margin-left:auto;opacity:.5;"></i>
+    </a>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-avatar">A</div>
+      <div style="overflow:hidden;">
+        <div class="sb-user-name" id="sb-username">Chargement…</div>
+        <div class="sb-user-email" id="sb-email"></div>
+      </div>
+      <button class="sb-logout" onclick="deconnexion()" title="Déconnecter">
+        <i class="ti ti-logout"></i>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div>
+      <div class="topbar-title" id="page-title">Tableau de bord</div>
+      <div class="topbar-crumb">
+        <i class="ti ti-home"></i> Admin
+        <i class="ti ti-chevron-right"></i>
+        <span id="page-breadcrumb">Vue d'ensemble</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn notif-dot" title="Notifications" onclick="showSection('dashboard')">
+        <i class="ti ti-bell"></i>
+      </button>
+      <button class="topbar-btn" onclick="deconnexion()" title="Déconnexion">
+        <i class="ti ti-logout"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : DASHBOARD                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-dashboard">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">Vue d'ensemble</div>
+        <div class="section-sub">Plateforme UniBurkina Hub — UTS 2025-2026</div>
+      </div>
+      <button class="btn btn-outline" onclick="reloadAll()" id="btn-refresh">
+        <i class="ti ti-refresh"></i> Actualiser
+      </button>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card blue" onclick="showSection('utilisateurs')" style="cursor:pointer;">
+        <div class="kpi-icon"><i class="ti ti-users"></i></div>
+        <div class="kpi-val" id="kpi-users">—</div>
+        <div class="kpi-label">Utilisateurs</div>
+        <div class="kpi-trend neutral"><i class="ti ti-minus" style="font-size:10px"></i> Tous rôles confondus</div>
+      </div>
+      <div class="kpi-card gold" onclick="showSection('documents')" style="cursor:pointer;">
+        <div class="kpi-icon"><i class="ti ti-files"></i></div>
+        <div class="kpi-val" id="kpi-docs">—</div>
+        <div class="kpi-label">Documents GED</div>
+        <div class="kpi-trend up"><i class="ti ti-arrow-up" style="font-size:10px"></i> Total stockés</div>
+      </div>
+      <div class="kpi-card green" onclick="showSection('universites')" style="cursor:pointer;">
+        <div class="kpi-icon"><i class="ti ti-building-community"></i></div>
+        <div class="kpi-val" id="kpi-univs">—</div>
+        <div class="kpi-label">Universités</div>
+        <div class="kpi-trend neutral"><i class="ti ti-minus" style="font-size:10px"></i> Enregistrées</div>
+      </div>
+      <div class="kpi-card red" onclick="showSection('documents')" style="cursor:pointer;">
+        <div class="kpi-icon"><i class="ti ti-clock-exclamation"></i></div>
+        <div class="kpi-val" id="kpi-pending">—</div>
+        <div class="kpi-label">Docs en attente</div>
+        <div class="kpi-trend warn" id="kpi-pending-trend"><i class="ti ti-alert-circle" style="font-size:10px"></i> À valider</div>
+      </div>
+    </div>
+
+    <!-- Row : derniers users + services -->
+    <div class="cards-row">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-user-check"></i> Derniers inscrits</div>
+          <button class="card-action" onclick="showSection('utilisateurs')">
+            Voir tout <i class="ti ti-arrow-right" style="font-size:12px"></i>
+          </button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Nom complet</th><th>Rôle</th><th>Statut</th></tr></thead>
+            <tbody id="body-last-users">
+              <tr><td colspan="3" class="empty"><i class="ti ti-loader spin" style="color:var(--blue-100);font-size:22px;"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-activity"></i> État des services</div>
+          <button class="card-action" onclick="checkServices()">
+            <i class="ti ti-refresh" style="font-size:12px"></i> Tester
+          </button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Service</th><th>Port</th><th>État</th></tr></thead>
+            <tbody id="body-services-mini">
+              <tr><td>service-auth</td><td>8001</td><td><span class="badge gray">…</span></td></tr>
+              <tr><td>service-ged</td><td>8002</td><td><span class="badge gray">…</span></td></tr>
+              <tr><td>service-ocr</td><td>8003</td><td><span class="badge gray">…</span></td></tr>
+              <tr><td>service-search</td><td>8004</td><td><span class="badge gray">…</span></td></tr>
+              <tr><td>service-forum</td><td>8005</td><td><span class="badge gray">…</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Derniers documents -->
+    <div class="card-full">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-files"></i> Documents récents</div>
+        <button class="card-action" onclick="showSection('documents')">
+          Voir tout <i class="ti ti-arrow-right" style="font-size:12px"></i>
+        </button>
+      </div>
+      <div style="padding:0;">
+        <table class="data-table">
+          <thead><tr><th>Titre</th><th>Type</th><th>Statut</th><th>Date</th></tr></thead>
+          <tbody id="body-recent-docs">
+            <tr><td colspan="4" class="empty"><i class="ti ti-loader spin" style="color:var(--blue-100);font-size:22px;"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /sec-dashboard -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : UNIVERSITÉS / UFR               -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-universites" style="display:none;">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">Universités & UFR</div>
+        <div class="section-sub">Gestion de l'arborescence académique</div>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-outline" onclick="openModal('modal-ufr')">
+          <i class="ti ti-plus"></i> Nouvelle UFR
+        </button>
+        <button class="btn btn-primary" onclick="openModal('modal-univ')">
+          <i class="ti ti-plus"></i> Nouvelle université
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchUnivTab('univs',this)">Universités</button>
+      <button class="tab-btn" onclick="switchUnivTab('ufrs',this)">UFR</button>
+    </div>
+
+    <!-- Universités -->
+    <div id="sub-univs">
+      <div class="card-full">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-building-community"></i> Liste des universités</div>
+          <div class="search-bar">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Rechercher…" id="search-univ" oninput="filterUnivs()"/>
+          </div>
+        </div>
+        <div style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Nom</th><th>Localisation</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody id="body-univs">
+              <tr><td colspan="5" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- UFR -->
+    <div id="sub-ufrs" style="display:none;">
+      <div class="card-full">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-layout-grid"></i> Unités de Formation et de Recherche</div>
+          <div style="display:flex;gap:.5rem;align-items:center;">
+            <select class="sel-sm" id="filter-univ-ufr" onchange="loadUFRs()">
+              <option value="">Toutes les universités</option>
+            </select>
+          </div>
+        </div>
+        <div style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Code</th><th>Nom UFR</th><th>Université</th><th>Actions</th></tr></thead>
+            <tbody id="body-ufrs">
+              <tr><td colspan="5" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div><!-- /sec-universites -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : FILIÈRES / MODULES              -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-filieres" style="display:none;">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">Filières & Modules</div>
+        <div class="section-sub">Programmes d'enseignement par UFR</div>
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-outline" onclick="openModal('modal-module')">
+          <i class="ti ti-plus"></i> Nouveau module
+        </button>
+        <button class="btn btn-primary" onclick="openModal('modal-filiere')">
+          <i class="ti ti-plus"></i> Nouvelle filière
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchFilTab('filieres',this)">Filières</button>
+      <button class="tab-btn" onclick="switchFilTab('modules',this)">Modules</button>
+    </div>
+
+    <div id="sub-filieres">
+      <div class="card-full">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-certificate"></i> Liste des filières</div>
+          <select class="sel-sm" id="filter-ufr-fil" onchange="loadFilieres()">
+            <option value="">Toutes les UFR</option>
+          </select>
+        </div>
+        <div style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Nom filière</th><th>UFR</th><th>Description</th><th>Actions</th></tr></thead>
+            <tbody id="body-filieres">
+              <tr><td colspan="5" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="sub-modules" style="display:none;">
+      <div class="card-full">
+        <div class="card-header">
+          <div class="card-title"><i class="ti ti-books"></i> Liste des modules</div>
+          <select class="sel-sm" id="filter-filiere-mod" onchange="loadModules()">
+            <option value="">Toutes les filières</option>
+          </select>
+        </div>
+        <div style="padding:0;">
+          <table class="data-table">
+            <thead><tr><th>Code</th><th>Libellé</th><th>Coefficient</th><th>Filière</th><th>Actions</th></tr></thead>
+            <tbody id="body-modules">
+              <tr><td colspan="5" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div><!-- /sec-filieres -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : UTILISATEURS                    -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-utilisateurs" style="display:none;">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">Gestion des Utilisateurs</div>
+        <div class="section-sub">Tous les comptes de la plateforme</div>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;">
+        <div class="search-bar">
+          <i class="ti ti-search"></i>
+          <input type="text" placeholder="Nom, email…" id="search-users" oninput="filterUsers()"/>
+        </div>
+        <select class="sel-sm" id="filter-role" onchange="filterUsers()">
+          <option value="">Tous les rôles</option>
+          <option value="ADMIN">Admin</option>
+          <option value="PRESIDENT">Président</option>
+          <option value="SOUS_ADMIN">Sous-admin</option>
+          <option value="ENSEIGNANT">Enseignant</option>
+          <option value="DELEGUE">Délégué</option>
+          <option value="ETUDIANT">Étudiant</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card-full">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-users"></i> Tous les utilisateurs</div>
+        <span id="users-count" style="font-size:.75rem;color:var(--text-3);"></span>
+      </div>
+      <div style="padding:0;">
+        <table class="data-table">
+          <thead><tr><th>Nom complet</th><th>Email / Username</th><th>Rôle</th><th>Statut</th><th>Actions</th></tr></thead>
+          <tbody id="body-users">
+            <tr><td colspan="5" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /sec-utilisateurs -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : DOCUMENTS GED                   -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-documents" style="display:none;">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">Documents GED</div>
+        <div class="section-sub">Gestion et validation des ressources pédagogiques</div>
+      </div>
+      <div style="display:flex;gap:.5rem;align-items:center;">
+        <select class="sel-sm" id="filter-type-doc" onchange="loadDocuments()">
+          <option value="">Tous les types</option>
+          <option value="COURS">Cours</option>
+          <option value="TD">TD</option>
+          <option value="EXAMEN">Examen</option>
+          <option value="ARCHIVE">Archive</option>
+        </select>
+        <select class="sel-sm" id="filter-statut-doc" onchange="loadDocuments()">
+          <option value="">Tous les statuts</option>
+          <option value="EN_ATTENTE">En attente</option>
+          <option value="VALIDE">Validés</option>
+          <option value="REFUSE">Refusés</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card-full">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-files"></i> Liste des documents</div>
+        <span id="docs-count" style="font-size:.75rem;color:var(--text-3);"></span>
+      </div>
+      <div style="padding:0;">
+        <table class="data-table">
+          <thead><tr><th>Titre</th><th>Type</th><th>Statut</th><th>Taille</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="body-docs">
+            <tr><td colspan="6" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /sec-documents -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : JOURNAL D'AUDIT                 -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-audit" style="display:none;">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">Journal d'audit</div>
+        <div class="section-sub">Traçabilité complète de toutes les actions</div>
+      </div>
+      <button class="btn btn-outline" onclick="loadAudit()">
+        <i class="ti ti-refresh"></i> Actualiser
+      </button>
+    </div>
+
+    <div class="card-full">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-list-check"></i> Actions récentes</div>
+        <div style="display:flex;gap:.5rem;align-items:center;">
+          <div class="search-bar" style="max-width:200px;">
+            <i class="ti ti-search"></i>
+            <input type="text" placeholder="Filtrer…" id="search-audit" oninput="filterAudit()"/>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0;">
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Action</th><th>Description</th><th>IP</th><th>Utilisateur</th></tr></thead>
+          <tbody id="body-audit">
+            <tr><td colspan="5" class="empty"><i class="ti ti-loader spin" style="font-size:22px;color:var(--blue-100)"></i></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /sec-audit -->
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- SECTION : ÉTAT DES SERVICES               -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="content" id="sec-services" style="display:none;">
+    <div class="section-hd">
+      <div>
+        <div class="section-title">État des services</div>
+        <div class="section-sub">Health check de tous les microservices</div>
+      </div>
+      <button class="btn btn-primary" onclick="checkServices(true)">
+        <i class="ti ti-refresh"></i> Tester tout
+      </button>
+    </div>
+
+    <div class="card-full">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-activity"></i> Microservices</div>
+      </div>
+      <div style="padding:0;">
+        <table class="data-table">
+          <thead><tr><th>Service</th><th>Port</th><th>URL Swagger</th><th>État</th><th>Temps réponse</th></tr></thead>
+          <tbody id="body-services-full">
+            <tr><td colspan="5" class="empty"><i class="ti ti-radar-2" style="font-size:28px"></i><p>Cliquez "Tester tout" pour vérifier</p></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div><!-- /sec-services -->
+
+</main><!-- /main -->
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODALS                                             -->
+<!-- ══════════════════════════════════════════════════ -->
+
+<!-- Modal : Nouvelle Université -->
+<div class="modal-overlay" id="modal-univ">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><i class="ti ti-building-community" style="color:var(--blue);margin-right:.4rem;font-size:18px;"></i>Nouvelle université</div>
+      <button class="modal-close" onclick="closeModal('modal-univ')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert error" id="err-univ"><i class="ti ti-alert-circle"></i><span id="err-univ-msg"></span></div>
+      <div class="field">
+        <label>Nom de l'université <span style="color:var(--red)">*</span></label>
+        <input type="text" id="univ-nom" placeholder="Ex : Université Thierno Saïdou"/>
+      </div>
+      <div class="field">
+        <label>Localisation</label>
+        <input type="text" id="univ-loc" placeholder="Ex : Ouagadougou"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-univ')">Annuler</button>
+      <button class="btn btn-primary" id="btn-save-univ" onclick="saveUniv()">
+        <i class="ti ti-check"></i> Créer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Nouvelle UFR -->
+<div class="modal-overlay" id="modal-ufr">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><i class="ti ti-layout-grid" style="color:var(--blue);margin-right:.4rem;font-size:18px;"></i>Nouvelle UFR</div>
+      <button class="modal-close" onclick="closeModal('modal-ufr')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert error" id="err-ufr"><i class="ti ti-alert-circle"></i><span id="err-ufr-msg"></span></div>
+      <div class="field-row">
+        <div class="field">
+          <label>Code UFR <span style="color:var(--red)">*</span></label>
+          <input type="text" id="ufr-code" placeholder="Ex : UFR/SN"/>
+        </div>
+        <div class="field">
+          <label>Université <span style="color:var(--red)">*</span></label>
+          <select id="ufr-univ-id"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Nom de l'UFR <span style="color:var(--red)">*</span></label>
+        <input type="text" id="ufr-nom" placeholder="Ex : Sciences du Numérique"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-ufr')">Annuler</button>
+      <button class="btn btn-primary" id="btn-save-ufr" onclick="saveUFR()">
+        <i class="ti ti-check"></i> Créer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Nouvelle Filière -->
+<div class="modal-overlay" id="modal-filiere">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><i class="ti ti-certificate" style="color:var(--blue);margin-right:.4rem;font-size:18px;"></i>Nouvelle filière</div>
+      <button class="modal-close" onclick="closeModal('modal-filiere')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert error" id="err-filiere"><i class="ti ti-alert-circle"></i><span id="err-filiere-msg"></span></div>
+      <div class="field">
+        <label>UFR <span style="color:var(--red)">*</span></label>
+        <select id="filiere-ufr-id"></select>
+      </div>
+      <div class="field">
+        <label>Nom de la filière <span style="color:var(--red)">*</span></label>
+        <input type="text" id="filiere-nom" placeholder="Ex : Informatique de Gestion"/>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="filiere-desc" placeholder="Description optionnelle…" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-filiere')">Annuler</button>
+      <button class="btn btn-primary" id="btn-save-filiere" onclick="saveFiliere()">
+        <i class="ti ti-check"></i> Créer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Nouveau Module -->
+<div class="modal-overlay" id="modal-module">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title"><i class="ti ti-books" style="color:var(--blue);margin-right:.4rem;font-size:18px;"></i>Nouveau module</div>
+      <button class="modal-close" onclick="closeModal('modal-module')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert error" id="err-module"><i class="ti ti-alert-circle"></i><span id="err-module-msg"></span></div>
+      <div class="field">
+        <label>Filière <span style="color:var(--red)">*</span></label>
+        <select id="module-filiere-id"></select>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Code module <span style="color:var(--red)">*</span></label>
+          <input type="text" id="module-code" placeholder="Ex : INF301"/>
+        </div>
+        <div class="field">
+          <label>Coefficient</label>
+          <input type="number" id="module-coeff" placeholder="2" min="1" max="10"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Libellé <span style="color:var(--red)">*</span></label>
+        <input type="text" id="module-libelle" placeholder="Ex : Bases de Données Avancées"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-module')">Annuler</button>
+      <button class="btn btn-primary" id="btn-save-module" onclick="saveModule()">
+        <i class="ti ti-check"></i> Créer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Valider / Refuser document (UC_05) -->
+<div class="modal-overlay" id="modal-valider">
+  <div class="modal modal-wide">
+    <div class="modal-head">
+      <div class="modal-title"><i class="ti ti-file-check" style="color:var(--blue);margin-right:.4rem;font-size:18px;"></i>Valider ou Refuser un document (UC_05)</div>
+      <button class="modal-close" onclick="closeModal('modal-valider')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-alert error" id="err-valider"><i class="ti ti-alert-circle"></i><span id="err-valider-msg"></span></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;margin-bottom:1rem;">
+        <div style="font-size:.72rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem;">Document concerné</div>
+        <div style="font-size:.92rem;font-weight:700;color:var(--text);" id="val-doc-titre">—</div>
+        <div style="font-size:.78rem;color:var(--text-3);margin-top:.2rem;" id="val-doc-meta">—</div>
+      </div>
+      <div class="field">
+        <label>Décision <span style="color:var(--red)">*</span></label>
+        <select id="val-decision" onchange="toggleMotif()">
+          <option value="">Choisir…</option>
+          <option value="VALIDE">✅ Valider le document</option>
+          <option value="REFUSE">❌ Refuser le document</option>
+        </select>
+      </div>
+      <div class="field" id="motif-field" style="display:none;">
+        <label>Motif de refus <span style="color:var(--red)">*</span></label>
+        <textarea id="val-motif" placeholder="Expliquez la raison du refus…" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-outline" onclick="closeModal('modal-valider')">Annuler</button>
+      <button class="btn btn-primary" id="btn-valider" onclick="submitValidation()">
+        <i class="ti ti-check"></i> Confirmer
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"><i class="ti ti-check" id="toast-icon"></i><span id="toast-msg">—</span></div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT                                         -->
+<!-- ══════════════════════════════════════════════════ -->
+<script>
+/* ── Token JWT injecté par Jinja2 (cookie HTTPOnly non lisible en JS) ── */
+const JWT_TOKEN  = "{{ token | safe }}";
+
+/* ── API endpoints ─────────────────────────────────── */
+const API_AUTH   = 'http://localhost:8001';
+const API_GED    = 'http://localhost:8002';
+const API_OCR    = 'http://localhost:8003';
+const API_SEARCH = 'http://localhost:8004';
+const API_FORUM  = 'http://localhost:8005';
+
+/* ── State ─────────────────────────────────────────── */
+let allUsers=[], allUnivs=[], allUFRs=[], allFilieres=[], allModules=[], allDocs=[], allAudit=[];
+let currentUser=null, currentDocId=null;
+
+/* ── Auth helpers ──────────────────────────────────── */
+function getToken(){
+  // Token injecté par le serveur via Jinja2 — le cookie est HTTPOnly et non accessible en JS
+  return JWT_TOKEN || '';
+}
+function authH(){
+  return {'Content-Type':'application/json','Authorization':'Bearer '+getToken()};
+}
+async function apiFetch(url,opts={}){
+  try{
+    const r=await fetch(url,{headers:authH(),...opts,headers:{...authH(),...(opts.headers||{})}});
+    if(r.status===401){window.location.href='/login';return null;}
+    return r;
+  }catch(e){return null;}
+}
+
+/* ── Toast ─────────────────────────────────────────── */
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  const icons={success:'ti-check',error:'ti-alert-circle',info:'ti-info-circle'};
+  document.getElementById('toast-icon').className='ti '+(icons[type]||'ti-check');
+  document.getElementById('toast-msg').textContent=msg;
+  t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ── Modal helpers ─────────────────────────────────── */
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+function modalErr(id,msg){
+  const el=document.getElementById(id);
+  el.querySelector('span').textContent=msg;
+  el.classList.add('show');
+}
+function clearErr(id){document.getElementById(id).classList.remove('show');}
+
+/* ── Formatters ────────────────────────────────────── */
+function fmtDate(d){if(!d)return'—';return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function fmtDateTime(d){if(!d)return'—';return new Date(d).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function fmtSize(b){if(!b)return'—';if(b>1048576)return(b/1048576).toFixed(1)+' Mo';return(b/1024).toFixed(0)+' Ko';}
+function roleLabel(r){return{ADMIN:'Admin',PRESIDENT:'Président',SOUS_ADMIN:'Sous-admin',ENSEIGNANT:'Enseignant',DELEGUE:'Délégué',ETUDIANT:'Étudiant'}[r]||r;}
+function roleCls(r){return{ADMIN:'red',PRESIDENT:'gold',SOUS_ADMIN:'orange',ENSEIGNANT:'blue',DELEGUE:'green',ETUDIANT:'gray'}[r]||'gray';}
+function statutBadge(s){
+  if(s==='VALIDE') return '<span class="badge green"><i class="ti ti-check" style="font-size:9px"></i> Validé</span>';
+  if(s==='EN_ATTENTE') return '<span class="badge orange"><i class="ti ti-clock" style="font-size:9px"></i> En attente</span>';
+  if(s==='REFUSE') return '<span class="badge red"><i class="ti ti-x" style="font-size:9px"></i> Refusé</span>';
+  return `<span class="badge gray">${s}</span>`;
+}
+function auditCls(action){
+  const a=(action||'').toLowerCase();
+  if(a.includes('creat')||a.includes('add')||a.includes('register')) return 'audit-row-create';
+  if(a.includes('delet')||a.includes('suppr')||a.includes('desact')) return 'audit-row-delete';
+  if(a.includes('login')||a.includes('connect')) return 'audit-row-login';
+  return 'audit-row-update';
+}
+
+/* ── Navigation ────────────────────────────────────── */
+const ALL_SECTIONS=['dashboard','universites','filieres','utilisateurs','documents','audit','services'];
+const SECTION_META={
+  dashboard:    {title:'Tableau de bord',    crumb:'Vue d\'ensemble'},
+  universites:  {title:'Universités & UFR',  crumb:'Arborescence académique'},
+  filieres:     {title:'Filières & Modules', crumb:'Programmes'},
+  utilisateurs: {title:'Utilisateurs',       crumb:'Gestion des comptes'},
+  documents:    {title:'Documents GED',      crumb:'Ressources pédagogiques'},
+  audit:        {title:"Journal d'audit",    crumb:'Traçabilité'},
+  services:     {title:'État des services',  crumb:'Health check'},
+};
+
+function showSection(name){
+  ALL_SECTIONS.forEach(s=>{
+    const el=document.getElementById('sec-'+s);
+    if(el) el.style.display=s===name?'block':'none';
+  });
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  const m=SECTION_META[name]||{};
+  document.getElementById('page-title').textContent=m.title||name;
+  document.getElementById('page-breadcrumb').textContent=m.crumb||name;
+
+  // Lazy-load data
+  if(name==='universites'){loadUnivs();loadUFRs();}
+  if(name==='filieres'){loadFilieres();loadModules();populateUFRSelects();}
+  if(name==='utilisateurs') loadUsers();
+  if(name==='documents') loadDocuments();
+  if(name==='audit') loadAudit();
+}
+
+function switchUnivTab(tab,btn){
+  document.getElementById('sub-univs').style.display=tab==='univs'?'block':'none';
+  document.getElementById('sub-ufrs').style.display=tab==='ufrs'?'block':'none';
+  document.querySelectorAll('#sec-universites .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='ufrs') loadUFRs();
+}
+function switchFilTab(tab,btn){
+  document.getElementById('sub-filieres').style.display=tab==='filieres'?'block':'none';
+  document.getElementById('sub-modules').style.display=tab==='modules'?'block':'none';
+  document.querySelectorAll('#sec-filieres .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ── LOAD PROFIL ───────────────────────────────────── */
+async function loadProfil(){
+  const r=await apiFetch(API_AUTH+'/auth/me');
+  if(!r) return;
+  const u=await r.json();
+  currentUser=u;
+  const init=((u.prenom||'A')[0]+(u.nom||'D')[0]).toUpperCase();
+  document.getElementById('sb-avatar').textContent=init;
+  document.getElementById('sb-username').textContent=(u.prenom||'')+' '+(u.nom||'');
+  document.getElementById('sb-email').textContent=u.email||'';
+}
+
+/* ── KPI ───────────────────────────────────────────── */
+async function loadKPI(){
+  // Users
+  const ru=await apiFetch(API_AUTH+'/auth/utilisateurs');
+  if(ru){
+    const data=await ru.json();
+    allUsers=Array.isArray(data)?data:(data.items||[]);
+    document.getElementById('kpi-users').textContent=allUsers.length;
+    renderLastUsers(allUsers.slice(0,5));
+  }
+  // GED stats
+  const rg=await apiFetch(API_GED+'/ged/stats');
+  if(rg){
+    const s=await rg.json();
+    document.getElementById('kpi-docs').textContent=s.total_documents??'—';
+    const pending=s.documents_attente??0;
+    document.getElementById('kpi-pending').textContent=pending;
+    if(pending>0){
+      document.getElementById('badge-pending').style.display='';
+      document.getElementById('badge-pending').textContent=pending;
+    }
+  }
+  // Univs
+  const runiv=await apiFetch(API_AUTH+'/auth/universites');
+  if(runiv){
+    const u=await runiv.json();
+    allUnivs=Array.isArray(u)?u:(u.items||[]);
+    document.getElementById('kpi-univs').textContent=allUnivs.length;
+  }
+  // Recent docs
+  const rd=await apiFetch(API_GED+'/ged/documents?limite=5');
+  if(rd){
+    const data=await rd.json();
+    renderRecentDocs(Array.isArray(data)?data:(data.items||[]));
+  }
+}
+
+function renderLastUsers(users){
+  const tbody=document.getElementById('body-last-users');
+  if(!users.length){
+    tbody.innerHTML='<tr><td colspan="3" class="empty"><i class="ti ti-users"></i><p>Aucun utilisateur</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=users.map(u=>`<tr>
+    <td><b>${u.prenom||''} ${u.nom||''}</b></td>
+    <td><span class="badge ${roleCls(u.role)}">${roleLabel(u.role)}</span></td>
+    <td>${u.actif!==false?'<span class="badge green">Actif</span>':'<span class="badge red">Inactif</span>'}</td>
+  </tr>`).join('');
+}
+
+function renderRecentDocs(docs){
+  const tbody=document.getElementById('body-recent-docs');
+  if(!docs.length){
+    tbody.innerHTML='<tr><td colspan="4" class="empty"><i class="ti ti-files"></i><p>Aucun document</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=docs.map(d=>`<tr>
+    <td><b>${d.titre||'—'}</b></td>
+    <td><span class="badge blue">${d.type_ressource||'—'}</span></td>
+    <td>${statutBadge(d.statut)}</td>
+    <td>${fmtDate(d.date_soumission||d.date_creation)}</td>
+  </tr>`).join('');
+}
+
+/* ── SERVICES HEALTH CHECK ─────────────────────────── */
+const SERVICES=[
+  {name:'service-auth',port:8001,url:API_AUTH+'/health'},
+  {name:'service-ged',port:8002,url:API_GED+'/health'},
+  {name:'service-ocr',port:8003,url:API_OCR+'/health'},
+  {name:'service-search',port:8004,url:API_SEARCH+'/health'},
+  {name:'service-forum',port:8005,url:API_FORUM+'/health'},
+];
+
+async function checkServices(full=false){
+  const bodyMini=document.getElementById('body-services-mini');
+  const bodyFull=document.getElementById('body-services-full');
+
+  // Init rows
+  const miniRows=SERVICES.map(s=>`<tr><td>${s.name}</td><td>${s.port}</td><td><span class="badge gray">…</span></td></tr>`).join('');
+  if(bodyMini) bodyMini.innerHTML=miniRows;
+
+  if(full&&bodyFull){
+    bodyFull.innerHTML=SERVICES.map(s=>`<tr>
+      <td><b>${s.name}</b></td><td>${s.port}</td>
+      <td><a href="http://localhost:${s.port}/docs" target="_blank" style="color:var(--blue);font-size:.77rem;">:${s.port}/docs</a></td>
+      <td><span class="badge gray">Vérification…</span></td>
+      <td><span style="color:var(--text-3);font-size:.77rem;">—</span></td>
+    </tr>`).join('');
+  }
+
+  for(let i=0;i<SERVICES.length;i++){
+    const s=SERVICES[i];
+    let ok=false, ms='—';
+    try{
+      const t0=Date.now();
+      const r=await fetch(s.url,{signal:AbortSignal.timeout(3000)});
+      ms=(Date.now()-t0)+'ms'; ok=r.ok;
+    }catch(e){}
+    const badge=ok
+      ?'<span class="badge green"><i class="ti ti-check" style="font-size:9px"></i> En ligne</span>'
+      :'<span class="badge red"><i class="ti ti-x" style="font-size:9px"></i> Hors ligne</span>';
+    if(bodyMini){ const rows=bodyMini.querySelectorAll('tr'); if(rows[i]) rows[i].cells[2].innerHTML=badge; }
+    if(full&&bodyFull){ const rows=bodyFull.querySelectorAll('tr'); if(rows[i]){rows[i].cells[3].innerHTML=badge;rows[i].cells[4].innerHTML=`<span style="font-size:.77rem;color:${ok?'var(--green)':'var(--red)'}">${ms}</span>`;}}
+  }
+}
+
+/* ── UNIVERSITÉS ───────────────────────────────────── */
+async function loadUnivs(){
+  const r=await apiFetch(API_AUTH+'/auth/universites');
+  if(!r) return;
+  const data=await r.json();
+  allUnivs=Array.isArray(data)?data:(data.items||[]);
+  renderUnivs(allUnivs);
+  // Populate selects
+  const sel=document.getElementById('filter-univ-ufr');
+  sel.innerHTML='<option value="">Toutes les universités</option>';
+  allUnivs.forEach(u=>{sel.innerHTML+=`<option value="${u.id_univ}">${u.nom_univ}</option>`;});
+  const ufrSel=document.getElementById('ufr-univ-id');
+  ufrSel.innerHTML='<option value="">Choisir…</option>';
+  allUnivs.forEach(u=>{ufrSel.innerHTML+=`<option value="${u.id_univ}">${u.nom_univ}</option>`;});
+}
+
+function renderUnivs(univs){
+  const tbody=document.getElementById('body-univs');
+  if(!univs.length){
+    tbody.innerHTML='<tr><td colspan="5" class="empty"><i class="ti ti-building-community"></i><p>Aucune université enregistrée</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=univs.map((u,i)=>`<tr>
+    <td style="color:var(--text-3);font-size:.78rem;">${i+1}</td>
+    <td><b>${u.nom_univ||'—'}</b></td>
+    <td>${u.localisation||'—'}</td>
+    <td>${u.actif!==false?'<span class="badge green">Active</span>':'<span class="badge red">Inactive</span>'}</td>
+    <td><button class="btn btn-xs btn-outline" title="Voir UFR" onclick="showSection('universites');switchUnivTab('ufrs',document.querySelector('#sec-universites .tab-btn:nth-child(2)'))">
+      <i class="ti ti-layout-grid"></i> UFR
+    </button></td>
+  </tr>`).join('');
+}
+
+function filterUnivs(){
+  const q=document.getElementById('search-univ').value.toLowerCase();
+  renderUnivs(allUnivs.filter(u=>(u.nom_univ||'').toLowerCase().includes(q)));
+}
+
+async function saveUniv(){
+  clearErr('err-univ');
+  const nom=document.getElementById('univ-nom').value.trim();
+  const loc=document.getElementById('univ-loc').value.trim();
+  if(!nom){modalErr('err-univ','Le nom est obligatoire.');return;}
+  const btn=document.getElementById('btn-save-univ');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Création…';
+  const r=await apiFetch(API_AUTH+'/auth/universites',{method:'POST',body:JSON.stringify({nom_univ:nom,localisation:loc,actif:true})});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Créer';
+  if(r&&(r.ok||r.status===201)){
+    closeModal('modal-univ');
+    document.getElementById('univ-nom').value='';
+    document.getElementById('univ-loc').value='';
+    toast('Université créée avec succès !');
+    loadUnivs(); loadKPI();
+  } else {
+    const d=r?await r.json():{};
+    modalErr('err-univ',d.detail||'Erreur lors de la création.');
+  }
+}
+
+/* ── UFR ───────────────────────────────────────────── */
+async function loadUFRs(){
+  const univId=document.getElementById('filter-univ-ufr')?.value||'';
+  const url=API_AUTH+'/auth/ufrs'+(univId?'?id_univ='+univId:'');
+  const r=await apiFetch(url);
+  if(!r) return;
+  const data=await r.json();
+  allUFRs=Array.isArray(data)?data:(data.items||[]);
+  const tbody=document.getElementById('body-ufrs');
+  if(!allUFRs.length){
+    tbody.innerHTML='<tr><td colspan="5" class="empty"><i class="ti ti-layout-grid"></i><p>Aucune UFR trouvée</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=allUFRs.map((u,i)=>{
+    const univ=allUnivs.find(v=>v.id_univ===u.id_univ);
+    return`<tr>
+      <td style="color:var(--text-3);font-size:.78rem;">${i+1}</td>
+      <td><span class="badge blue">${u.code_ufr||'—'}</span></td>
+      <td><b>${u.nom_ufr||'—'}</b></td>
+      <td>${univ?univ.nom_univ:'—'}</td>
+      <td><button class="btn btn-xs btn-outline" onclick="showSection('filieres')"><i class="ti ti-certificate"></i> Filières</button></td>
+    </tr>`;
+  }).join('');
+
+  // Populate filiere UFR select
+  const s=document.getElementById('filter-ufr-fil');
+  if(s){
+    s.innerHTML='<option value="">Toutes les UFR</option>';
+    allUFRs.forEach(u=>{s.innerHTML+=`<option value="${u.id_ufr}">${u.code_ufr} — ${u.nom_ufr}</option>`;});
+  }
+  const s2=document.getElementById('filiere-ufr-id');
+  if(s2){
+    s2.innerHTML='<option value="">Choisir…</option>';
+    allUFRs.forEach(u=>{s2.innerHTML+=`<option value="${u.id_ufr}">${u.code_ufr} — ${u.nom_ufr}</option>`;});
+  }
+}
+
+async function saveUFR(){
+  clearErr('err-ufr');
+  const nom=document.getElementById('ufr-nom').value.trim();
+  const code=document.getElementById('ufr-code').value.trim();
+  const univ=document.getElementById('ufr-univ-id').value;
+  if(!nom||!code||!univ){modalErr('err-ufr','Tous les champs sont obligatoires.');return;}
+  const btn=document.getElementById('btn-save-ufr');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Création…';
+  const r=await apiFetch(API_AUTH+'/auth/ufrs',{method:'POST',body:JSON.stringify({nom_ufr:nom,code_ufr:code,id_univ:parseInt(univ)})});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Créer';
+  if(r&&(r.ok||r.status===201)){
+    closeModal('modal-ufr');
+    ['ufr-nom','ufr-code'].forEach(id=>document.getElementById(id).value='');
+    toast('UFR créée avec succès !');
+    loadUFRs();
+  } else {
+    const d=r?await r.json():{};
+    modalErr('err-ufr',d.detail||'Erreur.');
+  }
+}
+
+/* ── FILIÈRES ──────────────────────────────────────── */
+async function loadFilieres(){
+  const ufrId=document.getElementById('filter-ufr-fil')?.value||'';
+  const url=API_AUTH+'/auth/filieres'+(ufrId?'?id_ufr='+ufrId:'');
+  const r=await apiFetch(url);
+  if(!r) return;
+  const data=await r.json();
+  allFilieres=Array.isArray(data)?data:(data.items||[]);
+  const tbody=document.getElementById('body-filieres');
+  if(!allFilieres.length){
+    tbody.innerHTML='<tr><td colspan="5" class="empty"><i class="ti ti-certificate"></i><p>Aucune filière</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=allFilieres.map((f,i)=>{
+    const ufr=allUFRs.find(u=>u.id_ufr===f.id_ufr);
+    return`<tr>
+      <td style="color:var(--text-3);font-size:.78rem;">${i+1}</td>
+      <td><b>${f.nom_filiere||'—'}</b></td>
+      <td>${ufr?`<span class="badge blue">${ufr.code_ufr}</span>`:'—'}</td>
+      <td style="font-size:.78rem;color:var(--text-3);">${f.description||'—'}</td>
+      <td><button class="btn btn-xs btn-outline" onclick="showSection('filieres');switchFilTab('modules',document.querySelector('#sec-filieres .tab-btn:nth-child(2)'))">
+        <i class="ti ti-books"></i> Modules
+      </button></td>
+    </tr>`;
+  }).join('');
+
+  // Populate module selects
+  const s=document.getElementById('filter-filiere-mod');
+  if(s){
+    s.innerHTML='<option value="">Toutes les filières</option>';
+    allFilieres.forEach(f=>{s.innerHTML+=`<option value="${f.id_filiere}">${f.nom_filiere}</option>`;});
+  }
+  const s2=document.getElementById('module-filiere-id');
+  if(s2){
+    s2.innerHTML='<option value="">Choisir…</option>';
+    allFilieres.forEach(f=>{s2.innerHTML+=`<option value="${f.id_filiere}">${f.nom_filiere}</option>`;});
+  }
+}
+
+async function saveFiliere(){
+  clearErr('err-filiere');
+  const nom=document.getElementById('filiere-nom').value.trim();
+  const ufrId=document.getElementById('filiere-ufr-id').value;
+  const desc=document.getElementById('filiere-desc').value.trim();
+  if(!nom||!ufrId){modalErr('err-filiere','Nom et UFR obligatoires.');return;}
+  const btn=document.getElementById('btn-save-filiere');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Création…';
+  const r=await apiFetch(API_AUTH+'/auth/filieres',{method:'POST',body:JSON.stringify({nom_filiere:nom,id_ufr:parseInt(ufrId),description:desc||null})});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Créer';
+  if(r&&(r.ok||r.status===201)){
+    closeModal('modal-filiere');
+    ['filiere-nom','filiere-desc'].forEach(id=>document.getElementById(id).value='');
+    toast('Filière créée !'); loadFilieres();
+  } else {
+    const d=r?await r.json():{};
+    modalErr('err-filiere',d.detail||'Erreur.');
+  }
+}
+
+/* ── MODULES ───────────────────────────────────────── */
+async function loadModules(){
+  const filId=document.getElementById('filter-filiere-mod')?.value||'';
+  const url=API_AUTH+'/auth/modules'+(filId?'?id_filiere='+filId:'');
+  const r=await apiFetch(url);
+  if(!r) return;
+  const data=await r.json();
+  allModules=Array.isArray(data)?data:(data.items||[]);
+  const tbody=document.getElementById('body-modules');
+  if(!allModules.length){
+    tbody.innerHTML='<tr><td colspan="5" class="empty"><i class="ti ti-books"></i><p>Aucun module</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=allModules.map(m=>{
+    const fil=allFilieres.find(f=>f.id_filiere===m.id_filiere);
+    return`<tr>
+      <td><span class="badge blue">${m.code_module||'—'}</span></td>
+      <td><b>${m.libelle||'—'}</b></td>
+      <td><span class="badge gray">${m.coefficient||1}</span></td>
+      <td style="font-size:.78rem;">${fil?fil.nom_filiere:'—'}</td>
+      <td>—</td>
+    </tr>`;
+  }).join('');
+}
+
+async function saveModule(){
+  clearErr('err-module');
+  const code=document.getElementById('module-code').value.trim();
+  const lib=document.getElementById('module-libelle').value.trim();
+  const coeff=parseInt(document.getElementById('module-coeff').value)||2;
+  const filId=document.getElementById('module-filiere-id').value;
+  if(!code||!lib||!filId){modalErr('err-module','Code, libellé et filière sont obligatoires.');return;}
+  const btn=document.getElementById('btn-save-module');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Création…';
+  const r=await apiFetch(API_AUTH+'/auth/modules',{method:'POST',body:JSON.stringify({code_module:code,libelle:lib,coefficient:coeff,id_filiere:parseInt(filId)})});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Créer';
+  if(r&&(r.ok||r.status===201)){
+    closeModal('modal-module');
+    ['module-code','module-libelle','module-coeff'].forEach(id=>document.getElementById(id).value='');
+    toast('Module créé !'); loadModules();
+  } else {
+    const d=r?await r.json():{};
+    modalErr('err-module',d.detail||'Erreur.');
+  }
+}
+
+async function populateUFRSelects(){
+  if(!allUnivs.length){
+    const r=await apiFetch(API_AUTH+'/auth/universites');
+    if(r){const d=await r.json();allUnivs=Array.isArray(d)?d:(d.items||[]);}
+  }
+  if(!allUFRs.length) await loadUFRs();
+}
+
+/* ── UTILISATEURS ──────────────────────────────────── */
+async function loadUsers(){
+  const r=await apiFetch(API_AUTH+'/auth/utilisateurs');
+  if(!r) return;
+  const data=await r.json();
+  allUsers=Array.isArray(data)?data:(data.items||[]);
+  document.getElementById('users-count').textContent=allUsers.length+' utilisateur(s)';
+  renderUsers(allUsers);
+}
+
+function renderUsers(users){
+  const tbody=document.getElementById('body-users');
+  if(!users.length){
+    tbody.innerHTML='<tr><td colspan="5" class="empty"><i class="ti ti-users"></i><p>Aucun utilisateur</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=users.map(u=>`<tr>
+    <td>
+      <div style="display:flex;align-items:center;gap:.5rem;">
+        <div style="width:28px;height:28px;border-radius:7px;background:linear-gradient(135deg,var(--blue),var(--navy-2));display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:#fff;flex-shrink:0;">
+          ${((u.prenom||'?')[0]+(u.nom||'?')[0]).toUpperCase()}
+        </div>
+        <div><div style="font-weight:600;">${u.prenom||''} ${u.nom||''}</div>
+        <div style="font-size:.7rem;color:var(--text-3);">@${u.username||''}</div></div>
+      </div>
+    </td>
+    <td style="font-size:.78rem;">${u.email||'—'}</td>
+    <td><span class="badge ${roleCls(u.role)}">${roleLabel(u.role)}</span></td>
+    <td>${u.actif!==false?'<span class="badge green">Actif</span>':'<span class="badge red">Inactif</span>'}</td>
+    <td>
+      ${u.actif!==false
+        ?`<button class="btn btn-xs btn-danger" onclick="desactiverUser('${u.id}','${u.prenom} ${u.nom}')"><i class="ti ti-user-off"></i> Désactiver</button>`
+        :'<span style="font-size:.72rem;color:var(--text-3);">Désactivé</span>'}
+    </td>
+  </tr>`).join('');
+}
+
+function filterUsers(){
+  const q=document.getElementById('search-users').value.toLowerCase();
+  const role=document.getElementById('filter-role').value;
+  const filtered=allUsers.filter(u=>{
+    const matchQ=(u.nom||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)||(u.prenom||'').toLowerCase().includes(q);
+    return matchQ&&(!role||u.role===role);
+  });
+  document.getElementById('users-count').textContent=filtered.length+' utilisateur(s)';
+  renderUsers(filtered);
+}
+
+async function desactiverUser(id,nom){
+  if(!confirm(`Désactiver le compte de ${nom} ?`)) return;
+  const r=await apiFetch(API_AUTH+'/auth/utilisateurs/'+id,{method:'DELETE'});
+  if(r&&r.ok){toast(`Compte de ${nom} désactivé`);loadUsers();}
+  else toast('Erreur lors de la désactivation','error');
+}
+
+/* ── DOCUMENTS ─────────────────────────────────────── */
+async function loadDocuments(){
+  const statut=document.getElementById('filter-statut-doc').value;
+  const type=document.getElementById('filter-type-doc').value;
+  let url=API_GED+'/ged/documents?limite=100';
+  if(statut) url+='&statut='+statut;
+  if(type)   url+='&type_ressource='+type;
+  const r=await apiFetch(url);
+  if(!r) return;
+  const data=await r.json();
+  allDocs=Array.isArray(data)?data:(data.items||[]);
+  document.getElementById('docs-count').textContent=allDocs.length+' document(s)';
+  renderDocs(allDocs);
+}
+
+function renderDocs(docs){
+  const tbody=document.getElementById('body-docs');
+  if(!docs.length){
+    tbody.innerHTML='<tr><td colspan="6" class="empty"><i class="ti ti-files"></i><p>Aucun document</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=docs.map(d=>`<tr>
+    <td>
+      <div style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${d.titre||''}">${d.titre||'—'}</div>
+      ${d.motif_refus?`<div style="font-size:.7rem;color:var(--red);margin-top:.15rem;"><i class="ti ti-alert-circle" style="font-size:10px"></i> ${d.motif_refus}</div>`:''}
+    </td>
+    <td><span class="badge blue">${d.type_ressource||'—'}</span></td>
+    <td>${statutBadge(d.statut)}</td>
+    <td style="font-size:.78rem;">${fmtSize(d.taille_fichier)}</td>
+    <td style="font-size:.78rem;">${fmtDate(d.date_soumission||d.date_creation)}</td>
+    <td>
+      <div class="val-actions">
+        <a href="${API_GED}/ged/documents/${d.id_doc}/telecharger" target="_blank"
+           class="btn btn-xs btn-outline" title="Télécharger">
+          <i class="ti ti-download"></i>
+        </a>
+        ${d.statut==='EN_ATTENTE'
+          ?`<button class="btn btn-xs btn-primary" onclick="openValider('${d.id_doc}','${(d.titre||'').replace(/'/g,"\\'")}','${d.type_ressource||''}')">
+              <i class="ti ti-gavel"></i> Valider
+             </button>`:''}
+      </div>
+    </td>
+  </tr>`).join('');
+}
+
+/* UC_05 — Valider / Refuser */
+function openValider(docId,titre,type){
+  currentDocId=docId;
+  clearErr('err-valider');
+  document.getElementById('val-decision').value='';
+  document.getElementById('val-motif').value='';
+  document.getElementById('motif-field').style.display='none';
+  document.getElementById('val-doc-titre').textContent=titre||'—';
+  document.getElementById('val-doc-meta').textContent='Type : '+type+' | ID : '+docId;
+  openModal('modal-valider');
+}
+function toggleMotif(){
+  const v=document.getElementById('val-decision').value;
+  document.getElementById('motif-field').style.display=v==='REFUSE'?'block':'none';
+}
+async function submitValidation(){
+  clearErr('err-valider');
+  const decision=document.getElementById('val-decision').value;
+  const motif=document.getElementById('val-motif').value.trim();
+  if(!decision){modalErr('err-valider','Choisissez une décision.');return;}
+  if(decision==='REFUSE'&&!motif){modalErr('err-valider','Le motif de refus est obligatoire.');return;}
+  const btn=document.getElementById('btn-valider');
+  btn.disabled=true;btn.innerHTML='<div class="spin"></div> Envoi…';
+  const body={statut:decision};
+  if(motif) body.motif_refus=motif;
+  const r=await apiFetch(API_GED+'/ged/documents/'+currentDocId+'/valider',{method:'PUT',body:JSON.stringify(body)});
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-check"></i> Confirmer';
+  if(r&&r.ok){
+    closeModal('modal-valider');
+    toast(decision==='VALIDE'?'Document validé avec succès !':'Document refusé.');
+    loadDocuments(); loadKPI();
+  } else {
+    const d=r?await r.json():{};
+    modalErr('err-valider',d.detail||'Erreur lors de la validation.');
+  }
+}
+
+/* ── AUDIT ─────────────────────────────────────────── */
+async function loadAudit(){
+  const r=await apiFetch(API_AUTH+'/auth/journal-audit?limite=100');
+  if(!r){
+    // Fallback: afficher message si endpoint indisponible
+    document.getElementById('body-audit').innerHTML=
+      `<tr><td colspan="5" class="empty">
+        <i class="ti ti-list-check" style="font-size:30px"></i>
+        <p>Journal disponible via <a href="http://localhost:8001/docs#/audit" target="_blank" style="color:var(--blue)">Swagger auth :8001</a></p>
+      </td></tr>`;
+    return;
+  }
+  const data=await r.json();
+  allAudit=Array.isArray(data)?data:(data.items||[]);
+  renderAudit(allAudit);
+}
+
+function renderAudit(entries){
+  const tbody=document.getElementById('body-audit');
+  if(!entries.length){
+    tbody.innerHTML='<tr><td colspan="5" class="empty"><i class="ti ti-list-check"></i><p>Aucune entrée d\'audit</p></td></tr>';
+    return;
+  }
+  tbody.innerHTML=entries.map(e=>`<tr class="${auditCls(e.action)}">
+    <td style="white-space:nowrap;font-size:.75rem;">${fmtDateTime(e.date_action)}</td>
+    <td><span class="badge ${auditCls(e.action).includes('create')?'green':auditCls(e.action).includes('delete')?'red':auditCls(e.action).includes('login')?'gold':'blue'}">${e.action||'—'}</span></td>
+    <td style="font-size:.79rem;max-width:280px;">${e.description||'—'}</td>
+    <td style="font-size:.75rem;color:var(--text-3);font-family:monospace;">${e.ip_address||'—'}</td>
+    <td style="font-size:.78rem;">${e.user_id||'—'}</td>
+  </tr>`).join('');
+}
+
+function filterAudit(){
+  const q=document.getElementById('search-audit').value.toLowerCase();
+  renderAudit(allAudit.filter(e=>
+    (e.action||'').toLowerCase().includes(q)||
+    (e.description||'').toLowerCase().includes(q)
+  ));
+}
+
+/* ── GLOBAL RELOAD ─────────────────────────────────── */
+async function reloadAll(){
+  const btn=document.getElementById('btn-refresh');
+  btn.disabled=true;btn.innerHTML='<div class="spin" style="border-top-color:var(--blue);border-color:var(--blue-100);"></div> Actualisation…';
+  await loadKPI();
+  await checkServices();
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-refresh"></i> Actualiser';
+  toast('Données actualisées','info');
+}
+
+/* ── DÉCONNEXION ───────────────────────────────────── */
+function deconnexion(){window.location.href='/deconnexion';}
+
+/* ── INIT ──────────────────────────────────────────── */
+(async function init(){
+  await loadProfil();
+  await loadKPI();
+  checkServices();
+})();
+</script>
+<!-- OCR_STUDIO_BTN_START -->
+<div id="ubh-ocr-fab" data-ocr-injected="true" style="position:fixed;bottom:28px;right:28px;z-index:9999;">
+  <a href="/ocr-studio" title="OCR Studio"
+     style="display:flex;align-items:center;gap:8px;background:#7B3FA0;color:#fff;padding:12px 20px;border-radius:50px;text-decoration:none;font-weight:700;font-size:.9rem;box-shadow:0 4px 18px rgba(123,63,160,.45);">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <path d="M7 8h10M7 12h7M7 16h5"/>
+    </svg>
+    OCR Studio
+  </a>
+</div>
+<!-- OCR_STUDIO_BTN_END -->
+<!-- VALIDATION_HUB_BTN_START -->
+<div id="ubh-valid-fab" data-valid-injected="true" style="position:fixed;bottom:28px;right:200px;z-index:9999;">
+  <a href="/validation-hub" title="Validation Hub"
+     style="display:flex;align-items:center;gap:8px;background:#0C447C;color:#fff;padding:12px 20px;border-radius:50px;text-decoration:none;font-weight:700;font-size:.9rem;box-shadow:0 4px 18px rgba(12,68,124,.45);">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M9 11l3 3L22 4"/>
+      <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+    </svg>
+    Validation Hub
+  </a>
+</div>
+<!-- VALIDATION_HUB_BTN_END -->
+</body>
+</html>

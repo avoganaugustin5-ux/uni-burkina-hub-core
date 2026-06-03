@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>À propos — UniBurkina Hub</title>
+  <meta name="description" content="À propos du projet UniBurkina Hub — Système GED académique pour l'Université Thomas SANKARA, Burkina Faso.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bleu-nuit:  #042C53;
+      --bleu-roi:   #185FA5;
+      --or:         #C89A2E;
+      --or-clair:   #F0C84A;
+      --creme:      #FBF8F3;
+      --blanc:      #FFFFFF;
+      --gris-texte: #4A5568;
+      --radius:     16px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Outfit', sans-serif; background: var(--creme); color: var(--bleu-nuit); line-height: 1.65; }
+
+    /* NAV */
+    nav {
+      background: var(--bleu-nuit);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo { color: var(--blanc); font-family: 'DM Serif Display', serif; font-size: 1.3rem; text-decoration: none; }
+    .nav-logo span { color: var(--or-clair); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,.8); text-decoration: none; font-size: .9rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--or-clair); }
+    .nav-cta {
+      background: var(--or); color: var(--bleu-nuit) !important; padding: .4rem 1.2rem;
+      border-radius: 8px; font-weight: 700 !important; font-size: .85rem !important;
+    }
+
+    /* HERO */
+    .hero-about {
+      background: linear-gradient(135deg, var(--bleu-nuit) 0%, #0d3d6e 100%);
+      color: var(--blanc);
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+    }
+    .hero-about h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 1rem; }
+    .hero-about h1 em { color: var(--or-clair); font-style: normal; }
+    .hero-about p { max-width: 640px; margin: 0 auto; opacity: .85; font-size: 1.05rem; }
+
+    /* SECTIONS */
+    section { max-width: 860px; margin: 0 auto; padding: 4rem 2rem; }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 1.9rem; color: var(--bleu-nuit); margin-bottom: 1.2rem; }
+    h2 span { color: var(--or); }
+    p { color: var(--gris-texte); margin-bottom: 1rem; }
+    .divider { border: none; border-top: 2px solid var(--or); width: 60px; margin: 0 0 2rem; }
+
+    /* CARDS */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+    .card {
+      background: var(--blanc); border-radius: var(--radius); padding: 1.8rem;
+      box-shadow: 0 4px 24px rgba(4,44,83,.08); border-top: 4px solid var(--or);
+    }
+    .card-icon { font-size: 2rem; margin-bottom: .8rem; }
+    .card h3 { color: var(--bleu-nuit); font-size: 1.1rem; margin-bottom: .5rem; }
+    .card p { font-size: .9rem; margin: 0; }
+
+    /* TECH STACK */
+    .tech-list { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: 1.2rem; }
+    .tech-badge {
+      background: var(--bleu-nuit); color: var(--blanc);
+      padding: .3rem .9rem; border-radius: 999px; font-size: .82rem; font-weight: 600;
+    }
+    .tech-badge.gold { background: var(--or); color: var(--bleu-nuit); }
+
+    /* DEV */
+    .dev-card {
+      background: var(--bleu-nuit); color: var(--blanc); border-radius: var(--radius);
+      padding: 2.5rem; display: flex; gap: 2rem; align-items: center; flex-wrap: wrap;
+    }
+    .dev-avatar {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--or), var(--bleu-roi));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; flex-shrink: 0;
+    }
+    .dev-info h3 { font-family: 'DM Serif Display', serif; font-size: 1.5rem; color: var(--or-clair); margin-bottom: .3rem; }
+    .dev-info p { color: rgba(255,255,255,.75); margin: 0 0 .8rem; font-size: .92rem; }
+    .dev-links { display: flex; gap: .8rem; flex-wrap: wrap; }
+    .dev-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .4rem 1rem; border-radius: 8px; font-size: .85rem; font-weight: 600;
+      text-decoration: none; transition: opacity .2s;
+    }
+    .dev-link:hover { opacity: .85; }
+    .dev-link-blog { background: var(--or); color: var(--bleu-nuit); }
+    .dev-link-email { background: rgba(255,255,255,.15); color: var(--blanc); }
+
+    /* FOOTER */
+    footer {
+      background: var(--bleu-nuit); color: rgba(255,255,255,.6);
+      text-align: center; padding: 2rem;
+      font-size: .85rem;
+    }
+    footer a { color: var(--or-clair); text-decoration: none; }
+
+    @media (max-width: 600px) {
+      .dev-card { flex-direction: column; text-align: center; }
+      .dev-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">Uni<span>Burkina</span> Hub</a>
+  <ul class="nav-links">
+    <li><a href="/">Accueil</a></li>
+    <li><a href="/a-propos" style="color:var(--or-clair)">À propos</a></li>
+    <li><a href="https://www.uts.bf" target="_blank" rel="noopener">Site UTS ↗</a></li>
+    <li><a href="/connexion" class="nav-cta">Se connecter</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="hero-about">
+  <h1>À propos d'<em>UniBurkina Hub</em></h1>
+  <p>Un projet académique né d'une conviction : chaque étudiant burkinabè mérite un accès équitable aux ressources pédagogiques.</p>
+</div>
+
+<!-- CONTEXTE -->
+<section>
+  <h2>Le <span>Contexte</span></h2>
+  <hr class="divider">
+  <p>À l'Université Thomas SANKARA (UTS), les étudiants dépendent de réseaux informels — groupes WhatsApp, photocopies de photocopies — pour accéder aux TD, anciens examens et supports de cours. Cette fragmentation crée une iniquité réelle : ceux qui ont les bons contacts accèdent aux ressources ; les autres non.</p>
+  <p>UniBurkina Hub est la réponse à cette problématique. Une plateforme centralisée de Gestion Électronique de Documents (GED) académiques, dotée d'un OCR performant (PaddleOCR) pour numériser et rendre consultables tous les documents physiques des universités du Burkina Faso.</p>
+</section>
+
+<!-- FONCTIONNALITES -->
+<section style="background:var(--blanc); border-radius:var(--radius); box-shadow:0 4px 24px rgba(4,44,83,.07); max-width:860px; margin:0 auto;">
+  <div style="padding:3rem 2rem 2rem">
+    <h2>Ce que fait la <span>plateforme</span></h2>
+    <hr class="divider">
+    <div class="cards" style="margin-top:0">
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <h3>OCR par PaddleOCR</h3>
+        <p>Numérisation intelligente de documents physiques avec extraction de texte, score de confiance et progression temps réel (SSE).</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗂️</div>
+        <h3>GED Centralisée</h3>
+        <p>Upload, validation, classement et recherche full-text via Elasticsearch de tous les documents académiques (TD, examens, annonces).</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔐</div>
+        <h3>Gestion des rôles</h3>
+        <p>5 rôles distincts : Étudiant, Délégué, Sous-admin, Admin, Super-admin — avec flux de validation documentaire structuré.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3>Forum académique</h3>
+        <p>Espace de discussion modéré par filière et module, avec système de signalement et notifications en temps réel.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Multi-formats</h3>
+        <p>Génération automatique de PDF, DOCX, XLSX, PPTX, TXT et Markdown depuis les résultats OCR.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏛️</div>
+        <h3>Architecture microservices</h3>
+        <p>6 services FastAPI indépendants (auth, GED, OCR, search, forum, frontend) — scalable et maintenable.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STACK TECHNIQUE -->
+<section>
+  <h2>Stack <span>Technique</span></h2>
+  <hr class="divider">
+  <p>UniBurkina Hub est entièrement construit sur des technologies open-source robustes, adaptées aux contraintes d'infrastructure locale (pas de Docker, Windows 11, ressources limitées).</p>
+  <div class="tech-list">
+    <span class="tech-badge gold">Python 3.11</span>
+    <span class="tech-badge">FastAPI 0.111</span>
+    <span class="tech-badge gold">PaddleOCR 3.5</span>
+    <span class="tech-badge">PostgreSQL 5432</span>
+    <span class="tech-badge">Elasticsearch 8.13</span>
+    <span class="tech-badge gold">SQLAlchemy 2.0</span>
+    <span class="tech-badge">ReportLab 4.x</span>
+    <span class="tech-badge">Bootstrap 5</span>
+    <span class="tech-badge gold">Jinja2</span>
+    <span class="tech-badge">JWT / bcrypt</span>
+    <span class="tech-badge">SSE Streaming</span>
+    <span class="tech-badge gold">OpenCV</span>
+  </div>
+</section>
+
+<!-- DEVELOPPEUR -->
+<section>
+  <h2>Le <span>Développeur</span></h2>
+  <hr class="divider">
+  <div class="dev-card">
+    <div class="dev-avatar">👨🏿‍💻</div>
+    <div class="dev-info">
+      <h3>AVOGAN Koudjo Augustin Sandaogo</h3>
+      <p>Étudiant en fin de cycle — INE N01213620231<br>
+         Université Thomas SANKARA (UTS), Burkina Faso<br>
+         Soutenance : Juillet 2026</p>
+      <div class="dev-links">
+        <a href="https://avoganaugustin.dev" target="_blank" rel="noopener" class="dev-link dev-link-blog">
+          🌐 Blog &amp; Portfolio
+        </a>
+        <a href="mailto:avoganaugustin5@gmail.com" class="dev-link dev-link-email">
+          ✉️ avoganaugustin5@gmail.com
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 UniBurkina Hub — <a href="https://www.uts.bf" target="_blank" rel="noopener">Université Thomas SANKARA</a> — Burkina Faso</p>
+</footer>
+
+</body>
+</html>

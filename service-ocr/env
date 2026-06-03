@@ -1,0 +1,48 @@
+# ===========================================================================
+# service-ocr — Variables d'environnement
+# Version 3.0 — PaddleOCR uniquement (Gemini supprimé)
+# IMPORTANT : Créer ce fichier en UTF-8 via PowerShell :
+#   [System.IO.File]::WriteAllText(".env", (Get-Content .env.example -Raw), [System.Text.Encoding]::UTF8)
+# ===========================================================================
+
+# Base de données
+DATABASE_URL=postgresql://uniburkina_admin:UTS_Burkina2025!@localhost:5432/uniburkina_db
+
+# Services inter-microservices
+API_GED=http://localhost:8002
+API_AUTH=http://localhost:8001
+
+# Stockage local des fichiers OCR
+UPLOAD_DIR=uploads
+OUTPUT_DIR=outputs
+
+# PaddleOCR — langue par défaut
+OCR_LANG_DEFAULT=fr
+OCR_USE_GPU=False
+OCR_USE_ANGLE_CLS=True
+
+# Gmail SMTP — Notifications email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=avoganaugustin5@gmail.com
+# IMPORTANT : Utiliser un "Mot de passe d'application" Gmail (pas votre vrai mot de passe)
+# Générer sur : https://myaccount.google.com/apppasswords
+# (Activer d'abord la validation en 2 étapes sur votre compte Google)
+SMTP_PASSWORD=REMPLACER_PAR_MOT_DE_PASSE_APPLICATION
+SMTP_FROM=avoganaugustin5@gmail.com
+SMTP_FROM_NAME=UniBurkina Hub
+
+# Sécurité JWT (même secret que service-auth)
+SECRET_KEY=uniburkina_secret_key_2025
+ALGORITHM=HS256
+
+# Limites upload
+MAX_FILE_SIZE_MB=50
+ALLOWED_IMAGE_EXTENSIONS=jpg,jpeg,png,tiff,tif,bmp,webp,pdf
+
+# ── Gemini API — SUPPRIMÉ en v3.0 (PaddleOCR uniquement) ──────────────────
+# Les variables ci-dessous sont conservées en commentaire pour référence.
+# Elles ne sont plus lues par main.py v3.0.
+# GEMINI_API_KEY=...
+# GEMINI_MODEL=gemini-2.0-flash
+# GEMINI_API_URL=https://generativelanguage.googleapis.com/v1beta/models

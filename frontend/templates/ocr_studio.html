@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCR Studio — UniBurkina Hub</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.5.0/tabler-icons.min.css" rel="stylesheet">
+<style>
+:root{
+  --ubh-navy:#042C53;--ubh-gold:#C89A2E;--ubh-blue:#0C447C;--ubh-teal:#0E7490;
+  --ubh-green:#1D9E75;--ubh-purple:#7B3FA0;--ubh-orange:#E67E22;
+  --sidebar-bg:#042C53;--sidebar-w:260px;
+  --bg:#F0F4F8;--card-bg:#fff;--text:#1A2332;--muted:#6B7280;
+  --border:#E2E8F0;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,.08);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);color:#fff;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow-y:auto}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-logo .brand{font-size:1.1rem;font-weight:700;color:#fff}
+.sidebar-logo .brand span{color:var(--ubh-gold)}
+.sidebar-logo .sub{font-size:.72rem;color:rgba(255,255,255,.55);margin-top:2px}
+.sidebar-nav{flex:1;padding:12px 0}
+.nav-section{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:16px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.8);text-decoration:none;border-radius:0;transition:.15s;cursor:pointer;border:none;background:none;width:100%;font-size:.88rem}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.12);color:#fff}
+.nav-item i{font-size:1.1rem;width:20px;flex-shrink:0}
+
+/* ── MAIN ── */
+.main{margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:1rem;font-weight:600;color:var(--ubh-navy)}
+.topbar-badge{font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600}
+.content{padding:24px;flex:1}
+
+/* ── CARDS ── */
+.card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.card-header-custom{background:linear-gradient(135deg,var(--ubh-navy),var(--ubh-blue));color:#fff;padding:18px 24px;display:flex;align-items:center;gap:12px}
+.card-header-custom i{font-size:1.4rem}
+.card-header-custom h5{margin:0;font-size:1rem;font-weight:600}
+.card-body-p{padding:24px}
+
+/* ── STEPS ── */
+.steps-nav{display:flex;gap:0;background:#F8FAFC;border-bottom:1px solid var(--border)}
+.step-btn{flex:1;padding:14px 8px;border:none;background:none;color:var(--muted);font-size:.82rem;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;border-bottom:3px solid transparent;transition:.15s;position:relative}
+.step-btn.active{color:var(--ubh-navy);border-bottom-color:var(--ubh-navy);background:#fff}
+.step-btn.done{color:var(--ubh-green)}
+.step-btn.done::after{content:'\2713';position:absolute;top:6px;right:6px;font-size:.6rem;background:var(--ubh-green);color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
+.step-number{width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--muted);font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.step-btn.active .step-number{background:var(--ubh-navy);color:#fff}
+.step-btn.done .step-number{background:var(--ubh-green);color:#fff}
+.step-content{display:none}
+.step-content.active{display:block}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:48px 24px;text-align:center;cursor:pointer;transition:.2s;background:#FAFBFC}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--ubh-navy);background:#EEF4FB}
+.upload-zone i{font-size:2.5rem;color:var(--muted);margin-bottom:12px}
+.upload-zone .uz-title{font-size:1rem;font-weight:600;color:var(--ubh-navy);margin-bottom:6px}
+.upload-zone .uz-sub{font-size:.82rem;color:var(--muted)}
+.upload-zone input{display:none}
+
+/* ── IMAGE PREVIEW LIST ── */
+.preview-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-top:16px}
+.preview-card{border:1px solid var(--border);border-radius:8px;overflow:hidden;position:relative;cursor:grab;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.preview-card img{width:100%;height:100px;object-fit:cover}
+.preview-card .pc-footer{padding:6px 8px;font-size:.7rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between}
+.preview-card .pc-order{font-weight:700;color:var(--ubh-navy)}
+.preview-card .btn-rm{background:none;border:none;color:var(--muted);cursor:pointer;padding:0;font-size:.9rem}
+.preview-card .btn-rm:hover{color:#EF4444}
+.preview-card.dragging{opacity:.4;border-style:dashed}
+.order-badge{position:absolute;top:6px;left:6px;background:var(--ubh-navy);color:#fff;font-size:.65rem;font-weight:700;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+/* ── MOTEUR OCR BADGE ── */
+.moteur-badge{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:10px}
+.moteur-badge.gemini{background:linear-gradient(135deg,#4285F4,#0F9D58);color:#fff}
+.moteur-badge.paddle{background:#E8F0FE;color:#1A73E8}
+.moteur-badge.mixte{background:#FFF3E0;color:#E65100}
+
+/* ── FIGURE BLOCK ── */
+.figure-block{background:linear-gradient(135deg,#EEF4FB,#F0FDF4);border:1px solid #B5D4F4;border-left:4px solid #378ADD;border-radius:8px;padding:12px 16px;margin:10px 0;font-size:.83rem}
+.figure-block .fig-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#185FA5;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.figure-block .fig-desc{color:#2d3748;line-height:1.5}
+
+/* ── MARKDOWN TABLE ── */
+.md-table-wrap{overflow-x:auto;margin:10px 0}
+.md-table-wrap table{border-collapse:collapse;font-size:.82rem;width:100%}
+.md-table-wrap th{background:var(--ubh-navy);color:#fff;padding:7px 12px;text-align:left;font-weight:600}
+.md-table-wrap td{padding:6px 12px;border-bottom:1px solid var(--border)}
+.md-table-wrap tr:hover td{background:#F8FAFC}
+
+/* ── RENDU OCR ── */
+#ocr-rendu{background:#fff;border:1px solid var(--border);border-radius:8px;padding:16px;min-height:200px;font-size:.85rem;line-height:1.7;display:none}
+.rendu-tabs{display:flex;gap:8px;margin-bottom:10px}
+.rendu-tab{font-size:.78rem;padding:4px 14px;border-radius:20px;border:1px solid var(--border);background:none;cursor:pointer;color:var(--muted)}
+.rendu-tab.active{background:var(--ubh-navy);color:#fff;border-color:var(--ubh-navy)}
+
+#texte-ocr{font-family:'Courier New',monospace;font-size:.85rem;line-height:1.6;min-height:300px;resize:vertical;background:#FAFBFC;border:1px solid var(--border);border-radius:8px;padding:16px;width:100%}
+#texte-ocr:focus{outline:none;border-color:var(--ubh-navy);box-shadow:0 0 0 3px rgba(4,44,83,.1)}
+
+/* ── FORMAT SELECTOR ── */
+.format-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.fmt-card{border:2px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;cursor:pointer;transition:.15s;background:#fff}
+.fmt-card:hover{border-color:var(--ubh-navy);background:#F0F4FB}
+.fmt-card.selected{border-color:var(--ubh-navy);background:#EEF4FB}
+.fmt-card i{font-size:1.6rem;display:block;margin-bottom:6px}
+.fmt-card .fmt-name{font-size:.78rem;font-weight:600;color:var(--ubh-navy)}
+.fmt-card .fmt-ext{font-size:.68rem;color:var(--muted)}
+.fmt-pdf i{color:#EF4444}.fmt-docx i{color:#2563EB}.fmt-xlsx i{color:#16A34A}
+.fmt-pptx i{color:#EA580C}.fmt-txt i{color:var(--muted)}.fmt-md i{color:#7C3AED}
+
+/* ── METADATA FORM ── */
+.meta-section{background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:12px}
+.meta-section label{font-size:.82rem;font-weight:600;color:var(--ubh-navy);margin-bottom:4px;display:block}
+.meta-section .form-control,.meta-section .form-select{font-size:.85rem;border-color:var(--border)}
+.meta-section .form-control:focus,.meta-section .form-select:focus{border-color:var(--ubh-navy);box-shadow:0 0 0 3px rgba(4,44,83,.1)}
+
+/* ── NOTIFICATION TOAST ── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.ubh-toast{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,.15);min-width:280px;display:flex;align-items:center;gap:12px;animation:slideIn .3s ease}
+.ubh-toast.ok{border-left:4px solid var(--ubh-green)}.ubh-toast.err{border-left:4px solid #EF4444}
+.ubh-toast i{font-size:1.2rem}.ubh-toast.ok i{color:var(--ubh-green)}.ubh-toast.err i{color:#EF4444}
+@keyframes slideIn{from{transform:translateX(30px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── PROGRESS ── */
+.ubh-progress{height:6px;border-radius:3px;background:var(--border);overflow:hidden;margin-top:8px}
+.ubh-progress-bar{height:100%;background:linear-gradient(90deg,var(--ubh-navy),var(--ubh-teal));border-radius:3px;transition:width .4s}
+
+/* ── RESULT PANEL ── */
+#result-panel{display:none}
+.result-stat{background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:center}
+.result-stat .rs-val{font-size:1.4rem;font-weight:700;color:var(--ubh-navy)}
+.result-stat .rs-lbl{font-size:.72rem;color:var(--muted);margin-top:2px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .format-grid{grid-template-columns:repeat(2,1fr)}
+  .preview-list{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ── PROGRESSION SSE ── */
+#ocr-progress-zone .progress{height:10px;border-radius:8px}
+#ocr-progress-zone .progress-bar{background:var(--ubh-navy);transition:width .5s ease}
+#ocr-progress-zone .progress-bar.bg-success{background:#198754 !important}
+#ocr-progress-zone .progress-bar.bg-warning{background:#ffc107 !important}
+#ocr-progress-zone .progress-bar.bg-danger{background:#dc3545 !important}
+.img-progress-row{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);font-size:.82rem;transition:background .2s}
+.img-progress-row.done{background:#F0FDF4;border-color:#86EFAC}
+.img-progress-row.erreur{background:#FEF2F2;border-color:#FECACA}
+.img-progress-row .img-icon{font-size:1.1rem;flex-shrink:0;width:22px;text-align:center}
+.img-progress-row .img-info{flex:1;overflow:hidden}
+.img-progress-row .img-nom{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ubh-navy)}
+.img-progress-row .img-phase{font-size:.73rem;color:var(--muted)}
+.score-badge-inline{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ SIDEBAR ════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">Uni<span>Burkina</span> Hub</div>
+    <div class="sub">OCR Studio — v3.0</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Navigation</div>
+    <a href="javascript:history.back()" class="nav-item">
+      <i class="ti ti-arrow-left"></i> Retour Dashboard
+    </a>
+    <div class="nav-section">OCR Studio</div>
+    <button class="nav-item active" onclick="showSection('studio')">
+      <i class="ti ti-scan"></i> Studio OCR
+    </button>
+    <button class="nav-item" onclick="showSection('historique')">
+      <i class="ti ti-history"></i> Mes scans
+    </button>
+    <div class="nav-section">Aide</div>
+    <button class="nav-item" onclick="showHelp()">
+      <i class="ti ti-help-circle"></i> Guide d'utilisation
+    </button>
+  </nav>
+</aside>
+
+<!-- ════════════════ MAIN ════════════════ -->
+<main class="main">
+  <div class="topbar">
+    <i class="ti ti-scan" style="font-size:1.3rem;color:var(--ubh-navy)"></i>
+    <div class="topbar-title">OCR Studio</div>
+    <span class="topbar-badge badge" style="background:#EEF4FB;color:var(--ubh-navy)" id="badge-role">Chargement...</span>
+    <div class="ms-auto d-flex align-items-center gap-2">
+      <span id="user-name" class="text-muted" style="font-size:.82rem"></span>
+      <a href="/deconnexion" class="btn btn-sm btn-outline-secondary">
+        <i class="ti ti-logout"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- SECTION STUDIO -->
+    <div id="section-studio">
+
+      <div class="card">
+        <div class="card-header-custom">
+          <i class="ti ti-scan"></i>
+          <div>
+            <h5>OCR Studio — Traitement de documents</h5>
+            <div style="font-size:.78rem;opacity:.75">Importez vos images, retranscrivez, corrigez, générez ou soumettez</div>
+          </div>
+        </div>
+
+        <!-- ÉTAPES -->
+        <div class="steps-nav" id="steps-nav">
+          <button class="step-btn active" id="btn-step-1" onclick="goStep(1)">
+            <div class="step-number">1</div>
+            <span>Importer</span>
+          </button>
+          <button class="step-btn" id="btn-step-2" onclick="goStep(2)">
+            <div class="step-number">2</div>
+            <span>Retranscrire</span>
+          </button>
+          <button class="step-btn" id="btn-step-3" onclick="goStep(3)">
+            <div class="step-number">3</div>
+            <span>Corriger & Ordonner</span>
+          </button>
+          <button class="step-btn" id="btn-step-4" onclick="goStep(4)">
+            <div class="step-number">4</div>
+            <span>Générer / Soumettre</span>
+          </button>
+        </div>
+
+        <div class="card-body-p">
+
+          <!-- ══ ÉTAPE 1 : IMPORT ══ -->
+          <div class="step-content active" id="step-1">
+            <h6 class="fw-semibold mb-1" style="color:var(--ubh-navy)">
+              <i class="ti ti-upload me-1"></i> Importez vos images
+            </h6>
+            <p class="text-muted mb-3" style="font-size:.83rem">
+              Glissez-déposez ou cliquez pour sélectionner une ou plusieurs images (JPEG, PNG, TIFF, WebP — max 20 Mo chacune).
+            </p>
+
+            <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+              <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/tiff,image/bmp,image/webp">
+              <i class="ti ti-photo-scan d-block mb-2"></i>
+              <div class="uz-title">Glissez vos images ici</div>
+              <div class="uz-sub">ou cliquez pour parcourir — JPG, PNG, TIFF, WebP acceptés</div>
+            </div>
+
+            <div id="preview-list" class="preview-list"></div>
+
+            <div id="step1-actions" class="mt-4 d-none">
+              <div class="row align-items-center g-3">
+                <div class="col-md-4">
+                  <label class="form-label fw-semibold" style="font-size:.82rem;color:var(--ubh-navy)">
+                    <i class="ti ti-language me-1"></i>Langue OCR
+                  </label>
+                  <select class="form-select form-select-sm" id="select-langue">
+                    <option value="fra" selected>Français</option>
+                    <option value="eng">Anglais</option>
+                    <option value="fra+eng">Français + Anglais</option>
+                  </select>
+                </div>
+                <div class="col-md-8">
+                  <label class="form-label fw-semibold" style="font-size:.82rem;color:var(--ubh-navy)">
+                    <i class="ti ti-route me-1"></i>Mode de traitement
+                  </label>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary flex-fill" onclick="setMode('retranscrire')">
+                      <i class="ti ti-text-scan-2 me-1"></i>Retranscrire d'abord
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary flex-fill" onclick="setMode('direct')">
+                      <i class="ti ti-bolt me-1"></i>Générer directement
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ ÉTAPE 2 : RETRANSCRIPTION ══ -->
+          <div class="step-content" id="step-2">
+            <h6 class="fw-semibold mb-1" style="color:var(--ubh-navy)">
+              <i class="ti ti-text-scan-2 me-1"></i>Retranscription OCR
+            </h6>
+            <p class="text-muted mb-3" style="font-size:.83rem">
+              L'OCR va extraire le texte de chaque image. Vérifiez le résultat avant de continuer.
+            </p>
+
+            <!-- Zone de progression SSE temps réel (v3.0) -->
+            <div id="ocr-progress-zone" class="d-none mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span id="ocr-progress-label" class="fw-semibold" style="font-size:.85rem;color:var(--ubh-navy)">
+                  Analyse en cours…
+                </span>
+                <span id="ocr-score-badge" class="d-none score-badge-inline"
+                      style="background:var(--ubh-navy)">
+                  Confiance : <span id="ocr-score-val">—</span>%
+                </span>
+              </div>
+              <div class="progress mb-3">
+                <div id="ocr-progress-bar"
+                     class="progress-bar progress-bar-striped progress-bar-animated"
+                     role="progressbar" style="width:0%"
+                     aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                </div>
+              </div>
+              <div id="ocr-progress-images" class="vstack gap-2"></div>
+              <p id="ocr-progress-msg" class="text-muted mt-2 mb-0" style="font-size:.78rem"></p>
+            </div>
+
+            <button class="btn btn-primary mb-3" id="btn-lancer-scan" onclick="lancerScan()">
+              <i class="ti ti-scan me-1"></i>Lancer la retranscription
+            </button>
+
+            <div id="ocr-results" style="display:none">
+              <div class="row g-3 mb-3" id="ocr-stats-cards"></div>
+
+              <!-- Vue enrichie (figures + tableaux rendus) -->
+              <div id="ocr-rendu" style="display:none"></div>
+
+              <label class="fw-semibold mb-2 d-block mt-3" style="font-size:.85rem;color:var(--ubh-navy)">
+                <i class="ti ti-notes me-1"></i>Texte extrait (modifiable)
+              </label>
+              <textarea id="texte-ocr" placeholder="Le texte extrait apparaîtra ici..."></textarea>
+
+              <div class="d-flex gap-2 mt-3 flex-wrap">
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyTexte()">
+                  <i class="ti ti-copy me-1"></i>Copier
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="effacerTexte()">
+                  <i class="ti ti-trash me-1"></i>Effacer
+                </button>
+                <button class="btn btn-sm" id="btn-corriger-ia"
+                        onclick="corrigerParIA()"
+                        style="background:linear-gradient(135deg,#4285F4,#0F9D58);color:#fff;border:none">
+                  <i class="ti ti-sparkles me-1"></i>Corriger par IA
+                </button>
+                <button class="btn btn-primary ms-auto" onclick="goStep(3)">
+                  Continuer <i class="ti ti-arrow-right ms-1"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ══ ÉTAPE 3 : CORRECTION & ORDRE ══ -->
+          <div class="step-content" id="step-3">
+            <h6 class="fw-semibold mb-2" style="color:var(--ubh-navy)">
+              <i class="ti ti-sort-ascending me-1"></i>Vérification de l'ordre et correction
+            </h6>
+            <p class="text-muted mb-3" style="font-size:.83rem">
+              Réordonnez les images par glisser-déposer si nécessaire. Corrigez le texte extrait dans la zone ci-dessous.
+            </p>
+
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="fw-semibold mb-2 d-block" style="font-size:.82rem;color:var(--ubh-navy)">
+                  <i class="ti ti-layout-grid me-1"></i>Ordre des images (drag & drop)
+                </label>
+                <div id="sort-preview" class="preview-list" style="min-height:80px"></div>
+                <div class="mt-2 p-2 rounded" style="background:#F0F9FF;border:1px solid #BAE6FD;font-size:.75rem;color:#0369A1">
+                  <i class="ti ti-info-circle me-1"></i>Glissez les images pour les réordonner
+                </div>
+              </div>
+              <div class="col-md-7">
+                <label class="fw-semibold mb-2 d-block" style="font-size:.82rem;color:var(--ubh-navy)">
+                  <i class="ti ti-edit me-1"></i>Texte corrigé
+                </label>
+                <textarea id="texte-corrige" style="font-family:'Courier New',monospace;font-size:.83rem;line-height:1.6;min-height:260px;resize:vertical;width:100%;border:1px solid var(--border);border-radius:8px;padding:12px;background:#FAFBFC" placeholder="Collez ou modifiez le texte ici..."></textarea>
+              </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-secondary" onclick="goStep(2)">
+                <i class="ti ti-arrow-left me-1"></i>Retour
+              </button>
+              <button class="btn btn-primary ms-auto" onclick="goStep(4)">
+                Continuer <i class="ti ti-arrow-right ms-1"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ══ ÉTAPE 4 : GÉNÉRATION / SOUMISSION ══ -->
+          <div class="step-content" id="step-4">
+            <h6 class="fw-semibold mb-3" style="color:var(--ubh-navy)">
+              <i class="ti ti-file-export me-1"></i>Choisissez votre action
+            </h6>
+
+            <!-- Titre du document -->
+            <div class="mb-3">
+              <label class="fw-semibold mb-1 d-block" style="font-size:.82rem;color:var(--ubh-navy)">
+                Titre du document <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control form-control-sm" id="doc-titre" placeholder="Ex: Cours Analyse — Licence 1 — Semestre 1">
+            </div>
+
+            <!-- Format de sortie -->
+            <label class="fw-semibold mb-2 d-block" style="font-size:.82rem;color:var(--ubh-navy)">
+              <i class="ti ti-file-type-doc me-1"></i>Format de sortie
+            </label>
+            <div class="format-grid" id="format-grid">
+              <div class="fmt-card fmt-pdf selected" data-fmt="pdf" onclick="selectFormat('pdf')">
+                <i class="ti ti-file-type-pdf"></i>
+                <div class="fmt-name">PDF</div><div class="fmt-ext">.pdf</div>
+              </div>
+              <div class="fmt-card fmt-docx" data-fmt="docx" onclick="selectFormat('docx')">
+                <i class="ti ti-file-type-doc"></i>
+                <div class="fmt-name">Word</div><div class="fmt-ext">.docx</div>
+              </div>
+              <div class="fmt-card fmt-xlsx" data-fmt="xlsx" onclick="selectFormat('xlsx')">
+                <i class="ti ti-file-type-xls"></i>
+                <div class="fmt-name">Excel</div><div class="fmt-ext">.xlsx</div>
+              </div>
+              <div class="fmt-card fmt-pptx" data-fmt="pptx" onclick="selectFormat('pptx')">
+                <i class="ti ti-file-type-ppt"></i>
+                <div class="fmt-name">PowerPoint</div><div class="fmt-ext">.pptx</div>
+              </div>
+              <div class="fmt-card fmt-txt" data-fmt="txt" onclick="selectFormat('txt')">
+                <i class="ti ti-file-type-txt"></i>
+                <div class="fmt-name">Texte brut</div><div class="fmt-ext">.txt</div>
+              </div>
+              <div class="fmt-card fmt-md" data-fmt="md" onclick="selectFormat('md')">
+                <i class="ti ti-markdown"></i>
+                <div class="fmt-name">Markdown</div><div class="fmt-ext">.md</div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="row g-3 mt-3">
+              <!-- Téléchargement local -->
+              <div class="col-md-6">
+                <div class="card h-100" style="border:2px solid var(--ubh-green)">
+                  <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="ti ti-download" style="font-size:1.4rem;color:var(--ubh-green)"></i>
+                      <div>
+                        <div class="fw-bold" style="font-size:.88rem">Télécharger localement</div>
+                        <div class="text-muted" style="font-size:.75rem">Générer et télécharger sur votre appareil</div>
+                      </div>
+                    </div>
+                    <button class="btn btn-sm w-100" style="background:var(--ubh-green);color:#fff" onclick="genererDocument()">
+                      <i class="ti ti-download me-1"></i>Générer et télécharger
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Soumission GED -->
+              <div class="col-md-6" id="col-ged-submit">
+                <div class="card h-100" style="border:2px solid var(--ubh-navy)">
+                  <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                      <i class="ti ti-cloud-upload" style="font-size:1.4rem;color:var(--ubh-navy)"></i>
+                      <div>
+                        <div class="fw-bold" style="font-size:.88rem">Soumettre à la GED</div>
+                        <div class="text-muted" style="font-size:.75rem">Envoyer pour validation et publication</div>
+                      </div>
+                    </div>
+
+                    <!-- Métadonnées GED -->
+                    <div class="meta-section">
+                      <div class="row g-2">
+                        <div class="col-6">
+                          <label>Type de ressource</label>
+                          <select class="form-select form-select-sm" id="ged-type">
+                            <option value="COURS">Cours</option>
+                            <option value="TD">TD / TP</option>
+                            <option value="EXAMEN">Examen</option>
+                            <option value="ARCHIVE">Archive</option>
+                          </select>
+                        </div>
+                        <div class="col-6">
+                          <label>Filière</label>
+                          <select class="form-select form-select-sm" id="ged-filiere">
+                            <option value="">Chargement...</option>
+                          </select>
+                        </div>
+                        <div class="col-12">
+                          <label>Module (optionnel)</label>
+                          <input class="form-control form-control-sm" id="ged-module" placeholder="Ex: Analyse, Algo...">
+                        </div>
+                      </div>
+                    </div>
+
+                    <button class="btn btn-sm w-100 mt-2" style="background:var(--ubh-navy);color:#fff" onclick="soumettreGED()">
+                      <i class="ti ti-send me-1"></i>Soumettre pour validation
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Résultat -->
+            <div id="result-panel" class="mt-4">
+              <hr>
+              <h6 class="fw-semibold mb-3" style="color:var(--ubh-green)">
+                <i class="ti ti-circle-check me-1"></i>Document généré avec succès
+              </h6>
+              <div class="row g-3 mb-3" id="result-stats"></div>
+              <a id="dl-link" href="#" class="btn btn-success" download target="_blank">
+                <i class="ti ti-download me-1"></i>Télécharger le document
+              </a>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-sm btn-outline-secondary" onclick="goStep(3)">
+                <i class="ti ti-arrow-left me-1"></i>Retour
+              </button>
+              <button class="btn btn-sm btn-outline-primary ms-auto" onclick="resetStudio()">
+                <i class="ti ti-refresh me-1"></i>Nouveau scan
+              </button>
+            </div>
+          </div>
+
+        </div><!-- /card-body-p -->
+      </div><!-- /card -->
+    </div><!-- /section-studio -->
+
+    <!-- SECTION HISTORIQUE -->
+    <div id="section-historique" style="display:none">
+      <div class="card">
+        <div class="card-header-custom">
+          <i class="ti ti-history"></i>
+          <h5>Historique de mes scans OCR</h5>
+        </div>
+        <div class="card-body-p">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <select class="form-select form-select-sm w-auto" id="filter-statut" onchange="chargerHistorique()">
+              <option value="">Tous les statuts</option>
+              <option value="GENERE">Générés</option>
+              <option value="SOUMIS">Soumis</option>
+              <option value="VALIDE">Validés</option>
+              <option value="REFUSE">Refusés</option>
+              <option value="ECHEC">Échoués</option>
+            </select>
+            <button class="btn btn-sm btn-outline-primary" onclick="chargerHistorique()">
+              <i class="ti ti-refresh me-1"></i>Actualiser
+            </button>
+          </div>
+          <div id="historique-list">
+            <div class="text-center text-muted py-4">
+              <div class="spinner-border spinner-border-sm"></div>
+              <div class="mt-2">Chargement...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+const API_OCR  = '';   // Proxy frontend /api/ocr/* (token injecté auto côté serveur)
+const API_GED  = '';   // Proxy frontend /api/ged/* (token injecté auto côté serveur)
+const API_AUTH = '';   // Proxy frontend /api/auth/*
+
+let uploadedFiles   = [];
+let currentStep     = 1;
+let modeTraitement  = 'retranscrire';
+let selectedFormat  = 'pdf';
+let dernierIdOcr    = null;
+let userProfile     = null;
+let dragSrcIdx      = null;
+
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  // Init non-bloquante : l'interface s'affiche immédiatement
+  // Les appels réseau se font en parallèle sans bloquer le rendu
+  initUploadZone();
+  chargerHistorique();
+  chargerProfil();    // sans await — met à jour le badge quand ça répond
+  chargerFilieres();  // sans await — peuple le select quand ça répond
+});
+
+async function chargerProfil() {
+  const badgeRole = document.getElementById('badge-role');
+  try {
+    // Timeout 5s : si /api/auth/me ne répond pas, on affiche une erreur claire
+    const ctrl = new AbortController();
+    const tid   = setTimeout(() => ctrl.abort(), 5000);
+    const r     = await fetch(API_AUTH + '/api/auth/me', {credentials:'include', signal: ctrl.signal});
+    clearTimeout(tid);
+    if (r.ok) {
+      userProfile = await r.json();
+      document.getElementById('user-name').textContent =
+        (userProfile.prenom || '') + ' ' + (userProfile.nom || '');
+      badgeRole.textContent = userProfile.role || 'ETUDIANT';
+      const rolesGED = ['DELEGUE','ENSEIGNANT','SOUS_ADMIN','CHEF_DEPARTEMENT','ADMIN'];
+      if (!rolesGED.includes(userProfile.role)) {
+        document.getElementById('col-ged-submit').style.display = 'none';
+      }
+    } else {
+      badgeRole.textContent = 'Non connecté';
+      badgeRole.style.background = '#FEE2E2';
+      badgeRole.style.color = '#991B1B';
+    }
+  } catch(e) {
+    // Timeout ou erreur réseau
+    badgeRole.textContent = e.name === 'AbortError' ? 'Auth lente…' : 'Hors ligne';
+    badgeRole.style.background = '#FEF3C7';
+    badgeRole.style.color = '#92400E';
+  }
+}
+
+async function chargerFilieres() {
+  try {
+    const r = await fetch(API_AUTH + '/api/auth/filieres', {credentials:'include'});
+    if (r.ok) {
+      const data = await r.json();
+      const sel = document.getElementById('ged-filiere');
+      sel.innerHTML = '<option value="">-- Sélectionner --</option>';
+      const arr = Array.isArray(data) ? data : (data.filieres || []);
+      arr.forEach(f => {
+        sel.innerHTML += `<option value="${f.id_filiere}">${esc(f.nom_filiere)}</option>`;
+      });
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+// UPLOAD ZONE
+// ═══════════════════════════════════════════════════════════
+function initUploadZone() {
+  const zone  = document.getElementById('upload-zone');
+  const input = document.getElementById('file-input');
+
+  input.addEventListener('change', e => ajouterFichiers(Array.from(e.target.files)));
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    ajouterFichiers(Array.from(e.dataTransfer.files));
+  });
+}
+
+function ajouterFichiers(files) {
+  const accepted = files.filter(f =>
+    ['image/jpeg','image/png','image/tiff','image/bmp','image/webp'].includes(f.type)
+    && f.size <= 20*1024*1024
+  );
+  if (accepted.length < files.length) {
+    toast('Certains fichiers ignorés (format ou taille invalide)', false);
+  }
+  uploadedFiles = [...uploadedFiles, ...accepted];
+  renderPreviews();
+}
+
+function renderPreviews() {
+  const list = document.getElementById('preview-list');
+  const actions = document.getElementById('step1-actions');
+  list.innerHTML = '';
+
+  if (uploadedFiles.length === 0) {
+    actions.classList.add('d-none');
+    return;
+  }
+  actions.classList.remove('d-none');
+
+  uploadedFiles.forEach((file, idx) => {
+    const url = URL.createObjectURL(file);
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.draggable = true;
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <div class="order-badge">${idx+1}</div>
+      <img src="${url}" alt="${esc(file.name)}">
+      <div class="pc-footer">
+        <span class="pc-order text-truncate" style="max-width:80px" title="${esc(file.name)}">${esc(file.name)}</span>
+        <button class="btn-rm" onclick="retirerFichier(${idx})"><i class="ti ti-x"></i></button>
+      </div>
+    `;
+    card.addEventListener('dragstart', e => { dragSrcIdx = idx; card.classList.add('dragging'); });
+    card.addEventListener('dragend',   () => card.classList.remove('dragging'));
+    card.addEventListener('dragover',  e => e.preventDefault());
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      const moved = uploadedFiles.splice(dragSrcIdx, 1)[0];
+      uploadedFiles.splice(idx, 0, moved);
+      dragSrcIdx = null;
+      renderPreviews();
+      syncSortPreview();
+    });
+    list.appendChild(card);
+  });
+
+  syncSortPreview();
+}
+
+function syncSortPreview() {
+  const sp = document.getElementById('sort-preview');
+  sp.innerHTML = '';
+  uploadedFiles.forEach((file, idx) => {
+    const url = URL.createObjectURL(file);
+    const card = document.createElement('div');
+    card.className = 'preview-card';
+    card.draggable = true;
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <div class="order-badge">${idx+1}</div>
+      <img src="${url}" style="height:80px;object-fit:cover;width:100%">
+      <div class="pc-footer"><span style="font-size:.68rem">${esc(file.name)}</span></div>
+    `;
+    card.addEventListener('dragstart', e => { dragSrcIdx = idx; });
+    card.addEventListener('dragover',  e => e.preventDefault());
+    card.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      const moved = uploadedFiles.splice(dragSrcIdx, 1)[0];
+      uploadedFiles.splice(idx, 0, moved);
+      dragSrcIdx = null;
+      renderPreviews();
+      syncSortPreview();
+    });
+    sp.appendChild(card);
+  });
+}
+
+function retirerFichier(idx) {
+  uploadedFiles.splice(idx, 1);
+  renderPreviews();
+}
+
+// ═══════════════════════════════════════════════════════════
+// NAVIGATION ÉTAPES
+// ═══════════════════════════════════════════════════════════
+function setMode(mode) {
+  modeTraitement = mode;
+  if (mode === 'retranscrire') {
+    goStep(2);
+  } else {
+    if (uploadedFiles.length === 0) { toast('Importez au moins une image', false); return; }
+    goStep(4);
+  }
+}
+
+function goStep(n) {
+  if (n > 1 && uploadedFiles.length === 0) {
+    toast('Veuillez importer au moins une image', false);
+    return;
+  }
+  currentStep = n;
+  document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+
+  document.querySelectorAll('.step-btn').forEach((btn, i) => {
+    btn.classList.remove('active','done');
+    if (i + 1 < n)  btn.classList.add('done');
+    if (i + 1 === n) btn.classList.add('active');
+  });
+
+  if (n === 3) {
+    const ocr = document.getElementById('texte-ocr').value;
+    if (ocr && !document.getElementById('texte-corrige').value) {
+      document.getElementById('texte-corrige').value = ocr;
+    }
+    syncSortPreview();
+  }
+}
+
+function showSection(name) {
+  document.getElementById('section-studio').style.display    = name === 'studio'    ? 'block' : 'none';
+  document.getElementById('section-historique').style.display = name === 'historique' ? 'block' : 'none';
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if (name === 'historique') chargerHistorique();
+}
+
+// ═══════════════════════════════════════════════════════════
+// SCAN OCR v3.0 — SSE temps réel image par image
+// ═══════════════════════════════════════════════════════════
+async function lancerScan() {
+  if (uploadedFiles.length === 0) { toast('Aucune image à scanner', false); return; }
+
+  const btn   = document.getElementById('btn-lancer-scan');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Scan en cours...';
+
+  // Réinitialiser la zone de progression
+  const zone       = document.getElementById('ocr-progress-zone');
+  const bar        = document.getElementById('ocr-progress-bar');
+  const label      = document.getElementById('ocr-progress-label');
+  const msg        = document.getElementById('ocr-progress-msg');
+  const imgZone    = document.getElementById('ocr-progress-images');
+  const scoreBadge = document.getElementById('ocr-score-badge');
+  const scoreVal   = document.getElementById('ocr-score-val');
+
+  zone.classList.remove('d-none');
+  scoreBadge.classList.add('d-none');
+  imgZone.innerHTML = '';
+  bar.style.width   = '0%';
+  bar.className     = 'progress-bar progress-bar-striped progress-bar-animated';
+  bar.style.background = '';
+  label.textContent = 'Connexion au moteur OCR…';
+  label.style.color = 'var(--ubh-navy)';
+  msg.textContent   = '';
+  document.getElementById('ocr-results').style.display = 'none';
+
+  const total = uploadedFiles.length;
+
+  // Créer une ligne par image
+  uploadedFiles.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'img-progress-row';
+    row.id = 'img-row-' + i;
+    row.innerHTML = `
+      <span class="img-icon" id="img-icon-${i}">🕐</span>
+      <div class="img-info">
+        <div class="img-nom" title="${esc(f.name)}">${esc(f.name.length > 40 ? f.name.slice(0,38)+'…' : f.name)}</div>
+        <div class="img-phase" id="img-phase-${i}">En attente…</div>
+      </div>
+      <span class="score-badge-inline d-none" id="img-score-${i}">—%</span>`;
+    imgZone.appendChild(row);
+  });
+
+  // Préparer FormData
+  const form = new FormData();
+  uploadedFiles.forEach(f => form.append('files', f));
+  form.append('langue', document.getElementById('select-langue').value);
+  form.append('ordre', '');
+
+  // Appel fetch → stream SSE (EventSource ne supporte pas POST)
+  let reader;
+  try {
+    const resp = await fetch(API_OCR + '/api/ocr/retranscrire-stream', {
+      method: 'POST', body: form, credentials: 'include'
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error('HTTP ' + resp.status + ' — ' + txt.slice(0,200));
+    }
+    reader = resp.body.getReader();
+  } catch(err) {
+    zone.classList.add('d-none');
+    toast('Erreur OCR : ' + err.message, false);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-scan me-1"></i>Relancer';
+    return;
+  }
+
+  // Lire le flux SSE ligne par ligne
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '', eventType = 'message';
+
+  const PHASE_LABELS = {
+    debut: 'Chargement image…', gemini: '🔍 Lecture Gemini Vision…',
+    paddleocr: '⚙️ Analyse PaddleOCR…', correction: '✨ Correction IA…',
+    termine: 'Terminé'
+  };
+
+  function traiterLigne(ligne) {
+    if (ligne.startsWith('event:')) { eventType = ligne.slice(6).trim(); return; }
+    if (!ligne.startsWith('data:')) return;
+    let data;
+    try { data = JSON.parse(ligne.slice(5).trim()); } catch { return; }
+
+    if (eventType === 'progress') {
+      const { image_index: idx, total: tot, phase, nom, texte, moteur, score, has_figures } = data;
+
+      // Barre globale
+      const phases = { debut:0.1, gemini:0.4, paddleocr:0.4, correction:0.7, termine:1.0 };
+      const pct = Math.round(((idx + (phases[phase]||0)) / tot) * 100);
+      bar.style.width = pct + '%';
+      bar.setAttribute('aria-valuenow', pct);
+      label.textContent = `Image ${idx+1}/${tot} — ${PHASE_LABELS[phase] || phase}`;
+
+      // Ligne image
+      const icon  = document.getElementById('img-icon-' + idx);
+      const phEl  = document.getElementById('img-phase-' + idx);
+      const scEl  = document.getElementById('img-score-' + idx);
+      const row   = document.getElementById('img-row-' + idx);
+      if (!icon) return;
+
+      if (phase === 'termine') {
+        const good = score >= 70, warn = score >= 40;
+        icon.textContent = good ? '✅' : warn ? '⚠️' : '❌';
+        phEl.textContent = _moteurLabel(moteur) + (has_figures ? ' · tableaux/figures détectés' : '');
+        phEl.style.color = '#198754';
+        row.classList.add(good || warn ? 'done' : 'erreur');
+        if (scEl) {
+          scEl.classList.remove('d-none');
+          scEl.textContent = score + '%';
+          scEl.style.background = good ? '#198754' : warn ? '#d97706' : '#dc3545';
+        }
+        msg.textContent = texte ? texte.slice(0, 130) + (texte.length > 130 ? '…' : '') : 'Aucun texte extrait.';
+      } else {
+        const icons = { debut:'🕐', gemini:'🔍', paddleocr:'⚙️', correction:'✨' };
+        icon.textContent = icons[phase] || '⏳';
+        phEl.textContent = PHASE_LABELS[phase] || phase;
+        phEl.style.color = '';
+      }
+
+    } else if (eventType === 'done') {
+      // Fin du traitement
+      bar.style.width = '100%';
+      bar.setAttribute('aria-valuenow', 100);
+      bar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+      const s = data.score_global || 0;
+      bar.style.background = s >= 70 ? '#198754' : s >= 40 ? '#ffc107' : '#dc3545';
+
+      const moteur = data.moteur_ocr || 'paddleocr';
+      label.textContent = '✅ ' + total + ' image(s) traitée(s) par ' + _moteurLabel(moteur);
+      label.style.color = '#198754';
+      msg.textContent   = (data.nb_mots || 0) + ' mots extraits.';
+
+      scoreBadge.classList.remove('d-none');
+      scoreVal.textContent = s;
+      scoreBadge.style.background = s >= 70 ? '#198754' : s >= 40 ? '#d97706' : '#dc3545';
+
+      // Remplir le textarea et les stats
+      dernierIdOcr = data.id_ocr;
+      const texteAffiche = data.texte_corrige || data.texte_consolide || '';
+      document.getElementById('texte-ocr').value = texteAffiche;
+      afficherRenduEnrichi(texteAffiche, data.has_figures);
+
+      const isGemini = moteur === 'gemini-vision';
+      const badgeCls  = isGemini ? 'gemini' : moteur.includes('mixte') ? 'mixte' : 'paddle';
+      const sc = document.getElementById('ocr-stats-cards');
+      sc.innerHTML = `
+        <div class="col-12 mb-2">
+          <span class="moteur-badge ${badgeCls}">${isGemini ? '✦' : '⚙'} ${_moteurLabel(moteur)}</span>
+          ${data.has_figures ? '<span class="moteur-badge" style="background:#F0FDF4;color:#15803D">📊 Figures / tableaux détectés</span>' : ''}
+          <span class="moteur-badge" style="background:${s>=70?'#F0FDF4':s>=40?'#FEF9C3':'#FEF2F2'};color:${s>=70?'#15803D':s>=40?'#854D0E':'#991B1B'}">
+            🎯 Confiance : ${s}%
+          </span>
+        </div>
+        <div class="col-3"><div class="result-stat">
+          <div class="rs-val">${data.nb_images || total}</div><div class="rs-lbl">Images</div>
+        </div></div>
+        <div class="col-3"><div class="result-stat">
+          <div class="rs-val">${data.nb_mots || 0}</div><div class="rs-lbl">Mots</div>
+        </div></div>
+        <div class="col-3"><div class="result-stat">
+          <div class="rs-val">${data.langue || 'fra'}</div><div class="rs-lbl">Langue</div>
+        </div></div>
+        <div class="col-3"><div class="result-stat">
+          <div class="rs-val" style="color:${s>=70?'#198754':s>=40?'#d97706':'#dc3545'}">${s}%</div>
+          <div class="rs-lbl">Confiance</div>
+        </div></div>`;
+      document.getElementById('ocr-results').style.display = 'block';
+      toast(isGemini ? 'Retranscription Gemini Vision réussie !' : 'Retranscription réussie !', true);
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-scan me-1"></i>Relancer';
+
+    } else if (eventType === 'error') {
+      label.textContent = '❌ ' + (data.message || 'Erreur OCR');
+      label.style.color = '#dc3545';
+      bar.classList.remove('progress-bar-animated');
+      bar.style.background = '#dc3545';
+      toast(data.message || 'Erreur OCR', false);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="ti ti-scan me-1"></i>Relancer';
+    }
+    eventType = 'message';
+  }
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const l of lines) traiterLigne(l);
+  }
+  if (buffer.trim()) traiterLigne(buffer);
+
+  // Sécurité : si done jamais reçu (coupure réseau)
+  if (btn.disabled) {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-scan me-1"></i>Relancer';
+  }
+}
+
+function _moteurLabel(m) {
+  return {'gemini-vision':'Gemini Vision','paddleocr+gemini-correction':'PaddleOCR + correction IA',
+    'paddleocr':'PaddleOCR','mixte':'Gemini Vision + PaddleOCR','echec':'Échec OCR'}[m] || m;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GÉNÉRATION DOCUMENT — CORRIGÉ : Authorization header injecté
+// ═══════════════════════════════════════════════════════════
+function selectFormat(fmt) {
+  selectedFormat = fmt;
+  document.querySelectorAll('.fmt-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`[data-fmt="${fmt}"]`).classList.add('selected');
+}
+
+async function genererDocument() {
+  const titre = document.getElementById('doc-titre').value.trim();
+  if (!titre) { toast('Le titre est obligatoire', false); return; }
+
+  // ✔ CORRECTION 401 : récupérer le token avant tout appel cross-port
+
+  // Si pas encore scanné, scanner d'abord (mode direct)
+  if (!dernierIdOcr) {
+    if (uploadedFiles.length === 0) { toast('Aucune image importée', false); return; }
+    toast('Scan préliminaire en cours…', true);
+    const scanForm = new FormData();
+    uploadedFiles.forEach(f => scanForm.append('files', f));
+    scanForm.append('langue', document.getElementById('select-langue').value);
+    try {
+      // ✔ headers injecté ici aussi
+      const rScan = await fetch(API_OCR + '/api/ocr/scan-multi', {method:'POST', credentials:'include', body:scanForm});
+      if (!rScan.ok) { const e = await rScan.json(); toast(e.detail||'Erreur scan', false); return; }
+      const dScan = await rScan.json();
+      dernierIdOcr = dScan.id_ocr;
+      if (document.getElementById('texte-ocr')) document.getElementById('texte-ocr').value = dScan.texte_consolide || '';
+    } catch(e) { toast('Service OCR inaccessible (port 8003)', false); return; }
+  }
+
+  const texte = document.getElementById('texte-corrige')?.value
+             || document.getElementById('texte-ocr')?.value || '';
+
+  // Sauvegarder la correction si elle existe
+  if (texte && dernierIdOcr) {
+    const corrForm = new FormData();
+    corrForm.append('texte_corrige', texte);
+    fetch(API_OCR + '/api/ocr/documents/' + dernierIdOcr + '/corriger', {
+      method:'PATCH', credentials:'include', body:corrForm
+    }).catch(()=>{});
+  }
+
+  const form = new FormData();
+  form.append('id_ocr', dernierIdOcr);
+  form.append('titre', titre);
+  form.append('format_sortie', selectedFormat);
+  form.append('mode', modeTraitement === 'direct' ? 'images' : 'texte');
+
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Génération...';
+
+  try {
+    // ✔ CORRECTION 401 principale : headers avec Authorization
+    const r = await fetch(API_OCR + '/api/ocr/generer', {method:'POST', credentials:'include', body:form});
+
+    if (r.ok) {
+      const data = await r.json();
+      // Télécharger via endpoint dédié
+      const dlUrl = API_OCR + '/api/ocr/documents/' + dernierIdOcr + '/telecharger';
+      const a = document.createElement('a');
+      a.href = dlUrl; a.target = '_blank';
+      a.download = titre.replace(/[^a-zA-Z0-9_\-]/g,'_') + '.' + selectedFormat;
+      document.body.appendChild(a); a.click(); a.remove();
+      toast('Document généré et téléchargé !', true);
+
+      const rp = document.getElementById('result-panel');
+      rp.style.display = 'block';
+      document.getElementById('result-stats').innerHTML = `
+        <div class="col-4"><div class="result-stat">
+          <div class="rs-val">${selectedFormat.toUpperCase()}</div><div class="rs-lbl">Format</div>
+        </div></div>
+        <div class="col-4"><div class="result-stat">
+          <div class="rs-val">${uploadedFiles.length}</div><div class="rs-lbl">Images</div>
+        </div></div>
+        <div class="col-4"><div class="result-stat">
+          <div class="rs-val text-success"><i class="ti ti-check"></i></div><div class="rs-lbl">OK</div>
+        </div></div>
+      `;
+    } else {
+      const err = await r.json();
+      toast(err.detail || 'Erreur lors de la génération', false);
+    }
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-download me-1"></i>Générer et télécharger';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// SOUMISSION GED — CORRIGÉ : Authorization header injecté
+// ═══════════════════════════════════════════════════════════
+async function soumettreGED() {
+  const titre   = document.getElementById('doc-titre').value.trim();
+  const type    = document.getElementById('ged-type').value;
+  const filiere = document.getElementById('ged-filiere').value;
+  const module_ = document.getElementById('ged-module').value.trim();
+
+  if (!titre)   { toast('Le titre est obligatoire', false); return; }
+  if (!filiere) { toast('Sélectionnez une filière', false); return; }
+  if (uploadedFiles.length === 0) { toast('Aucune image importée', false); return; }
+
+  // ✔ CORRECTION 401
+
+  const texte = document.getElementById('texte-corrige').value
+              || document.getElementById('texte-ocr').value;
+
+  const form = new FormData();
+  form.append('id_ocr', dernierIdOcr);
+  form.append('titre', titre);
+  form.append('type_ressource', type);
+  form.append('id_filiere', filiere || '');
+  if (module_) form.append('id_module', module_);
+  form.append('texte_corrige', texte);
+  form.append('format_sortie', selectedFormat);
+
+  const btn = event.currentTarget;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Soumission...';
+
+  try {
+    // ✔ headers injecté
+    const r = await fetch(API_OCR + '/api/ocr/soumettre-ged', {method:'POST', credentials:'include', body:form});
+    const data = await r.json();
+    if (r.ok) {
+      toast('Document soumis à la GED — en attente de validation', true);
+      dernierIdOcr = data.id_ocr;
+    } else {
+      toast(data.detail || 'Erreur soumission GED', false);
+    }
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-send me-1"></i>Soumettre pour validation';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HISTORIQUE — lecture seule, credentials:include suffit ici
+// ═══════════════════════════════════════════════════════════
+async function chargerHistorique() {
+  const statut = document.getElementById('filter-statut')?.value || '';
+  const list   = document.getElementById('historique-list');
+  list.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm"></div></div>';
+
+  try {
+    const url = API_OCR + '/api/ocr/documents?limite=30' + (statut ? '&statut=' + statut : '');
+    // ✔ l'endpoint liste_documents n'exige pas de token (pas de Depends auth),
+    //   credentials:include suffit pour les éventuels cookies same-site
+    const r   = await fetch(url, {credentials:'include'});
+    if (!r.ok) throw new Error('Erreur API');
+    const data = await r.json();
+    const docs = data.documents || [];
+
+    if (docs.length === 0) {
+      list.innerHTML = '<div class="text-center text-muted py-4"><i class="ti ti-inbox" style="font-size:2rem"></i><div class="mt-2">Aucun document</div></div>';
+      return;
+    }
+
+    const statuts = {
+      'GENERE':{'class':'success','label':'Généré'},
+      'SOUMIS':{'class':'primary','label':'Soumis'},
+      'VALIDE':{'class':'success','label':'Validé'},
+      'REFUSE':{'class':'danger','label':'Refusé'},
+      'ECHEC': {'class':'danger','label':'Échoué'},
+      'RETRANSCRIT':{'class':'info','label':'Retranscrit'},
+    };
+
+    list.innerHTML = `
+      <div class="table-responsive">
+      <table class="table table-hover align-middle" style="font-size:.83rem">
+        <thead style="background:#F8FAFC">
+          <tr>
+            <th>Fichier</th><th>Format</th><th>Pages</th>
+            <th>Statut</th><th>Date</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${docs.map(d => `
+            <tr>
+              <td><span title="${esc(d.nom_fichier_orig)}">${esc((d.nom_fichier_orig||'').substring(0,30))}</span></td>
+              <td><span class="badge bg-secondary">${(d.format_sortie||'pdf').toUpperCase()}</span></td>
+              <td>${d.nb_pages||1}</td>
+              <td>
+                <span class="badge bg-${(statuts[d.statut]||{class:'secondary'}).class}">
+                  ${(statuts[d.statut]||{label:d.statut}).label}
+                </span>
+              </td>
+              <td>${d.date_soumission ? new Date(d.date_soumission).toLocaleDateString('fr-FR') : '—'}</td>
+              <td>
+                ${d.telecharger_url ? `
+                  <a href="/ocr/proxy-telecharger/${d.id_ocr}" class="btn btn-xs btn-outline-primary" style="font-size:.72rem;padding:2px 8px" target="_blank">
+                    <i class="ti ti-download"></i>
+                  </a>` : '—'}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+      </div>
+    `;
+  } catch(e) {
+    list.innerHTML = '<div class="alert alert-warning">Erreur de chargement — ' + e.message + '</div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITAIRES
+// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+// DÉTECTION GEMINI (vérifiée au chargement via /health)
+// ═══════════════════════════════════════════════════════════
+let GEMINI_AVAILABLE = false;
+(async () => {
+  try {
+    const r = await fetch('/api/ocr/health', {credentials:'include'});
+    if (r.ok) {
+      const d = await r.json();
+      GEMINI_AVAILABLE = d.gemini_available === true;
+    }
+  } catch(e) {}
+})();
+
+// ═══════════════════════════════════════════════════════════
+// RENDU ENRICHI — figures, tableaux Markdown → HTML
+// ═══════════════════════════════════════════════════════════
+function afficherRenduEnrichi(texte, hasFigures) {
+  const el = document.getElementById('ocr-rendu');
+  if (!el) return;
+
+  if (!hasFigures && !texte.includes('|')) {
+    el.style.display = 'none';
+    return;
+  }
+
+  // Convertir [FIGURE: ...] et [IMAGE: ...] en blocs visuels
+  let html = esc(texte)
+    .replace(/\[FIGURE:\s*(.*?)\]/g, (_, desc) =>
+      `</p><div class="figure-block"><div class="fig-label">🖼 Figure / Schéma</div><div class="fig-desc">${desc}</div></div><p>`)
+    .replace(/\[IMAGE:\s*(.*?)\]/g, (_, desc) =>
+      `</p><div class="figure-block" style="border-left-color:#0F9D58"><div class="fig-label" style="color:#0F9D58">🖼 Image</div><div class="fig-desc">${desc}</div></div><p>`);
+
+  // Convertir tableaux Markdown en <table>
+  html = html.replace(/((\|[^\n]+\|\n?)+)/g, mdBlock => {
+    const lignes = mdBlock.trim().split('\n').filter(l => l.trim());
+    if (lignes.length < 2) return mdBlock;
+    const enTete  = lignes[0].split('|').filter(c => c.trim());
+    const isDelim = lignes[1] && /^\|[-| :]+\|$/.test(lignes[1].trim());
+    const debut   = isDelim ? 2 : 1;
+    let tbl = '<div class="md-table-wrap"><table><thead><tr>';
+    enTete.forEach(c => { tbl += `<th>${c.trim()}</th>`; });
+    tbl += '</tr></thead><tbody>';
+    for (let i = debut; i < lignes.length; i++) {
+      const cells = lignes[i].split('|').filter(c => c !== undefined).slice(1, -1);
+      tbl += '<tr>';
+      cells.forEach(c => { tbl += `<td>${c.trim()}</td>`; });
+      tbl += '</tr>';
+    }
+    tbl += '</tbody></table></div>';
+    return tbl;
+  });
+
+  // Paragraphes
+  html = '<p>' + html.replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+
+  el.innerHTML = `
+    <div class="rendu-tabs">
+      <button class="rendu-tab active" onclick="switchRendu('rendu')">✦ Vue enrichie</button>
+      <button class="rendu-tab" onclick="switchRendu('brut')">Texte brut</button>
+    </div>
+    <div id="rendu-html">${html}</div>
+  `;
+  el.style.display = 'block';
+}
+
+function switchRendu(mode) {
+  document.querySelectorAll('.rendu-tab').forEach(t => t.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  const renduHtml = document.getElementById('rendu-html');
+  const texteOcr  = document.getElementById('texte-ocr');
+  if (mode === 'rendu') {
+    if (renduHtml) renduHtml.style.display = 'block';
+    if (texteOcr)  texteOcr.style.display  = 'none';
+  } else {
+    if (renduHtml) renduHtml.style.display = 'none';
+    if (texteOcr)  texteOcr.style.display  = 'block';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CORRECTION PAR IA — bouton manuel
+// ═══════════════════════════════════════════════════════════
+async function corrigerParIA() {
+  if (!dernierIdOcr) { toast('Lancez d\'abord une retranscription', false); return; }
+  const btn = document.getElementById('btn-corriger-ia');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Correction IA…'; }
+  try {
+    const r = await fetch(API_OCR + '/api/ocr/documents/' + dernierIdOcr + '/corriger-llm',
+                          {method:'POST', credentials:'include'});
+    const data = await r.json();
+    if (r.ok) {
+      document.getElementById('texte-ocr').value = data.texte_corrige || '';
+      if (document.getElementById('texte-corrige')) {
+        document.getElementById('texte-corrige').value = data.texte_corrige || '';
+      }
+      afficherRenduEnrichi(data.texte_corrige || '', (data.texte_corrige||'').includes('[FIGURE:'));
+      toast('Correction IA appliquée !', true);
+    } else {
+      toast(data.detail || 'Erreur correction IA', false);
+    }
+  } catch(e) {
+    toast('Erreur réseau : ' + e.message, false);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-sparkles me-1"></i>Corriger par IA'; }
+  }
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copyTexte() {
+  const t = document.getElementById('texte-ocr');
+  t.select();
+  navigator.clipboard.writeText(t.value).then(() => toast('Texte copié !', true));
+}
+
+function effacerTexte() {
+  document.getElementById('texte-ocr').value = '';
+  document.getElementById('texte-corrige').value = '';
+}
+
+function resetStudio() {
+  uploadedFiles  = [];
+  dernierIdOcr   = null;
+  modeTraitement = 'retranscrire';
+  document.getElementById('texte-ocr').value = '';
+  document.getElementById('texte-corrige').value = '';
+  document.getElementById('doc-titre').value = '';
+  document.getElementById('ocr-results').style.display = 'none';
+  document.getElementById('result-panel').style.display = 'none';
+  // Réinitialiser la zone de progression SSE
+  const zone = document.getElementById('ocr-progress-zone');
+  if (zone) {
+    zone.classList.add('d-none');
+    const bar = document.getElementById('ocr-progress-bar');
+    if (bar) { bar.style.width='0%'; bar.style.background=''; bar.className='progress-bar progress-bar-striped progress-bar-animated'; }
+    const imgZone = document.getElementById('ocr-progress-images');
+    if (imgZone) imgZone.innerHTML = '';
+    const badge = document.getElementById('ocr-score-badge');
+    if (badge) badge.classList.add('d-none');
+  }
+  renderPreviews();
+  goStep(1);
+}
+
+function showHelp() {
+  toast('Guide : Importer vos images → Retranscrire → Corriger → Générer ou Soumettre à la GED', true);
+}
+
+function toast(msg, ok) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'ubh-toast ' + (ok ? 'ok' : 'err');
+  t.innerHTML = `<i class="ti ${ok ? 'ti-circle-check' : 'ti-alert-circle'}"></i><span>${esc(msg)}</span>`;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+</script>
+</body>
+</html>

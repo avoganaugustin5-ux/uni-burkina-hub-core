@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UniBurkina Hub — Créer un compte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<style>
+:root {
+  --green-900: #0D3B1F; --green-800: #145427; --green-700: #1A6B30;
+  --green-600: #22883D; --green-400: #4DB86A; --green-100: #C8EDD2;
+  --green-50:  #EBF7EE; --gold: #C89A2E; --gold-light:#F0D98B;
+  --teal: #0E7490; --teal-bg: #E0F4F7;
+  --surface: #F6F9F7; --white: #FFFFFF; --border: #C8DDD0;
+  --text-main: #0A1F10; --text-muted: #4A7060;
+  --error: #C0392B; --error-bg: #FDECEA;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Source Sans 3',sans-serif;background:var(--surface);min-height:100vh;
+  display:flex;align-items:center;justify-content:center;padding:1.5rem;
+  background-image:radial-gradient(ellipse at 20% 50%,rgba(34,136,61,.06) 0%,transparent 60%),
+    radial-gradient(ellipse at 80% 20%,rgba(200,154,46,.05) 0%,transparent 50%);}
+.wrap{display:flex;width:100%;max-width:900px;min-height:580px;border-radius:16px;overflow:hidden;
+  box-shadow:0 8px 40px rgba(13,59,31,.15),0 2px 8px rgba(0,0,0,.06);}
+.left{width:240px;background:linear-gradient(160deg,var(--green-900) 0%,var(--green-800) 60%,#0a2e14 100%);
+  display:flex;flex-direction:column;justify-content:space-between;padding:2rem 1.5rem;
+  flex-shrink:0;position:relative;overflow:hidden;}
+.left::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;
+  border-radius:50%;border:1px solid rgba(200,154,46,.12);}
+.left::after{content:'';position:absolute;bottom:-40px;left:-40px;width:160px;height:160px;
+  border-radius:50%;border:1px solid rgba(200,154,46,.08);}
+.logo-area{display:flex;align-items:center;gap:.75rem;margin-bottom:1.75rem;}
+.emblem{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.emblem i{font-size:22px;color:var(--gold-light);}
+.brand-h{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#fff;line-height:1.2;}
+.brand-sub{font-size:.58rem;color:#7ABFA0;letter-spacing:.08em;text-transform:uppercase;margin-top:.1rem;}
+.divider-gold{width:32px;height:2px;background:linear-gradient(90deg,var(--gold),transparent);
+  border-radius:2px;margin-bottom:1.25rem;}
+.feat-list{list-style:none;}
+.feat-item{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:.9rem;}
+.feat-icon{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:.1rem;}
+.feat-icon i{font-size:13px;color:var(--gold-light);}
+.feat-txt strong{display:block;font-size:.7rem;font-weight:600;color:#E8F6EE;}
+.feat-txt span{font-size:.62rem;color:#7ABFA0;line-height:1.3;}
+.left-foot{font-size:.62rem;color:#3D7055;line-height:1.5;
+  border-top:1px solid rgba(255,255,255,.07);padding-top:.75rem;position:relative;z-index:1;}
+.left-foot strong{color:#7ABFA0;}
+.right{flex:1;background:var(--white);display:flex;flex-direction:column;
+  padding:2rem 2.25rem;overflow-y:auto;}
+.form-header{margin-bottom:1.5rem;}
+.step-label{font-size:.68rem;font-weight:600;color:var(--green-600);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:.3rem;}
+.form-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;
+  color:var(--text-main);margin-bottom:.2rem;}
+.form-sub{font-size:.8rem;color:var(--text-muted);}
+.progress-bar{display:flex;gap:6px;margin-bottom:1.75rem;align-items:center;}
+.prog-seg{height:3px;flex:1;border-radius:3px;background:var(--border);transition:background .3s;}
+.prog-seg.done{background:var(--green-600);}
+.prog-seg.active{background:var(--gold);}
+.prog-labels{display:flex;justify-content:space-between;margin-top:.4rem;margin-bottom:1.5rem;}
+.prog-lbl{font-size:.62rem;color:var(--text-muted);flex:1;text-align:center;font-weight:500;}
+.prog-lbl.done{color:var(--green-600);}
+.prog-lbl.active{color:var(--gold);font-weight:600;}
+.step{display:none;}
+.step.active{display:block;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;}
+.field{margin-bottom:.75rem;}
+label.lbl{display:block;font-size:.73rem;font-weight:600;color:var(--text-main);margin-bottom:.3rem;}
+.required{color:var(--gold);}
+.input-wrap{position:relative;}
+.input-wrap i.ic{position:absolute;left:.7rem;top:50%;transform:translateY(-50%);
+  font-size:15px;color:var(--text-muted);pointer-events:none;}
+.input-wrap input,.input-wrap select{width:100%;height:40px;border:1.5px solid var(--border);
+  border-radius:8px;background:var(--surface);padding:0 .85rem 0 2.25rem;font-size:.8rem;
+  color:var(--text-main);font-family:'Source Sans 3',sans-serif;
+  transition:border-color .2s,box-shadow .2s;appearance:none;}
+.input-wrap input:focus,.input-wrap select:focus{outline:none;border-color:var(--green-600);
+  box-shadow:0 0 0 3px rgba(34,136,61,.1);background:var(--white);}
+.input-wrap .eye-btn{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;font-size:15px;}
+.radio-group{display:flex;gap:.75rem;margin-bottom:.75rem;align-items:center;}
+.radio-label{font-size:.73rem;font-weight:600;color:var(--text-main);margin-right:.25rem;}
+.radio-opt{display:flex;align-items:center;gap:.35rem;cursor:pointer;}
+.radio-opt input[type=radio]{accent-color:var(--green-600);width:15px;height:15px;cursor:pointer;}
+.radio-opt span{font-size:.78rem;color:var(--text-main);}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem;}
+.role-card{border:1.5px solid var(--border);border-radius:9px;padding:.55rem .65rem;
+  cursor:pointer;display:flex;align-items:center;gap:.5rem;transition:border-color .2s,background .2s;}
+.role-card:hover{border-color:var(--green-400);background:var(--green-50);}
+.role-card.selected{border-color:var(--green-600);background:var(--green-50);}
+.role-card i{font-size:16px;color:var(--green-600);}
+.role-card[data-role="CHEF_DEPARTEMENT"] i{color:var(--teal);}
+.role-card[data-role="CHEF_DEPARTEMENT"].selected{border-color:var(--teal);background:var(--teal-bg);}
+.role-card[data-role="CHEF_DEPARTEMENT"]:hover{border-color:var(--teal);background:var(--teal-bg);}
+.role-card span{font-size:.72rem;font-weight:600;color:var(--text-main);}
+.role-card .role-desc{font-size:.62rem;color:var(--text-muted);}
+.field-dept{overflow:hidden;max-height:0;opacity:0;
+  transition:max-height .35s ease,opacity .3s ease,margin .3s ease;margin-bottom:0;}
+.field-dept.visible{max-height:80px;opacity:1;margin-bottom:.75rem;}
+.role-dept-badge{display:inline-flex;align-items:center;gap:.35rem;background:var(--teal-bg);
+  color:var(--teal);border:1px solid #B2E4EE;border-radius:6px;font-size:.65rem;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;padding:.25rem .6rem;margin-bottom:.5rem;}
+.upload-area{border:1.5px dashed var(--border);border-radius:8px;padding:.65rem 1rem;
+  display:flex;align-items:center;gap:.75rem;cursor:pointer;
+  transition:border-color .2s,background .2s;background:var(--surface);margin-bottom:.75rem;}
+.upload-area:hover{border-color:var(--green-600);background:var(--green-50);}
+.upload-area i{font-size:20px;color:var(--text-muted);}
+.upload-txt strong{display:block;font-size:.75rem;color:var(--text-main);}
+.upload-txt span{font-size:.65rem;color:var(--text-muted);}
+#photo-input{display:none;}
+#photo-name{font-size:.7rem;color:var(--green-600);font-weight:600;margin-top:.2rem;}
+.recap-box{background:var(--green-50);border:1px solid var(--green-100);
+  border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.recap-title{font-size:.72rem;font-weight:700;color:var(--green-700);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;}
+.recap-grid{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .75rem;}
+.recap-key{font-size:.65rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.recap-val{font-size:.8rem;color:var(--text-main);font-weight:500;}
+.cgv-row{display:flex;align-items:flex-start;gap:.5rem;font-size:.72rem;color:var(--text-muted);margin-bottom:1rem;}
+.cgv-row input{accent-color:var(--green-600);margin-top:2px;cursor:pointer;}
+.cgv-row a{color:var(--green-600);font-weight:600;text-decoration:none;}
+.btn-row{display:flex;gap:.65rem;margin-top:.5rem;}
+.btn-back{height:42px;padding:0 1.25rem;border:1.5px solid var(--border);border-radius:9px;
+  background:var(--white);color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;gap:.35rem;font-family:'Source Sans 3',sans-serif;transition:border-color .2s;}
+.btn-back:hover{border-color:var(--green-400);}
+.btn-next{flex:1;height:42px;background:linear-gradient(135deg,var(--green-700),var(--green-600));
+  color:#fff;border:none;border-radius:9px;font-size:.85rem;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  font-family:'Source Sans 3',sans-serif;transition:opacity .2s,transform .15s;
+  box-shadow:0 4px 12px rgba(22,107,48,.25);}
+.btn-next:hover{opacity:.92;transform:translateY(-1px);}
+.btn-next:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.btn-next .spin{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+.btn-next.loading .spin{display:block;}
+.btn-next.loading .btn-text{display:none;}
+.msg-box{border-radius:8px;padding:.6rem .85rem;font-size:.75rem;font-weight:500;
+  margin-bottom:.75rem;display:none;align-items:flex-start;gap:.5rem;}
+.msg-box.error{display:flex;background:var(--error-bg);color:var(--error);border:1px solid #F5C6C2;}
+.msg-box.success{display:flex;background:var(--green-50);color:var(--green-700);border:1px solid var(--green-100);}
+.back-login{text-align:center;margin-top:1rem;font-size:.73rem;color:var(--text-muted);}
+.back-login a{color:var(--green-600);font-weight:600;text-decoration:none;}
+.info-box{background:var(--teal-bg);border:1px solid #B2E4EE;border-radius:8px;
+  padding:.55rem .8rem;display:flex;align-items:flex-start;gap:.5rem;
+  font-size:.72rem;color:var(--teal);margin-bottom:.75rem;}
+.info-box i{font-size:14px;flex-shrink:0;margin-top:1px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:680px){.left{display:none;}.right{padding:1.5rem;}
+  .field-row{grid-template-columns:1fr;}.role-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ══ PANNEAU GAUCHE ══ -->
+  <div class="left">
+    <div>
+      <div class="logo-area">
+        <div class="emblem"><i class="ti ti-school"></i></div>
+        <div><div class="brand-h">UniBurkina<br>Hub</div>
+          <div class="brand-sub">Plateforme universitaire</div></div>
+      </div>
+      <div class="divider-gold"></div>
+      <ul class="feat-list">
+        <li class="feat-item"><div class="feat-icon"><i class="ti ti-file-certificate"></i></div>
+          <div class="feat-txt"><strong>GED académique</strong><span>Dépôt & validation de documents</span></div></li>
+        <li class="feat-item"><div class="feat-icon"><i class="ti ti-scan"></i></div>
+          <div class="feat-txt"><strong>OCR Tesseract</strong><span>Numérisation automatique</span></div></li>
+        <li class="feat-item"><div class="feat-icon"><i class="ti ti-message-circle"></i></div>
+          <div class="feat-txt"><strong>Forum par filière</strong><span>Questions & modération</span></div></li>
+        <li class="feat-item"><div class="feat-icon"><i class="ti ti-search"></i></div>
+          <div class="feat-txt"><strong>Recherche full-text</strong><span>Elasticsearch 8</span></div></li>
+      </ul>
+    </div>
+    <div class="left-foot"><strong>UTS Burkina</strong><br>Année 2025–2026</div>
+  </div>
+
+  <!-- ══ PANNEAU DROIT ══ -->
+  <div class="right">
+    <div class="progress-bar">
+      <div class="prog-seg active" id="seg1"></div>
+      <div class="prog-seg" id="seg2"></div>
+      <div class="prog-seg" id="seg3"></div>
+    </div>
+    <div class="prog-labels">
+      <span class="prog-lbl active" id="lbl1">Identité</span>
+      <span class="prog-lbl" id="lbl2">Affiliation</span>
+      <span class="prog-lbl" id="lbl3">Confirmation</span>
+    </div>
+    <div class="msg-box" id="msg-box"><i class="ti ti-alert-circle"></i><span id="msg-text"></span></div>
+
+    <!-- ÉTAPE 1 — Identité -->
+    <div class="step active" id="step1">
+      <div class="form-header">
+        <div class="step-label">Étape 1 sur 3</div>
+        <div class="form-title">Votre identité</div>
+        <div class="form-sub">Renseignez vos informations personnelles</div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label class="lbl">Nom <span class="required">*</span></label>
+          <div class="input-wrap"><i class="ti ti-user ic"></i>
+            <input type="text" id="nom" placeholder="AVOGAN"/></div></div>
+        <div class="field"><label class="lbl">Prénom <span class="required">*</span></label>
+          <div class="input-wrap"><i class="ti ti-user ic"></i>
+            <input type="text" id="prenom" placeholder="Koudjo Augustin"/></div></div>
+      </div>
+      <div class="field"><label class="lbl">Nom d'utilisateur <span class="required">*</span></label>
+        <div class="input-wrap"><i class="ti ti-at ic"></i>
+          <input type="text" id="username" placeholder="kavogan2025"/></div></div>
+      <div class="field"><label class="lbl">Adresse email <span class="required">*</span></label>
+        <div class="input-wrap"><i class="ti ti-mail ic"></i>
+          <input type="email" id="email" placeholder="prenom.nom@universite.bf"/></div></div>
+      <div class="radio-group">
+        <span class="radio-label">Sexe <span class="required">*</span></span>
+        <label class="radio-opt"><input type="radio" name="sexe" value="M" checked/><span>Homme</span></label>
+        <label class="radio-opt"><input type="radio" name="sexe" value="F"/><span>Femme</span></label>
+      </div>
+      <div class="field"><label class="lbl">Date de naissance</label>
+        <div class="input-wrap"><i class="ti ti-calendar ic"></i>
+          <input type="date" id="date_naissance"/></div></div>
+      <div class="field"><label class="lbl">Mot de passe <span class="required">*</span></label>
+        <div class="input-wrap"><i class="ti ti-lock ic"></i>
+          <input type="password" id="password" placeholder="••••••••"/>
+          <button class="eye-btn" onclick="togglePwd('password',this)" type="button">
+            <i class="ti ti-eye-off"></i></button></div></div>
+      <div class="field"><label class="lbl">Confirmer le mot de passe <span class="required">*</span></label>
+        <div class="input-wrap"><i class="ti ti-lock ic"></i>
+          <input type="password" id="confirm" placeholder="••••••••"/>
+          <button class="eye-btn" onclick="togglePwd('confirm',this)" type="button">
+            <i class="ti ti-eye-off"></i></button></div></div>
+      <div class="field"><label class="lbl">Photo de profil</label>
+        <div class="upload-area" onclick="document.getElementById('photo-input').click()">
+          <i class="ti ti-upload"></i>
+          <div class="upload-txt"><strong>Choisir une image</strong><span>JPG, PNG — max 2 Mo</span></div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" onchange="onPhoto(this)"/>
+        <div id="photo-name"></div></div>
+      <div class="btn-row">
+        <button class="btn-next" id="btn1" onclick="goStep2()">
+          <span class="btn-text">Continuer <i class="ti ti-arrow-right" style="font-size:14px"></i></span>
+          <div class="spin"></div>
+        </button>
+      </div>
+      <div class="back-login">Déjà un compte ? <a href="/login">Se connecter →</a></div>
+    </div>
+
+    <!-- ÉTAPE 2 — Affiliation -->
+    <div class="step" id="step2">
+      <div class="form-header">
+        <div class="step-label">Étape 2 sur 3</div>
+        <div class="form-title">Votre affiliation</div>
+        <div class="form-sub">Choisissez votre rôle et votre établissement</div>
+      </div>
+      <div class="field"><label class="lbl">Rôle <span class="required">*</span></label>
+        <div class="role-grid" id="role-grid">
+          <div class="role-card selected" data-role="ETUDIANT" onclick="selectRole(this)">
+            <i class="ti ti-books"></i>
+            <div><span>Étudiant</span><div class="role-desc">Accès lecture</div></div>
+          </div>
+          <div class="role-card" data-role="ENSEIGNANT" onclick="selectRole(this)">
+            <i class="ti ti-chalkboard"></i>
+            <div><span>Enseignant</span><div class="role-desc">Dépôt & forum</div></div>
+          </div>
+          <div class="role-card" data-role="DELEGUE" onclick="selectRole(this)">
+            <i class="ti ti-users"></i>
+            <div><span>Délégué</span><div class="role-desc">OCR + étudiant</div></div>
+          </div>
+          <div class="role-card" data-role="SOUS_ADMIN" onclick="selectRole(this)">
+            <i class="ti ti-shield-half"></i>
+            <div><span>Sous-admin</span><div class="role-desc">Gestion UFR</div></div>
+          </div>
+          <div class="role-card" data-role="CHEF_DEPARTEMENT" onclick="selectRole(this)" style="grid-column:1/-1">
+            <i class="ti ti-chart-bar"></i>
+            <div><span>Chef de département</span><div class="role-desc">Supervision UFR</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="info-box" id="info-chef" style="display:none">
+        <i class="ti ti-info-circle"></i>
+        <span>En tant que Chef de département, sélectionnez le département dont vous avez la responsabilité.</span>
+      </div>
+      <div class="field"><label class="lbl">Université <span class="required">*</span></label>
+        <div class="input-wrap"><i class="ti ti-building-community ic"></i>
+          <select id="select-univ" onchange="onUnivChange()">
+            <option value="">-- Chargement... --</option>
+          </select></div></div>
+      <div class="field field-dept" id="field-dept">
+        <label class="lbl">
+          <span class="role-dept-badge"><i class="ti ti-chart-bar" style="font-size:11px"></i>Chef de département</span><br>
+          Département supervisé <span class="required">*</span>
+        </label>
+        <div class="input-wrap"><i class="ti ti-building ic"></i>
+          <select id="select-dept"><option value="">-- Sélectionnez une université d'abord --</option></select></div>
+      </div>
+      <div class="field" id="field-filiere"><label class="lbl">Filière</label>
+        <div class="input-wrap"><i class="ti ti-certificate ic"></i>
+          <select id="select-filiere"><option value="">-- Sélectionnez une université d'abord --</option></select></div>
+      </div>
+      <div class="field"><label class="lbl">Numéro matricule / INE</label>
+        <div class="input-wrap"><i class="ti ti-id-badge ic"></i>
+          <input type="text" id="matricule" placeholder="N01213620231"/></div></div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="goStep(1)">
+          <i class="ti ti-arrow-left" style="font-size:14px"></i> Retour
+        </button>
+        <button class="btn-next" id="btn2" onclick="goStep3()">
+          <span class="btn-text">Continuer <i class="ti ti-arrow-right" style="font-size:14px"></i></span>
+          <div class="spin"></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ÉTAPE 3 — Confirmation -->
+    <div class="step" id="step3">
+      <div class="form-header">
+        <div class="step-label">Étape 3 sur 3</div>
+        <div class="form-title">Confirmation</div>
+        <div class="form-sub">Vérifiez vos informations avant de créer votre compte</div>
+      </div>
+      <div class="recap-box">
+        <div class="recap-title"><i class="ti ti-user-check"></i> Récapitulatif</div>
+        <div class="recap-grid" id="recap-grid"></div>
+      </div>
+      <div class="cgv-row">
+        <input type="checkbox" id="cgv"/>
+        <label for="cgv">J'accepte les <a href="#">conditions d'utilisation</a> et la
+          <a href="#">politique de confidentialité</a> de UniBurkina Hub.</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn-back" onclick="goStep(2)">
+          <i class="ti ti-arrow-left" style="font-size:14px"></i> Retour
+        </button>
+        <button class="btn-next" id="btn3" onclick="submitRegister()">
+          <span class="btn-text"><i class="ti ti-check" style="font-size:14px"></i> Créer mon compte</span>
+          <div class="spin"></div>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API      = 'http://localhost:8001';  // service-auth
+const FRONTEND = 'http://localhost:8000';  // frontend (pour /set-token)
+
+const state = {
+  nom:'', prenom:'', username:'', email:'',
+  sexe:'M', date_naissance:'', password:'',
+  role:'ETUDIANT',
+  id_univ:null, nom_univ:'',
+  id_filiere:null, nom_filiere:'',
+  id_dept:null,   nom_dept:'',
+  matricule:''
+};
+
+// ── Navigation ─────────────────────────────────────────────────────────
+function goStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  ['seg','lbl'].forEach(p=>{
+    for(let i=1;i<=3;i++){
+      const el=document.getElementById(p+i);
+      el.className = p==='seg'
+        ? 'prog-seg'+(i<n?' done':i===n?' active':'')
+        : 'prog-lbl'+(i<n?' done':i===n?' active':'');
+    }
+  });
+  hideMsg();
+}
+
+// ── Étape 1 → 2 ────────────────────────────────────────────────────────
+function goStep2(){
+  const nom=v('nom'), prenom=v('prenom'), username=v('username'),
+        email=v('email'), pwd=v('password'), conf=v('confirm');
+  if(!nom||!prenom||!username||!email||!pwd)
+    return showMsg('Veuillez remplir tous les champs obligatoires.','error');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    return showMsg('Adresse email invalide.','error');
+  if(pwd.length<8)
+    return showMsg('Le mot de passe doit faire au moins 8 caractères.','error');
+  if(pwd!==conf)
+    return showMsg('Les mots de passe ne correspondent pas.','error');
+  state.nom=nom; state.prenom=prenom; state.username=username;
+  state.email=email; state.password=pwd;
+  state.sexe=document.querySelector('input[name=sexe]:checked')?.value||'M';
+  state.date_naissance=v('date_naissance');
+  goStep(2);
+  chargerUniversites();
+}
+
+// ── Étape 2 → 3 ────────────────────────────────────────────────────────
+function goStep3(){
+  const idUniv=document.getElementById('select-univ').value;
+  if(!idUniv) return showMsg('Veuillez sélectionner une université.','error');
+  if(state.role==='CHEF_DEPARTEMENT'){
+    const idDept=document.getElementById('select-dept').value;
+    if(!idDept) return showMsg('Veuillez sélectionner votre département.','error');
+    state.id_dept=parseInt(idDept);
+    state.nom_dept=document.getElementById('select-dept').selectedOptions[0]?.text||'';
+    state.id_filiere=null; state.nom_filiere='—';
+  } else {
+    state.id_dept=null; state.nom_dept='';
+    const fSel=document.getElementById('select-filiere');
+    state.id_filiere=fSel.value?parseInt(fSel.value):null;
+    state.nom_filiere=fSel.value?fSel.selectedOptions[0]?.text:'—';
+  }
+  state.id_univ=parseInt(idUniv);
+  state.nom_univ=document.getElementById('select-univ').selectedOptions[0]?.text||'';
+  state.matricule=v('matricule');
+  const items=[
+    ['Nom complet',state.prenom+' '+state.nom],
+    ["Nom d'utilisateur",state.username],
+    ['Email',state.email],
+    ['Sexe',state.sexe==='M'?'Homme':'Femme'],
+    ['Rôle',roleName(state.role)],
+    ['Université',state.nom_univ],
+  ];
+  if(state.role==='CHEF_DEPARTEMENT') items.push(['Département',state.nom_dept||'—']);
+  else items.push(['Filière',state.nom_filiere||'—']);
+  items.push(['Matricule',state.matricule||'—']);
+  document.getElementById('recap-grid').innerHTML=items.map(([k,val])=>
+    `<div class="recap-key">${k}</div><div class="recap-val">${val}</div>`
+  ).join('');
+  goStep(3);
+}
+
+// ── Soumission ──────────────────────────────────────────────────────────
+async function submitRegister(){
+  if(!document.getElementById('cgv').checked)
+    return showMsg("Veuillez accepter les conditions d'utilisation.",'error');
+  setBtnLoading('btn3',true); hideMsg();
+  const payload={
+    nom:state.nom, prenom:state.prenom, username:state.username,
+    email:state.email, mot_de_passe:state.password,
+    confirm_mot_de_passe:state.password,
+    sexe:state.sexe, role:state.role,
+    id_filiere:state.id_filiere||undefined,
+    numero_matricule:state.matricule||undefined,
+  };
+  if(state.date_naissance) payload.date_naissance=state.date_naissance;
+  try{
+    const r=await fetch(`${API}/auth/register`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data=await r.json();
+    if(!r.ok){
+      const detail=Array.isArray(data.detail)
+        ? data.detail.map(e=>e.msg||JSON.stringify(e)).join(' — ')
+        : (data.detail||'Erreur lors de la création du compte.');
+      return showMsg(detail,'error');
+    }
+    showMsg('Compte créé ! Connexion en cours...','success');
+    await autoLogin(state.email,state.password);
+  } catch(e){
+    showMsg('Impossible de contacter le serveur. Vérifiez que service-auth tourne sur :8001.','error');
+  } finally { setBtnLoading('btn3',false); }
+}
+
+// ── Auto-login via /set-token (cookie HTTPOnly) ─────────────────────────
+async function autoLogin(email, pwd){
+  try{
+    // 1. Login sur service-auth
+    const r=await fetch(`${API}/auth/login`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,mot_de_passe:pwd})
+    });
+    const data=await r.json();
+    if(!r.ok||!data.access_token){
+      window.location.href='/login'; return;
+    }
+    // 2. Poser le cookie HTTPOnly via le frontend ← CORRECTION CLÉE
+    const r2=await fetch(`${FRONTEND}/set-token`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body:JSON.stringify({token:data.access_token,role:data.role||state.role})
+    });
+    if(r2.ok){
+      const d2=await r2.json();
+      setTimeout(()=>{ window.location.href=d2.redirect_url||'/etudiant/dashboard'; },600);
+    } else {
+      window.location.href='/login';
+    }
+  } catch(e){ window.location.href='/login'; }
+}
+
+// ── Charger universités ─────────────────────────────────────────────────
+async function chargerUniversites(){
+  const sel=document.getElementById('select-univ');
+  sel.innerHTML='<option value="">-- Chargement... --</option>';
+  try{
+    const r=await fetch(`${API}/auth/universites`);
+    const data=await r.json();
+    const univs=Array.isArray(data)?data:(data.items||[]);
+    sel.innerHTML='<option value="">-- Sélectionnez --</option>'
+      +univs.map(u=>`<option value="${u.id_univ}">${u.nom_univ}</option>`).join('');
+  } catch(e){
+    sel.innerHTML='<option value="">-- Erreur de chargement --</option>';
+  }
+}
+
+// ── Changement d'université — 3 stratégies robustes ────────────────────
+async function onUnivChange(){
+  const id=document.getElementById('select-univ').value;
+  document.getElementById('select-filiere').innerHTML='<option value="">-- Chargement... --</option>';
+  document.getElementById('select-dept').innerHTML='<option value="">-- Chargement... --</option>';
+  if(!id){
+    document.getElementById('select-filiere').innerHTML='<option value="">-- Sélectionnez une université --</option>';
+    document.getElementById('select-dept').innerHTML='<option value="">-- Sélectionnez une université --</option>';
+    return;
+  }
+  try{
+    let filieres=[];
+    let ufrsCharges=null;
+
+    // ── Stratégie 1 : endpoint dédié /universites/{id}/filieres ──
+    try{
+      const r1=await fetch(`${API}/auth/universites/${id}/filieres`);
+      if(r1.ok){
+        const d1=await r1.json();
+        filieres=Array.isArray(d1)?d1:(d1.items||d1.filieres||[]);
+      }
+    } catch(e1){ /* endpoint absent, on continue */ }
+
+    // ── Stratégie 2 : UFRs → filières par UFR (BONNE stratégie pour le modèle) ──
+    // Ne s'exécute QUE si la stratégie 1 n'a rien retourné
+    if(filieres.length===0){
+      try{
+        const rU=await fetch(`${API}/auth/ufrs?id_univ=${id}`);
+        if(rU.ok){
+          const dU=await rU.json();
+          ufrsCharges=Array.isArray(dU)?dU:(dU.items||[]);
+          // Dédupliquer les filières par id_filiere pour éviter les doublons
+          const vus=new Set();
+          for(const ufr of ufrsCharges){
+            const rF=await fetch(`${API}/auth/filieres?id_ufr=${ufr.id_ufr}`);
+            if(rF.ok){
+              const dF=await rF.json();
+              const fs=Array.isArray(dF)?dF:(dF.items||[]);
+              for(const f of fs){
+                if(!vus.has(f.id_filiere)){
+                  vus.add(f.id_filiere);
+                  f._nom_ufr=ufr.nom_ufr; f._id_ufr=ufr.id_ufr;
+                  filieres.push(f);
+                }
+              }
+            }
+          }
+        }
+      } catch(e2){ /* continuer vers stratégie 3 */ }
+    }
+
+    // ── Stratégie 3 : toutes les filières (fallback absolu) ──
+    // Ne s'exécute QUE si les deux stratégies précédentes ont échoué
+    if(filieres.length===0){
+      try{
+        const rAll=await fetch(`${API}/auth/filieres`);
+        if(rAll.ok){
+          const dAll=await rAll.json();
+          filieres=Array.isArray(dAll)?dAll:(dAll.items||[]);
+        }
+      } catch(e3){ /* rien à faire */ }
+    }
+
+    // Remplir le select filières (une seule fois, à la fin)
+    const selF=document.getElementById('select-filiere');
+    if(filieres.length===0){
+      selF.innerHTML='<option value="">-- Aucune filière trouvée --</option>';
+    } else {
+      selF.innerHTML='<option value="">-- Sélectionnez une filière --</option>'
+        +filieres.map(f=>`<option value="${f.id_filiere}">${f.nom_filiere}</option>`).join('');
+    }
+
+    // Charger les UFRs pour le select département (Chef de département)
+    await chargerDepts(id, ufrsCharges);
+
+  } catch(e){
+    document.getElementById('select-filiere').innerHTML='<option value="">-- Erreur --</option>';
+    document.getElementById('select-dept').innerHTML='<option value="">-- Erreur --</option>';
+  }
+}
+
+// ── Charger départements (UFRs) pour Chef de département ───────────────
+async function chargerDepts(id_univ, ufrsDejaCharges){
+  const selD=document.getElementById('select-dept');
+  try{
+    let ufrs=ufrsDejaCharges;
+    if(!ufrs){
+      // Charger les UFRs si pas encore fait
+      const r=await fetch(`${API}/auth/ufrs?id_univ=${id_univ}`);
+      if(r.ok){
+        const d=await r.json();
+        ufrs=Array.isArray(d)?d:(d.items||[]);
+      }
+    }
+    if(ufrs&&ufrs.length>0){
+      selD.innerHTML='<option value="">-- Sélectionnez --</option>'
+        +ufrs.map(u=>`<option value="${u.id_ufr}">${u.nom_ufr}</option>`).join('');
+    } else {
+      selD.innerHTML='<option value="">-- Aucun département trouvé --</option>';
+    }
+  } catch(e){
+    selD.innerHTML='<option value="">-- Erreur --</option>';
+  }
+}
+
+// ── Sélection du rôle ───────────────────────────────────────────────────
+function selectRole(card){
+  document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.role=card.dataset.role;
+  const isChef=state.role==='CHEF_DEPARTEMENT';
+  document.getElementById('field-dept').classList.toggle('visible',isChef);
+  document.getElementById('field-filiere').style.display=isChef?'none':'';
+  document.getElementById('info-chef').style.display=isChef?'flex':'none';
+  // Si université déjà choisie et bascule vers Chef → recharger depts
+  const idUniv=document.getElementById('select-univ').value;
+  if(isChef&&idUniv) chargerDepts(idUniv,null);
+}
+
+// ── Photo ────────────────────────────────────────────────────────────────
+function onPhoto(input){
+  const f=input.files[0];
+  document.getElementById('photo-name').textContent=f?'✓ '+f.name:'';
+}
+
+// ── Toggle mot de passe ──────────────────────────────────────────────────
+function togglePwd(id,btn){
+  const inp=document.getElementById(id);
+  const icon=btn.querySelector('i');
+  if(inp.type==='password'){inp.type='text';icon.className='ti ti-eye';}
+  else{inp.type='password';icon.className='ti ti-eye-off';}
+}
+
+// ── Nom lisible du rôle ──────────────────────────────────────────────────
+function roleName(r){
+  return{ETUDIANT:'Étudiant',ENSEIGNANT:'Enseignant',DELEGUE:'Délégué',
+    SOUS_ADMIN:'Sous-administrateur',CHEF_DEPARTEMENT:'Chef de département',
+    ADMIN:'Administrateur'}[r]||r;
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────
+const v=id=>document.getElementById(id)?.value?.trim()||'';
+function showMsg(txt,type){
+  const box=document.getElementById('msg-box');
+  document.getElementById('msg-text').textContent=txt;
+  box.className='msg-box '+type;
+  box.querySelector('i').className=type==='error'?'ti ti-alert-circle':'ti ti-check';
+  box.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function hideMsg(){document.getElementById('msg-box').className='msg-box';}
+function setBtnLoading(id,on){
+  const btn=document.getElementById(id);
+  btn.disabled=on; btn.classList.toggle('loading',on);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1924 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniBurkina Hub — Espace Délégué</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:        #141820;
+  --ink-2:      #1e2533;
+  --ink-3:      #2c3447;
+  --slate:      #3d4a63;
+  --slate-2:    #5a6a87;
+  --muted:      #8896b0;
+  --muted-2:    #b4bece;
+  --border:     #dde2ec;
+  --border-2:   #eaeef6;
+  --surface:    #f5f7fc;
+  --surface-2:  #eef1f8;
+  --white:      #ffffff;
+
+  /* Délégué accent: violet/purple */
+  --accent:     #7C3AED;
+  --accent-2:   #8B5CF6;
+  --accent-dk:  #5B21B6;
+  --accent-bg:  #F5F3FF;
+  --accent-mid: #C4B5FD;
+
+  --teal:       #0d9488;
+  --teal-bg:    #e6f7f6;
+  --amber:      #d97706;
+  --amber-bg:   #fef3c7;
+  --rose:       #e11d48;
+  --rose-bg:    #ffe4ec;
+  --emerald:    #059669;
+  --emerald-bg: #d1fae5;
+
+  --sidebar-w:  260px;
+  --topbar-h:   60px;
+  --radius:     12px;
+  --radius-sm:  8px;
+  --radius-xs:  6px;
+
+  --shadow-sm:  0 1px 4px rgba(20,24,32,.07);
+  --shadow:     0 2px 12px rgba(20,24,32,.09);
+  --shadow-lg:  0 8px 32px rgba(20,24,32,.13);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--ink);
+  min-height: 100vh;
+  position: fixed;
+  top: 0; left: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+}
+.sidebar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,transparent,transparent 40px,
+    rgba(255,255,255,.012) 40px,rgba(255,255,255,.012) 41px
+  );
+  pointer-events: none;
+}
+
+.sb-brand {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 12px;
+}
+.sb-emblem {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(124,58,237,.4);
+}
+.sb-emblem svg { width: 20px; height: 20px; fill: #fff; }
+.sb-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px; color: #fff; line-height: 1.25;
+}
+.sb-name span { color: var(--accent-2); }
+
+.sb-role-pill {
+  margin: 12px 20px;
+  background: rgba(124,58,237,.15);
+  border: 1px solid rgba(124,58,237,.25);
+  border-radius: 20px; padding: 5px 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sb-role-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 6px var(--accent-2);
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.4} }
+.sb-role-text {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: var(--accent-mid);
+}
+
+.sb-nav {
+  flex: 1; padding: 8px 10px;
+  overflow-y: auto; scrollbar-width: none;
+}
+.sb-nav::-webkit-scrollbar { display: none; }
+.sb-section {
+  font-size: 9.5px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: rgba(255,255,255,.25);
+  padding: 14px 10px 5px;
+}
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  color: rgba(255,255,255,.55); text-decoration: none;
+  font-size: 13.5px; font-weight: 500; cursor: pointer;
+  margin-bottom: 2px; transition: all .16s;
+  border: 1px solid transparent;
+}
+.sb-item:hover {
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.9);
+  border-color: rgba(255,255,255,.06);
+}
+.sb-item.active {
+  background: rgba(124,58,237,.18);
+  color: #fff; border-color: rgba(124,58,237,.3);
+}
+.sb-item.active .sb-icon { color: var(--accent-2); }
+.sb-icon {
+  width: 18px; text-align: center; font-size: 15px;
+  flex-shrink: 0; color: rgba(255,255,255,.4); transition: color .16s;
+}
+.sb-item:hover .sb-icon { color: rgba(255,255,255,.75); }
+.sb-badge {
+  margin-left: auto; background: var(--rose); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+}
+
+.sb-user {
+  padding: 14px 16px; border-top: 1px solid rgba(255,255,255,.07);
+  display: flex; align-items: center; gap: 10px;
+}
+.sb-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dk));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 14px; color: #fff; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,.1);
+}
+.sb-user-info { overflow: hidden; flex: 1; }
+.sb-user-name {
+  font-size: 12.5px; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sb-user-email {
+  font-size: 11px; color: rgba(255,255,255,.35);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;
+}
+.sb-logout {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,.3); font-size: 16px;
+  padding: 4px; transition: color .16s; flex-shrink: 0;
+}
+.sb-logout:hover { color: var(--rose); }
+
+/* ═══════════════════════════════════════
+   MAIN
+═══════════════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w); flex: 1;
+  display: flex; flex-direction: column; min-height: 100vh;
+}
+
+.topbar {
+  height: var(--topbar-h); background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 28px; gap: 14px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.topbar-menu {
+  display: none; background: none; border: none;
+  cursor: pointer; color: var(--slate); font-size: 20px; padding: 4px;
+}
+.topbar-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12.5px; color: var(--muted);
+}
+.topbar-breadcrumb .current { font-weight: 600; color: var(--ink); }
+.topbar-right {
+  margin-left: auto; display: flex; align-items: center; gap: 8px;
+}
+.topbar-btn {
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--white);
+  color: var(--slate-2); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; transition: all .15s; text-decoration: none;
+}
+.topbar-btn:hover {
+  background: var(--accent-bg); border-color: var(--accent-mid); color: var(--accent);
+}
+.topbar-scan-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 0 16px; height: 36px;
+  background: var(--accent); color: #fff; border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .16s;
+  box-shadow: 0 2px 8px rgba(124,58,237,.3);
+}
+.topbar-scan-btn:hover {
+  background: var(--accent-dk);
+  box-shadow: 0 4px 16px rgba(124,58,237,.4);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════
+   CONTENT
+═══════════════════════════════════════ */
+.content {
+  flex: 1; padding: 28px 32px;
+  animation: fadeUp .35s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  margin-bottom: 26px;
+  display: flex; align-items: flex-end;
+  justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.page-eyebrow {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: var(--accent); margin-bottom: 4px;
+}
+.page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 24px; color: var(--ink); line-height: 1.2;
+}
+.page-sub { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+/* ═══════════════════════════════════════
+   KPI CARDS
+═══════════════════════════════════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px; margin-bottom: 26px;
+}
+.kpi-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative; overflow: hidden;
+  transition: box-shadow .2s, transform .2s;
+}
+.kpi-card:hover { box-shadow: var(--shadow); transform: translateY(-1px); }
+.kpi-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.kpi-card.purple::before { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.kpi-card.teal::before   { background: linear-gradient(90deg, var(--teal), #34d399); }
+.kpi-card.amber::before  { background: linear-gradient(90deg, var(--amber), #f59e0b); }
+.kpi-card.rose::before   { background: linear-gradient(90deg, var(--rose), #fb7185); }
+
+.kpi-label {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); margin-bottom: 10px;
+}
+.kpi-value {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px; line-height: 1;
+  color: var(--ink); margin-bottom: 4px;
+}
+.kpi-sub { font-size: 11px; color: var(--muted); }
+.kpi-icon {
+  position: absolute; top: 18px; right: 18px;
+  width: 36px; height: 36px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.kpi-card.purple .kpi-icon { background: var(--accent-bg); }
+.kpi-card.teal   .kpi-icon { background: var(--teal-bg); }
+.kpi-card.amber  .kpi-icon { background: var(--amber-bg); }
+.kpi-card.rose   .kpi-icon { background: var(--rose-bg); }
+
+/* ═══════════════════════════════════════
+   CARDS / PANELS
+═══════════════════════════════════════ */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  padding: 18px 22px; border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.card-title {
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-title-icon {
+  width: 28px; height: 28px; border-radius: var(--radius-xs);
+  background: var(--accent-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: var(--accent);
+}
+.card-body { padding: 22px; }
+
+/* ═══════════════════════════════════════
+   OCR SCANNER ZONE (hero)
+═══════════════════════════════════════ */
+.ocr-hero {
+  background: linear-gradient(135deg, #1e1036 0%, #2d1557 50%, #1a0e42 100%);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 26px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(124,58,237,.3);
+}
+.ocr-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(139,92,246,.15) 0%, transparent 60%);
+}
+.ocr-hero-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 28px; position: relative;
+}
+
+.ocr-upload-zone {
+  border: 2px dashed rgba(196,181,253,.3);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer; transition: all .2s;
+  background: rgba(124,58,237,.06);
+  position: relative;
+}
+.ocr-upload-zone:hover, .ocr-upload-zone.drag-over {
+  border-color: var(--accent-2);
+  background: rgba(124,58,237,.12);
+}
+.ocr-upload-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+.ocr-upload-icon {
+  font-size: 40px; margin-bottom: 12px;
+  filter: drop-shadow(0 0 12px rgba(139,92,246,.4));
+}
+.ocr-upload-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; color: #fff; margin-bottom: 6px;
+}
+.ocr-upload-sub { font-size: 12px; color: rgba(196,181,253,.7); }
+.ocr-upload-formats {
+  margin-top: 12px; display: flex; align-items: center;
+  justify-content: center; gap: 6px; flex-wrap: wrap;
+}
+.ocr-format-tag {
+  background: rgba(196,181,253,.12); border: 1px solid rgba(196,181,253,.2);
+  border-radius: 20px; padding: 2px 10px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .05em; color: var(--accent-mid);
+}
+
+.ocr-file-preview {
+  display: none;
+  align-items: center; gap: 12px;
+  background: rgba(196,181,253,.08);
+  border: 1px solid rgba(196,181,253,.2);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px; margin-top: 12px;
+}
+.ocr-file-icon { font-size: 22px; }
+.ocr-file-info { flex: 1; text-align: left; }
+.ocr-file-name { font-size: 12px; font-weight: 600; color: #fff; }
+.ocr-file-size { font-size: 11px; color: rgba(196,181,253,.6); }
+.ocr-file-clear {
+  background: none; border: none; cursor: pointer;
+  color: rgba(196,181,253,.5); font-size: 16px;
+  transition: color .15s; padding: 2px;
+}
+.ocr-file-clear:hover { color: #fb7185; }
+
+.ocr-controls-panel {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.ocr-ctrl-label {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em;
+  color: rgba(196,181,253,.6); margin-bottom: 6px;
+}
+.ocr-select {
+  width: 100%; padding: 10px 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(196,181,253,.2);
+  border-radius: var(--radius-sm);
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23a78bfa' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  transition: border-color .15s;
+}
+.ocr-select:focus { outline: none; border-color: var(--accent-2); }
+.ocr-select option { background: #1e1036; }
+
+.ocr-input {
+  width: 100%; padding: 10px 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(196,181,253,.2);
+  border-radius: var(--radius-sm);
+  color: #fff; font-family: 'DM Sans', sans-serif;
+  font-size: 13px; transition: border-color .15s;
+}
+.ocr-input::placeholder { color: rgba(196,181,253,.4); }
+.ocr-input:focus { outline: none; border-color: var(--accent-2); }
+
+.ocr-btn-scan {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: none; border-radius: var(--radius-sm);
+  color: #fff; font-family: 'DM Serif Display', serif;
+  font-size: 16px; cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 4px 20px rgba(124,58,237,.4);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.ocr-btn-scan:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(124,58,237,.5);
+}
+.ocr-btn-scan:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.ocr-btn-ged {
+  width: 100%; padding: 11px;
+  background: rgba(196,181,253,.1);
+  border: 1px solid rgba(196,181,253,.25);
+  border-radius: var(--radius-sm);
+  color: var(--accent-mid); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .2s;
+}
+.ocr-btn-ged:hover:not(:disabled) {
+  background: rgba(196,181,253,.2);
+  border-color: var(--accent-2); color: #fff;
+}
+.ocr-btn-ged:disabled { opacity: .4; cursor: not-allowed; }
+
+/* OCR Progress */
+.ocr-progress-wrap {
+  display: none; margin-top: 8px;
+}
+.ocr-progress-track {
+  height: 6px; background: rgba(196,181,253,.15);
+  border-radius: 3px; overflow: hidden;
+}
+.ocr-progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 3px; transition: width .3s;
+}
+.ocr-progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: rgba(196,181,253,.6);
+  margin-top: 5px;
+}
+
+/* OCR Result */
+.ocr-result-box {
+  display: none;
+  margin-top: 16px;
+  background: rgba(196,181,253,.06);
+  border: 1px solid rgba(196,181,253,.18);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.ocr-result-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(196,181,253,.12);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ocr-result-title { font-size: 11px; font-weight: 700; color: var(--accent-mid); letter-spacing: .05em; text-transform: uppercase; }
+.ocr-result-actions { display: flex; gap: 6px; }
+.ocr-result-btn {
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid rgba(196,181,253,.2);
+  background: none; color: rgba(196,181,253,.7);
+  font-size: 10px; font-weight: 600; cursor: pointer;
+  transition: all .15s;
+}
+.ocr-result-btn:hover { background: rgba(196,181,253,.1); color: #fff; }
+.ocr-result-text {
+  padding: 14px; min-height: 80px; max-height: 180px;
+  overflow-y: auto;
+  font-size: 12px; line-height: 1.7;
+  color: rgba(255,255,255,.8);
+  white-space: pre-wrap;
+  font-family: 'DM Mono', monospace, 'DM Sans', sans-serif;
+}
+.ocr-result-text::-webkit-scrollbar { width: 4px; }
+.ocr-result-text::-webkit-scrollbar-thumb { background: rgba(196,181,253,.2); border-radius: 2px; }
+
+/* Scan stats bar */
+.ocr-stats-bar {
+  display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+}
+.ocr-stat-pill {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 30px; padding: 6px 16px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+}
+.ocr-stat-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.ocr-stat-dot.purple { background: var(--accent); }
+.ocr-stat-dot.teal   { background: var(--teal); }
+.ocr-stat-dot.amber  { background: var(--amber); }
+.ocr-stat-dot.rose   { background: var(--rose); }
+.ocr-stat-val { font-weight: 700; color: var(--ink); }
+.ocr-stat-lbl { color: var(--muted); }
+
+/* ═══════════════════════════════════════
+   TABLES
+═══════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+thead th {
+  background: var(--surface); color: var(--muted);
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: 10px 16px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid var(--border-2); transition: background .12s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface); }
+tbody td { padding: 12px 16px; }
+
+/* ═══════════════════════════════════════
+   BADGES
+═══════════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; letter-spacing: .03em;
+  white-space: nowrap;
+}
+.badge-purple  { background: var(--accent-bg);  color: var(--accent); }
+.badge-teal    { background: var(--teal-bg);     color: var(--teal); }
+.badge-amber   { background: var(--amber-bg);    color: var(--amber); }
+.badge-rose    { background: var(--rose-bg);     color: var(--rose); }
+.badge-emerald { background: var(--emerald-bg);  color: var(--emerald); }
+.badge-slate   { background: var(--surface-2);   color: var(--slate); }
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: all .16s; text-decoration: none;
+}
+.btn-primary {
+  background: var(--accent); color: #fff;
+  box-shadow: 0 2px 8px rgba(124,58,237,.25);
+}
+.btn-primary:hover { background: var(--accent-dk); transform: translateY(-1px); }
+.btn-outline {
+  background: var(--white); color: var(--slate);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--accent-mid); color: var(--accent); background: var(--accent-bg); }
+.btn-xs { padding: 5px 10px; font-size: 11.5px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+/* ═══════════════════════════════════════
+   FILTERS
+═══════════════════════════════════════ */
+.filter-bar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--white);
+  color: var(--slate-2); font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+}
+.filter-btn:hover { border-color: var(--accent-mid); color: var(--accent); }
+.filter-btn.active {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.2);
+}
+
+/* ═══════════════════════════════════════
+   SEARCH BAR
+═══════════════════════════════════════ */
+.search-wrap {
+  position: relative;
+}
+.search-wrap input {
+  width: 100%; padding: 10px 14px 10px 38px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; color: var(--ink);
+  background: var(--white); transition: border-color .15s;
+}
+.search-wrap input:focus {
+  outline: none; border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.08);
+}
+.search-icon {
+  position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted); font-size: 14px; pointer-events: none;
+}
+
+/* ═══════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════ */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+}
+.empty-state-icon { font-size: 36px; opacity: .25; margin-bottom: 10px; }
+.empty-state-title { font-size: 14px; font-weight: 600; color: var(--slate); margin-bottom: 4px; }
+.empty-state-text { font-size: 12px; color: var(--muted); }
+
+/* ═══════════════════════════════════════
+   GRID LAYOUTS
+═══════════════════════════════════════ */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ═══════════════════════════════════════
+   MODAL
+═══════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(14,18,28,.55); backdrop-filter: blur(4px);
+  display: none; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 460px;
+  animation: slideUp .22s cubic-bezier(.4,0,.2,1);
+}
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(20px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+.modal-header {
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--border-2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px; color: var(--ink);
+}
+.modal-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 18px; padding: 2px;
+  transition: color .15s;
+}
+.modal-close:hover { color: var(--rose); }
+.modal-body { padding: 20px 22px; }
+.modal-footer {
+  padding: 14px 22px 20px;
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--slate); margin-bottom: 5px;
+}
+.form-control {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--ink);
+  transition: border-color .15s; background: var(--white);
+}
+.form-control:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(124,58,237,.08); }
+
+/* ═══════════════════════════════════════
+   SPINNER
+═══════════════════════════════════════ */
+.spin {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+#toastContainer {
+  position: fixed; bottom: 24px; right: 24px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 12px 18px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  box-shadow: var(--shadow-lg); max-width: 340px;
+  animation: toastIn .25s ease;
+}
+@keyframes toastIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+.toast.success { background: var(--emerald); color: #fff; }
+.toast.error   { background: var(--rose);    color: #fff; }
+.toast.info    { background: var(--ink-2);   color: #fff; }
+.toast.warning { background: var(--amber);   color: #fff; }
+
+/* Sidebar overlay mobile */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(14,18,28,.45); z-index: 199;
+}
+.sidebar-overlay.visible { display: block; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 900px) {
+  .ocr-hero-grid { grid-template-columns: 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+}
+@media (max-width: 860px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .topbar-menu { display: flex; }
+  .content { padding: 20px 16px; }
+  .ocr-hero { padding: 20px 16px; }
+}
+@media (max-width: 500px) { .kpi-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-emblem">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.2L20 8.5v7.1L12 19.8l-8-4.2V8.5L12 4.2z"/></svg>
+    </div>
+    <div class="sb-name">UniBurkina <span>Hub</span></div>
+  </div>
+
+  <div class="sb-role-pill">
+    <div class="sb-role-dot"></div>
+    <span class="sb-role-text">Délégué</span>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Principal</div>
+    <div class="sb-item active" id="nav-ocr" onclick="showSection('ocr', this)">
+      <span class="sb-icon">⬡</span> OCR Scanner
+    </div>
+    <div class="sb-item" id="nav-scans" onclick="showSection('scans', this)">
+      <span class="sb-icon">▤</span> Mes scans
+      <span class="sb-badge" id="navScansBadge" style="display:none">0</span>
+    </div>
+
+    <div class="sb-section">Filière</div>
+    <div class="sb-item" id="nav-ressources" onclick="showSection('ressources', this)">
+      <span class="sb-icon">◎</span> Ressources
+    </div>
+    <div class="sb-item" id="nav-recherche" onclick="showSection('recherche', this)">
+      <span class="sb-icon">◌</span> Recherche
+    </div>
+    <div class="sb-item" id="nav-forum" onclick="showSection('forum', this)">
+      <span class="sb-icon">◉</span> Forum filière
+    </div>
+    <div class="sb-item" id="nav-annonces" onclick="showSection('annonces', this)">
+      <span class="sb-icon">◈</span> Annonces
+    </div>
+  </nav>
+
+  <div class="sb-user">
+    <div class="sb-avatar" id="sbAvatarText">D</div>
+    <div class="sb-user-info">
+      <div class="sb-user-name" id="sbUserName">Délégué</div>
+      <div class="sb-user-email" id="sbUserEmail">—</div>
+    </div>
+    <button class="sb-logout" onclick="logout()" title="Déconnexion">⏻</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="topbar-menu" onclick="openSidebar()">☰</button>
+    <div class="topbar-breadcrumb">
+      <span>UniBurkina Hub</span>
+      <span class="sep">›</span>
+      <span class="current" id="topbarCrumb">OCR Scanner</span>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" title="Aide">?</button>
+      <button class="topbar-scan-btn" onclick="showSection('ocr', document.getElementById('nav-ocr'))">
+        ⬡ Nouveau scan
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════════
+         SECTION : OCR SCANNER
+    ═══════════════════════════════════ -->
+    <div id="sec-ocr">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-eyebrow">Outil principal</div>
+          <h1 class="page-title">OCR Scanner</h1>
+          <p class="page-sub">Numérisez et indexez vos documents physiques en quelques clics.</p>
+        </div>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="ocr-stats-bar" id="ocrStatsBar">
+        <div class="ocr-stat-pill">
+          <div class="ocr-stat-dot purple"></div>
+          <span class="ocr-stat-val" id="ocrStatTotal">—</span>
+          <span class="ocr-stat-lbl">scans total</span>
+        </div>
+        <div class="ocr-stat-pill">
+          <div class="ocr-stat-dot teal"></div>
+          <span class="ocr-stat-val" id="ocrStatOk">—</span>
+          <span class="ocr-stat-lbl">réussis</span>
+        </div>
+        <div class="ocr-stat-pill">
+          <div class="ocr-stat-dot amber"></div>
+          <span class="ocr-stat-val" id="ocrStatPages">—</span>
+          <span class="ocr-stat-lbl">pages traitées</span>
+        </div>
+        <div class="ocr-stat-pill">
+          <div class="ocr-stat-dot rose"></div>
+          <span class="ocr-stat-val" id="ocrStatFails">—</span>
+          <span class="ocr-stat-lbl">échecs</span>
+        </div>
+      </div>
+
+      <!-- OCR Hero -->
+      <div class="ocr-hero">
+        <div class="ocr-hero-grid">
+          <!-- Zone gauche : upload -->
+          <div>
+            <div class="ocr-upload-zone" id="ocrDropZone">
+              <input type="file" id="ocrFileInput"
+                     accept="image/*,.pdf"
+                     onchange="onOcrFileSelected(this)">
+              <div class="ocr-upload-icon">⬡</div>
+              <div class="ocr-upload-title">Déposez votre document</div>
+              <div class="ocr-upload-sub">Glissez-déposez ou cliquez pour choisir</div>
+              <div class="ocr-upload-formats">
+                <span class="ocr-format-tag">JPEG</span>
+                <span class="ocr-format-tag">PNG</span>
+                <span class="ocr-format-tag">TIFF</span>
+                <span class="ocr-format-tag">PDF</span>
+              </div>
+            </div>
+
+            <!-- Fichier sélectionné -->
+            <div class="ocr-file-preview" id="ocrFilePreview">
+              <div class="ocr-file-icon" id="ocrFileEmoji">🖼️</div>
+              <div class="ocr-file-info">
+                <div class="ocr-file-name" id="ocrFileName">—</div>
+                <div class="ocr-file-size" id="ocrFileSize">—</div>
+              </div>
+              <button class="ocr-file-clear" onclick="clearOcrFile()">✕</button>
+            </div>
+
+            <!-- Progress -->
+            <div class="ocr-progress-wrap" id="ocrProgressWrap">
+              <div class="ocr-progress-track">
+                <div class="ocr-progress-fill" id="ocrProgressFill"></div>
+              </div>
+              <div class="ocr-progress-label">
+                <span id="ocrProgressText">Analyse en cours…</span>
+                <span id="ocrProgressPct">0%</span>
+              </div>
+            </div>
+
+            <!-- Résultat texte -->
+            <div class="ocr-result-box" id="ocrResultBox">
+              <div class="ocr-result-header">
+                <span class="ocr-result-title">✓ Texte extrait</span>
+                <div class="ocr-result-actions">
+                  <button class="ocr-result-btn" onclick="copyOcrText()">Copier</button>
+                  <button class="ocr-result-btn" onclick="downloadOcrPdf()">↓ PDF</button>
+                </div>
+              </div>
+              <div class="ocr-result-text" id="ocrResultText">(résultat)</div>
+            </div>
+          </div>
+
+          <!-- Zone droite : options + actions -->
+          <div class="ocr-controls-panel">
+            <div>
+              <div class="ocr-ctrl-label">Langue du document</div>
+              <select class="ocr-select" id="ocrLang">
+                <option value="fra">Français</option>
+                <option value="eng">Anglais</option>
+                <option value="fra+eng">Français + Anglais</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="ocr-ctrl-label">Titre du document</div>
+              <input class="ocr-input" id="ocrDocTitre"
+                     placeholder="Ex: TD Mathématiques S2 — 2025">
+            </div>
+
+            <div>
+              <div class="ocr-ctrl-label">Type de ressource</div>
+              <select class="ocr-select" id="ocrDocType">
+                <option value="">— Choisir —</option>
+                <option value="COURS">Cours</option>
+                <option value="TD">TD / TP</option>
+                <option value="EXAMEN">Examen / Corrigé</option>
+                <option value="ARCHIVE">Archive</option>
+              </select>
+            </div>
+
+            <!-- Scanner seulement -->
+            <button class="ocr-btn-scan" id="btnScanOnly"
+                    onclick="lancerScan(false)" disabled>
+              <span>⬡</span> Scanner le document
+            </button>
+
+            <!-- Scanner + envoyer GED -->
+            <button class="ocr-btn-ged" id="btnScanGed"
+                    onclick="lancerScan(true)" disabled>
+              ↑ Scanner et envoyer vers GED
+            </button>
+
+            <div style="text-align:center; font-size:11px; color:rgba(196,181,253,.45); margin-top:-4px;">
+              L'envoi vers GED crée un document EN_ATTENTE de validation
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sec-ocr -->
+
+    <!-- ═══════════════════════════════════
+         SECTION : MES SCANS
+    ═══════════════════════════════════ -->
+    <div id="sec-scans" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-eyebrow">Historique</div>
+          <h1 class="page-title">Mes scans OCR</h1>
+          <p class="page-sub">Tous vos documents numérisés avec statut et téléchargement.</p>
+        </div>
+        <div>
+          <button class="btn btn-primary" onclick="chargerScans()">↻ Actualiser</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card purple">
+          <div class="kpi-label">Total scans</div>
+          <div class="kpi-value" id="kpiScanTotal">—</div>
+          <div class="kpi-icon">⬡</div>
+        </div>
+        <div class="kpi-card teal">
+          <div class="kpi-label">Terminés</div>
+          <div class="kpi-value" id="kpiScanOk">—</div>
+          <div class="kpi-icon">✓</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-label">En cours</div>
+          <div class="kpi-value" id="kpiScanEnCours">—</div>
+          <div class="kpi-icon">◷</div>
+        </div>
+        <div class="kpi-card rose">
+          <div class="kpi-label">Échecs</div>
+          <div class="kpi-value" id="kpiScanEchec">—</div>
+          <div class="kpi-icon">⊗</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-title-icon">▤</div>
+            Historique des scans
+            <span id="scansCount" style="font-size:11px;font-weight:500;color:var(--muted);margin-left:4px;"></span>
+          </div>
+          <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterScans('ALL',this)">Tous</button>
+            <button class="filter-btn" onclick="filterScans('TERMINE',this)">Terminés</button>
+            <button class="filter-btn" onclick="filterScans('ECHEC',this)">Échecs</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fichier</th>
+                <th>Langue</th>
+                <th>Pages</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="scansBody">
+              <tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">⬡</div><div class="empty-state-title">Chargement…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /sec-scans -->
+
+    <!-- ═══════════════════════════════════
+         SECTION : RESSOURCES
+    ═══════════════════════════════════ -->
+    <div id="sec-ressources" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-eyebrow">Filière</div>
+          <h1 class="page-title">Ressources pédagogiques</h1>
+          <p class="page-sub">Documents validés accessibles à toute la filière.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-title-icon">◎</div>
+            Documents validés
+          </div>
+          <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterRessources('ALL',this)">Tous</button>
+            <button class="filter-btn" onclick="filterRessources('COURS',this)">Cours</button>
+            <button class="filter-btn" onclick="filterRessources('TD',this)">TD</button>
+            <button class="filter-btn" onclick="filterRessources('EXAMEN',this)">Examens</button>
+            <button class="filter-btn" onclick="filterRessources('ARCHIVE',this)">Archives</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Titre</th>
+                <th>Type</th>
+                <th>Taille</th>
+                <th>Date</th>
+                <th>Télécharger</th>
+              </tr>
+            </thead>
+            <tbody id="ressourcesBody">
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-title">Chargement…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /sec-ressources -->
+
+    <!-- ═══════════════════════════════════
+         SECTION : RECHERCHE
+    ═══════════════════════════════════ -->
+    <div id="sec-recherche" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-eyebrow">Elasticsearch</div>
+          <h1 class="page-title">Recherche full-text</h1>
+          <p class="page-sub">Cherchez dans tous les documents et sujets du forum.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:20px;">
+        <div class="card-body">
+          <div class="search-wrap">
+            <span class="search-icon">◌</span>
+            <input type="text" id="searchInput"
+                   placeholder="Cherchez un cours, examen, sujet forum…"
+                   oninput="onSearchInput()"
+                   autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-title-icon">◎</div>
+              Documents
+              <span id="searchDocCount" style="font-size:11px;font-weight:500;color:var(--muted);margin-left:4px;"></span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Titre</th><th>Type</th><th>Action</th></tr></thead>
+              <tbody id="searchDocsBody">
+                <tr><td colspan="3"><div class="empty-state"><div class="empty-state-icon">◌</div><div class="empty-state-title">Tapez pour chercher</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-title-icon">◉</div>
+              Sujets forum
+              <span id="searchForumCount" style="font-size:11px;font-weight:500;color:var(--muted);margin-left:4px;"></span>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Sujet</th><th>Catégorie</th></tr></thead>
+              <tbody id="searchForumBody">
+                <tr><td colspan="2"><div class="empty-state"><div class="empty-state-icon">◌</div><div class="empty-state-title">Tapez pour chercher</div></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sec-recherche -->
+
+    <!-- ═══════════════════════════════════
+         SECTION : FORUM
+    ═══════════════════════════════════ -->
+    <div id="sec-forum" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-eyebrow">Communauté</div>
+          <h1 class="page-title">Forum filière</h1>
+          <p class="page-sub">Posez des questions, partagez des ressources.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modalNouvelSujet')">+ Nouveau sujet</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="card-title-icon">◉</div>
+            Sujets récents
+          </div>
+          <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterForum('ALL',this)">Tous</button>
+            <button class="filter-btn" onclick="filterForum('COURS',this)">Cours</button>
+            <button class="filter-btn" onclick="filterForum('EXAMEN',this)">Examen</button>
+            <button class="filter-btn" onclick="filterForum('STAGE',this)">Stage</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Sujet</th>
+                <th>Catégorie</th>
+                <th>Vues</th>
+                <th>Réponses</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody id="forumBody">
+              <tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">◉</div><div class="empty-state-title">Chargement…</div></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div><!-- /sec-forum -->
+
+    <!-- ═══════════════════════════════════
+         SECTION : ANNONCES
+    ═══════════════════════════════════ -->
+    <div id="sec-annonces" style="display:none">
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="page-eyebrow">Informations</div>
+          <h1 class="page-title">Annonces & Plannings</h1>
+          <p class="page-sub">Communications officielles de votre filière.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="card-title-icon">◈</div> Annonces</div>
+          </div>
+          <div id="annoncesBody" style="padding:0 22px 22px;">
+            <div class="empty-state"><div class="empty-state-icon">◈</div><div class="empty-state-title">Chargement…</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="card-title-icon">▦</div> Plannings</div>
+          </div>
+          <div id="planningsBody" style="padding:0 22px 22px;">
+            <div class="empty-state"><div class="empty-state-icon">▦</div><div class="empty-state-title">Chargement…</div></div>
+          </div>
+        </div>
+      </div>
+    </div><!-- /sec-annonces -->
+
+  </main>
+</div><!-- /main -->
+
+<!-- MODAL : Nouveau sujet forum -->
+<div class="modal-overlay" id="modalNouvelSujet">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title">Nouveau sujet</span>
+      <button class="modal-close" onclick="closeModal('modalNouvelSujet')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Titre du sujet *</label>
+        <input class="form-control" id="sujetTitre" placeholder="Question ou sujet à débattre…">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catégorie *</label>
+        <select class="form-control" id="sujetCategorie">
+          <option value="COURS">Cours</option>
+          <option value="EXAMEN">Examen</option>
+          <option value="STAGE">Stage</option>
+          <option value="VIE_UNI">Vie universitaire</option>
+          <option value="AUTRE">Autre</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea class="form-control" id="sujetContenu" rows="4"
+                  placeholder="Décrivez votre question ou situation…" style="resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalNouvelSujet')">Annuler</button>
+      <button class="btn btn-primary" id="btnCreerSujet" onclick="creerSujet()">Publier</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer"></div>
+
+<!-- JINJA2 DATA INJECTION -->
+<script>
+// ─────────────────────────────────────────
+// Données Jinja2 (injectées par main.py)
+// ─────────────────────────────────────────
+const USER     = {{ user | tojson | safe }};
+const OCR_STATS = {{ ocr_stats | tojson | safe }};
+const DOCS_GED  = {{ docs | tojson | safe }};  // GET /ged/documents?limite=10
+
+// API Endpoints
+const API_GED    = "{{ api_ged }}";    // http://localhost:8002
+const API_OCR    = "{{ api_ocr }}";    // http://localhost:8003
+const API_FORUM  = "http://localhost:8005";  // ajout direct (non passé par main.py)
+const API_SEARCH = "http://localhost:8004";  // ajout direct
+const API_AUTH   = "http://localhost:8001";
+</script>
+
+<script>
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let ocrSelectedFile = null;
+let lastOcrId       = null;
+let allScans        = [];
+let allRessources   = DOCS_GED || [];
+let allSujets       = [];
+let searchTimeout   = null;
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Profil sidebar
+  if (USER) {
+    const initials = ((USER.prenom||'')[0]||(USER.nom||'D')[0]||'D').toUpperCase();
+    document.getElementById('sbAvatarText').textContent = initials;
+    document.getElementById('sbUserName').textContent   = `${USER.prenom||''} ${USER.nom||''}`.trim() || 'Délégué';
+    document.getElementById('sbUserEmail').textContent  = USER.email || '—';
+  }
+
+  // OCR stats depuis Jinja2
+  applyOcrStats(OCR_STATS);
+
+  // Drag & drop
+  setupDragDrop();
+
+  // Charger les ressources (depuis Jinja2 + refresh)
+  renderRessources(allRessources);
+
+  // Charger les scans en background
+  chargerScans(true);
+});
+
+// ─────────────────────────────────────────
+// OCR STATS
+// ─────────────────────────────────────────
+function applyOcrStats(s) {
+  if (!s) return;
+  const total   = s.total_documents  || s.total   || 0;
+  const ok      = s.total_termines   || s.success  || 0;
+  const pages   = s.total_pages      || s.pages    || 0;
+  const fails   = s.total_echecs     || s.fails    || 0;
+
+  document.getElementById('ocrStatTotal').textContent = total;
+  document.getElementById('ocrStatOk').textContent    = ok;
+  document.getElementById('ocrStatPages').textContent = pages;
+  document.getElementById('ocrStatFails').textContent = fails;
+
+  // kpis scans panel
+  document.getElementById('kpiScanTotal').textContent   = total;
+  document.getElementById('kpiScanOk').textContent      = ok;
+  document.getElementById('kpiScanEchec').textContent   = fails;
+  document.getElementById('kpiScanEnCours').textContent = (s.total_en_cours || 0);
+}
+
+async function refreshOcrStats() {
+  try {
+    const r = await fetch(`${API_OCR}/ocr/stats`, { credentials: 'include' });
+    if (r.ok) { applyOcrStats(await r.json()); }
+  } catch {}
+}
+
+// ─────────────────────────────────────────
+// OCR FILE SELECTION
+// ─────────────────────────────────────────
+function onOcrFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const isImg = file.type.startsWith('image/');
+  const isPdf = file.name.toLowerCase().endsWith('.pdf');
+  if (!isImg && !isPdf) {
+    showToast('Format non supporté. Utilisez JPEG, PNG, TIFF ou PDF.', 'error'); return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    showToast('Fichier trop lourd (max 20 Mo).', 'error'); return;
+  }
+  ocrSelectedFile = file;
+  document.getElementById('ocrFileName').textContent  = file.name;
+  document.getElementById('ocrFileSize').textContent  = fmtSize(file.size);
+  document.getElementById('ocrFileEmoji').textContent = isImg ? '🖼️' : '📄';
+  document.getElementById('ocrFilePreview').style.display = 'flex';
+  document.getElementById('ocrResultBox').style.display   = 'none';
+  document.getElementById('ocrProgressWrap').style.display = 'none';
+  document.getElementById('btnScanOnly').disabled = false;
+  document.getElementById('btnScanGed').disabled  = false;
+
+  // Pré-remplir titre
+  if (!document.getElementById('ocrDocTitre').value) {
+    document.getElementById('ocrDocTitre').value =
+      file.name.replace(/\.(jpe?g|png|tiff?|pdf)$/i,'').replace(/[-_]/g,' ');
+  }
+}
+
+function clearOcrFile() {
+  ocrSelectedFile = null;
+  lastOcrId       = null;
+  document.getElementById('ocrFileInput').value = '';
+  document.getElementById('ocrFilePreview').style.display   = 'none';
+  document.getElementById('ocrResultBox').style.display     = 'none';
+  document.getElementById('ocrProgressWrap').style.display  = 'none';
+  document.getElementById('btnScanOnly').disabled = true;
+  document.getElementById('btnScanGed').disabled  = true;
+}
+
+// ─────────────────────────────────────────
+// DRAG & DROP
+// ─────────────────────────────────────────
+function setupDragDrop() {
+  const zone = document.getElementById('ocrDropZone');
+  if (!zone) return;
+  ['dragenter','dragover'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.add('drag-over');
+  }));
+  ['dragleave','drop'].forEach(ev => zone.addEventListener(ev, e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+  }));
+  zone.addEventListener('drop', e => {
+    const files = e.dataTransfer.files;
+    if (files.length) onOcrFileSelected({ files });
+  });
+}
+
+// ─────────────────────────────────────────
+// LANCER SCAN OCR
+// ─────────────────────────────────────────
+async function lancerScan(envoyerGed) {
+  if (!ocrSelectedFile) return;
+
+  const btnId   = envoyerGed ? 'btnScanGed' : 'btnScanOnly';
+  const btnEl   = document.getElementById(btnId);
+  const origTxt = btnEl.innerHTML;
+
+  btnEl.disabled = true;
+  btnEl.innerHTML = `<div class="spin"></div> Traitement…`;
+  document.getElementById('btnScanOnly').disabled = true;
+  document.getElementById('btnScanGed').disabled  = true;
+
+  // Progress animation
+  const wrap  = document.getElementById('ocrProgressWrap');
+  const fill  = document.getElementById('ocrProgressFill');
+  const pct   = document.getElementById('ocrProgressPct');
+  const ptxt  = document.getElementById('ocrProgressText');
+  wrap.style.display = 'block';
+  document.getElementById('ocrResultBox').style.display = 'none';
+  let p = 0;
+  const iv = setInterval(() => {
+    p = Math.min(p + Math.random() * 10, 85);
+    fill.style.width = p + '%';
+    pct.textContent  = Math.round(p) + '%';
+  }, 350);
+
+  try {
+    const fd = new FormData();
+    fd.append('file',   ocrSelectedFile);
+    fd.append('langue', document.getElementById('ocrLang').value);
+
+    let endpoint = envoyerGed ? '/ocr/scan-et-ged' : '/ocr/scan';
+    const r = await fetch(`${API_OCR}${endpoint}`, {
+      method: 'POST', body: fd, credentials: 'include'
+    });
+
+    clearInterval(iv);
+    fill.style.width = '100%'; pct.textContent = '100%';
+    ptxt.textContent = 'Terminé !';
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${r.status}`);
+    }
+
+    const data = await r.json();
+    lastOcrId = data.id_ocr || data.id || null;
+
+    // Afficher résultat
+    setTimeout(() => { wrap.style.display = 'none'; }, 600);
+    const resultBox  = document.getElementById('ocrResultBox');
+    const resultText = document.getElementById('ocrResultText');
+    resultText.textContent = data.texte_extrait || '(Aucun texte extrait)';
+    resultBox.style.display = 'block';
+
+    const msg = envoyerGed
+      ? `✓ Scanné et envoyé vers GED — ${data.nb_pages||1} page(s) — en attente de validation`
+      : `✓ Scan terminé — ${data.nb_pages||1} page(s) extraite(s)`;
+    showToast(msg, 'success');
+
+    // Refresh stats
+    await refreshOcrStats();
+
+    // Refresh scans list en background
+    chargerScans(true);
+
+  } catch (err) {
+    clearInterval(iv);
+    wrap.style.display = 'none';
+    showToast('Erreur OCR : ' + (err.message || 'Échec du traitement'), 'error');
+  } finally {
+    btnEl.disabled = false;
+    btnEl.innerHTML = origTxt;
+    document.getElementById('btnScanOnly').disabled = !ocrSelectedFile;
+    document.getElementById('btnScanGed').disabled  = !ocrSelectedFile;
+  }
+}
+
+function copyOcrText() {
+  const t = document.getElementById('ocrResultText').textContent;
+  navigator.clipboard.writeText(t).then(() => showToast('Texte copié !', 'success'));
+}
+
+async function downloadOcrPdf() {
+  if (!lastOcrId) { showToast('Aucun scan disponible.', 'error'); return; }
+  window.open(`${API_OCR}/ocr/documents/${lastOcrId}/telecharger`, '_blank');
+}
+
+// ─────────────────────────────────────────
+// MES SCANS
+// ─────────────────────────────────────────
+async function chargerScans(silent = false) {
+  try {
+    const r = await fetch(`${API_OCR}/ocr/documents`, { credentials: 'include' });
+    if (!r.ok) return;
+    allScans = await r.json();
+    if (Array.isArray(allScans)) renderScans(allScans);
+
+    const badge = document.getElementById('navScansBadge');
+    if (allScans.length) {
+      badge.textContent = allScans.length;
+      badge.style.display = 'inline-block';
+    }
+  } catch {
+    if (!silent) showToast('Impossible de charger les scans.', 'error');
+  }
+}
+
+function filterScans(statut, btn) {
+  document.querySelectorAll('#sec-scans .filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const list = statut === 'ALL' ? allScans : allScans.filter(s => s.statut === statut);
+  renderScans(list);
+}
+
+function renderScans(list) {
+  const tbody = document.getElementById('scansBody');
+  document.getElementById('scansCount').textContent = `${list.length} résultat(s)`;
+
+  const terminé  = list.filter(s => s.statut === 'TERMINE').length;
+  const enCours  = list.filter(s => s.statut === 'EN_COURS' || s.statut === 'EN_ATTENTE').length;
+  const echec    = list.filter(s => s.statut === 'ECHEC').length;
+  document.getElementById('kpiScanTotal').textContent   = list.length;
+  document.getElementById('kpiScanOk').textContent      = terminé;
+  document.getElementById('kpiScanEnCours').textContent = enCours;
+  document.getElementById('kpiScanEchec').textContent   = echec;
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon">⬡</div><div class="empty-state-title">Aucun scan</div><div class="empty-state-text">Commencez par scanner un document.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(s => {
+    const statBadge = {
+      TERMINE:    '<span class="badge badge-emerald">✓ Terminé</span>',
+      ECHEC:      '<span class="badge badge-rose">⊗ Échec</span>',
+      EN_COURS:   '<span class="badge badge-purple">◷ En cours</span>',
+      EN_ATTENTE: '<span class="badge badge-amber">◷ En attente</span>',
+    }[s.statut] || `<span class="badge badge-slate">${s.statut||'—'}</span>`;
+    const id = s.id_ocr || s.id || '';
+    return `<tr>
+      <td>
+        <div style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+             title="${escHtml(s.nom_fichier_orig||'')}">${escHtml(s.nom_fichier_orig||'—')}</div>
+      </td>
+      <td>${s.langue||'fra'}</td>
+      <td>${s.nb_pages||'—'}</td>
+      <td>${statBadge}</td>
+      <td style="font-size:12px;color:var(--muted);">${fmtDate(s.date_soumission)}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          ${s.statut==='TERMINE'
+            ? `<a href="${API_OCR}/ocr/documents/${id}/telecharger" target="_blank"
+                  class="btn btn-outline btn-xs" title="Télécharger PDF">↓ PDF</a>`
+            : ''}
+          ${s.message_erreur
+            ? `<span title="${escHtml(s.message_erreur)}" style="cursor:help;font-size:13px;color:var(--rose);">⚠</span>`
+            : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// RESSOURCES (GED docs validés)
+// ─────────────────────────────────────────
+async function chargerRessources() {
+  try {
+    const r = await fetch(`${API_GED}/ged/documents?statut=VALIDE&limite=50`, { credentials: 'include' });
+    if (r.ok) {
+      allRessources = await r.json();
+      if (!Array.isArray(allRessources)) allRessources = [];
+      renderRessources(allRessources);
+    }
+  } catch {}
+}
+
+function filterRessources(type, btn) {
+  document.querySelectorAll('#sec-ressources .filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const list = type === 'ALL' ? allRessources : allRessources.filter(d => (d.type_ressource||d.type_document) === type);
+  renderRessources(list);
+}
+
+function renderRessources(list) {
+  const tbody = document.getElementById('ressourcesBody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">◎</div><div class="empty-state-title">Aucun document</div><div class="empty-state-text">Aucun document validé pour votre filière.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(d => {
+    const id = d.id_document || d.id_doc || '';
+    return `<tr>
+      <td>
+        <div style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+             title="${escHtml(d.titre)}">${escHtml(d.titre||'—')}</div>
+      </td>
+      <td>${typeBadge(d.type_ressource||d.type_document)}</td>
+      <td style="font-size:12px;color:var(--muted);">${fmtSize(d.taille_fichier)}</td>
+      <td style="font-size:12px;color:var(--muted);">${fmtDate(d.date_creation||d.date_soumission)}</td>
+      <td>
+        <a href="${API_GED}/ged/documents/${id}/telecharger"
+           target="_blank"
+           class="btn btn-outline btn-xs">↓ Télécharger</a>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────
+// RECHERCHE ELASTICSEARCH
+// ─────────────────────────────────────────
+function onSearchInput() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(doSearch, 400);
+}
+
+async function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (q.length < 2) {
+    document.getElementById('searchDocsBody').innerHTML  = `<tr><td colspan="3"><div class="empty-state"><div class="empty-state-icon">◌</div><div class="empty-state-title">Tapez pour chercher</div></div></td></tr>`;
+    document.getElementById('searchForumBody').innerHTML = `<tr><td colspan="2"><div class="empty-state"><div class="empty-state-icon">◌</div><div class="empty-state-title">Tapez pour chercher</div></div></td></tr>`;
+    document.getElementById('searchDocCount').textContent  = '';
+    document.getElementById('searchForumCount').textContent = '';
+    return;
+  }
+  try {
+    const r = await fetch(`${API_SEARCH}/search?q=${encodeURIComponent(q)}&limite=10`, { credentials: 'include' });
+    if (!r.ok) return;
+    const data = await r.json();
+    const docs   = data.documents || [];
+    const sujets = data.sujets    || [];
+
+    document.getElementById('searchDocCount').textContent  = `${docs.length} résultat(s)`;
+    document.getElementById('searchForumCount').textContent = `${sujets.length} résultat(s)`;
+
+    document.getElementById('searchDocsBody').innerHTML = docs.length
+      ? docs.map(d => `<tr>
+          <td><div style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(d.titre||'—')}</div></td>
+          <td>${typeBadge(d.type_ressource)}</td>
+          <td><a href="${API_GED}/ged/documents/${d.id_doc||d.id_document}/telecharger" target="_blank" class="btn btn-outline btn-xs">↓</a></td>
+        </tr>`).join('')
+      : `<tr><td colspan="3"><div class="empty-state"><div class="empty-state-title">Aucun document</div></div></td></tr>`;
+
+    document.getElementById('searchForumBody').innerHTML = sujets.length
+      ? sujets.map(s => `<tr>
+          <td><div style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(s.titre||'—')}</div></td>
+          <td>${catBadge(s.categorie)}</td>
+        </tr>`).join('')
+      : `<tr><td colspan="2"><div class="empty-state"><div class="empty-state-title">Aucun sujet</div></div></td></tr>`;
+  } catch {
+    showToast('Erreur de recherche.', 'error');
+  }
+}
+
+// ─────────────────────────────────────────
+// FORUM
+// ─────────────────────────────────────────
+async function chargerForum() {
+  try {
+    const r = await fetch(`${API_FORUM}/forum/sujets?limite=30`, { credentials: 'include' });
+    if (!r.ok) return;
+    const data = await r.json();
+    allSujets = Array.isArray(data) ? data : (data.sujets || []);
+    renderForum(allSujets);
+  } catch {}
+}
+
+function filterForum(cat, btn) {
+  document.querySelectorAll('#sec-forum .filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const list = cat === 'ALL' ? allSujets : allSujets.filter(s => s.categorie === cat);
+  renderForum(list);
+}
+
+function renderForum(list) {
+  const tbody = document.getElementById('forumBody');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">◉</div><div class="empty-state-title">Aucun sujet</div><div class="empty-state-text">Soyez le premier à poser une question.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(s => `
+    <tr>
+      <td>
+        <div style="font-weight:600;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+             title="${escHtml(s.titre||'')}">
+          ${s.est_epingle ? '📌 ' : ''}${escHtml(s.titre||'—')}
+        </div>
+        <div style="font-size:11px;color:var(--muted);">par ${escHtml(s.auteur_nom||'—')}</div>
+      </td>
+      <td>${catBadge(s.categorie)}</td>
+      <td style="font-size:12px;color:var(--muted);">${s.nb_vues||0}</td>
+      <td style="font-size:12px;color:var(--muted);">${(s.reponses||[]).length||0}</td>
+      <td>${s.est_resolu
+        ? '<span class="badge badge-emerald">✓ Résolu</span>'
+        : '<span class="badge badge-slate">Ouvert</span>'}</td>
+    </tr>`).join('');
+}
+
+async function creerSujet() {
+  const titre    = document.getElementById('sujetTitre').value.trim();
+  const contenu  = document.getElementById('sujetContenu').value.trim();
+  const categorie = document.getElementById('sujetCategorie').value;
+  if (!titre || !contenu) { showToast('Titre et description obligatoires.', 'error'); return; }
+
+  const btn = document.getElementById('btnCreerSujet');
+  btn.disabled = true; btn.innerHTML = `<div class="spin"></div>`;
+  try {
+    const r = await fetch(`${API_FORUM}/forum/sujets`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titre, contenu, categorie,
+        auteur_nom: `${USER.prenom||''} ${USER.nom||''}`.trim() || 'Délégué',
+      }),
+      credentials: 'include'
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    showToast('Sujet publié avec succès !', 'success');
+    closeModal('modalNouvelSujet');
+    document.getElementById('sujetTitre').value   = '';
+    document.getElementById('sujetContenu').value = '';
+    chargerForum();
+  } catch (err) {
+    showToast('Erreur : ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = 'Publier';
+  }
+}
+
+// ─────────────────────────────────────────
+// ANNONCES & PLANNINGS
+// ─────────────────────────────────────────
+async function chargerAnnonces() {
+  try {
+    const r = await fetch(`${API_GED}/ged/annonces`, { credentials: 'include' });
+    if (!r.ok) return;
+    const list = await r.json();
+    const el = document.getElementById('annoncesBody');
+    if (!list.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">◈</div><div class="empty-state-title">Aucune annonce</div></div>`;
+      return;
+    }
+    el.innerHTML = list.slice(0,10).map(a => `
+      <div style="padding:14px 0;border-bottom:1px solid var(--border-2);">
+        <div style="font-weight:600;font-size:13px;margin-bottom:4px;">${escHtml(a.titre||'—')}</div>
+        <div style="font-size:12px;color:var(--muted);">${escHtml((a.contenu||'').substring(0,120))}${(a.contenu||'').length>120?'…':''}</div>
+        <div style="font-size:11px;color:var(--muted-2);margin-top:5px;">${fmtDate(a.date_creation||a.created_at)}</div>
+      </div>`).join('');
+  } catch {}
+}
+
+async function chargerPlannings() {
+  try {
+    const r = await fetch(`${API_GED}/ged/plannings`, { credentials: 'include' });
+    if (!r.ok) return;
+    const list = await r.json();
+    const el = document.getElementById('planningsBody');
+    if (!list.length) {
+      el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">▦</div><div class="empty-state-title">Aucun planning</div></div>`;
+      return;
+    }
+    el.innerHTML = list.slice(0,10).map(p => `
+      <div style="padding:14px 0;border-bottom:1px solid var(--border-2);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div style="font-weight:600;font-size:13px;">${escHtml(p.titre||'Planning')}</div>
+          <div style="font-size:11px;color:var(--muted);">Semaine ${escHtml(String(p.semaine||'—'))}</div>
+        </div>
+        ${p.fichier_url
+          ? `<a href="${API_GED}${p.fichier_url}" target="_blank" class="btn btn-outline btn-xs">↓</a>`
+          : ''}
+      </div>`).join('');
+  } catch {}
+}
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+const SECTIONS = ['ocr','scans','ressources','recherche','forum','annonces'];
+const CRUMBS   = {
+  ocr:        'OCR Scanner',
+  scans:      'Mes scans',
+  ressources: 'Ressources',
+  recherche:  'Recherche',
+  forum:      'Forum filière',
+  annonces:   'Annonces & Plannings',
+};
+
+let loaders = {};
+
+function showSection(name, navItem) {
+  SECTIONS.forEach(s => {
+    const el = document.getElementById(`sec-${s}`);
+    if (el) el.style.display = s === name ? '' : 'none';
+  });
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  if (navItem) navItem.classList.add('active');
+  document.getElementById('topbarCrumb').textContent = CRUMBS[name] || name;
+  if (window.innerWidth <= 860) closeSidebar();
+
+  // Lazy loaders
+  if (!loaders[name]) {
+    loaders[name] = true;
+    if (name === 'scans')      chargerScans();
+    if (name === 'ressources') chargerRessources();
+    if (name === 'forum')      chargerForum();
+    if (name === 'annonces') { chargerAnnonces(); chargerPlannings(); }
+  }
+}
+
+// ─────────────────────────────────────────
+// SIDEBAR / MODAL / LOGOUT
+// ─────────────────────────────────────────
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.add('visible'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('visible'); }
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => { if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open'); });
+async function logout() { try { await fetch('/deconnexion', { credentials: 'include' }); } catch {} window.location.href = '/deconnexion'; }
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+function showToast(msg, type = 'info', ms = 4000) {
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), ms);
+}
+
+// ─────────────────────────────────────────
+// FORMATTERS
+// ─────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' });
+}
+function fmtSize(b) {
+  if (!b) return '—';
+  if (b > 1048576) return (b / 1048576).toFixed(1) + ' Mo';
+  return (b / 1024).toFixed(0) + ' Ko';
+}
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function typeBadge(t) {
+  const map = { COURS:'badge-purple', TD:'badge-teal', EXAMEN:'badge-amber', ARCHIVE:'badge-slate' };
+  const lbl = { COURS:'Cours', TD:'TD', EXAMEN:'Examen', ARCHIVE:'Archive' };
+  return `<span class="badge ${map[t]||'badge-slate'}">${lbl[t]||t||'—'}</span>`;
+}
+function catBadge(c) {
+  const map = { COURS:'badge-purple', EXAMEN:'badge-amber', STAGE:'badge-teal', VIE_UNI:'badge-emerald', AUTRE:'badge-slate' };
+  const lbl = { COURS:'Cours', EXAMEN:'Examen', STAGE:'Stage', VIE_UNI:'Vie Uni', AUTRE:'Autre' };
+  return `<span class="badge ${map[c]||'badge-slate'}">${lbl[c]||c||'—'}</span>`;
+}
+</script>
+<!-- OCR_STUDIO_BTN_START -->
+<div id="ubh-ocr-fab" data-ocr-injected="true" style="position:fixed;bottom:28px;right:28px;z-index:9999;">
+  <a href="/ocr-studio" title="OCR Studio"
+     style="display:flex;align-items:center;gap:8px;background:#7B3FA0;color:#fff;padding:12px 20px;border-radius:50px;text-decoration:none;font-weight:700;font-size:.9rem;box-shadow:0 4px 18px rgba(123,63,160,.45);">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="18" height="18" rx="3"/>
+      <path d="M7 8h10M7 12h7M7 16h5"/>
+    </svg>
+    OCR Studio
+  </a>
+</div>
+<!-- OCR_STUDIO_BTN_END -->
+</body>
+</html>
