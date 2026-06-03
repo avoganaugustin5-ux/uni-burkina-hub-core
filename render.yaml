@@ -1,0 +1,84 @@
+services:
+  - type: web
+    name: uniburkina-service-auth
+    runtime: python
+    rootDir: service-auth
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        value: uniburkina_secret_jwt_2025_uts
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 1440
+
+  - type: web
+    name: uniburkina-service-ged
+    runtime: python
+    rootDir: service-ged
+    buildCommand: pip install -r requirements.txt && cp storage_service_cloud.py storage_service.py
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SERVICE_URL
+        value: https://uniburkina-service-auth.onrender.com
+      - key: STORAGE_PATH
+        value: /tmp/storage
+
+  - type: web
+    name: uniburkina-service-forum
+    runtime: python
+    rootDir: service-forum
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SERVICE_URL
+        value: https://uniburkina-service-auth.onrender.com
+
+  - type: web
+    name: uniburkina-service-search
+    runtime: python
+    rootDir: service-search
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_SERVICE_URL
+        value: https://uniburkina-service-auth.onrender.com
+      - key: ELASTICSEARCH_URL
+        value: http://localhost:9200
+
+  - type: web
+    name: uniburkina-frontend
+    runtime: python
+    rootDir: frontend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: AUTH_SERVICE_URL
+        value: https://uniburkina-service-auth.onrender.com
+      - key: GED_SERVICE_URL
+        value: https://uniburkina-service-ged.onrender.com
+      - key: OCR_SERVICE_URL
+        value: https://uniburkina-service-ocr.onrender.com
+      - key: FORUM_SERVICE_URL
+        value: https://uniburkina-service-forum.onrender.com
+      - key: SEARCH_SERVICE_URL
+        value: https://uniburkina-service-search.onrender.com
