@@ -22,3 +22,11 @@ storage/
 # Logs
 *.log
 logs/
+
+# Fichier env sans point (spécifique service-ocr)
+service-ocr/env
+
+# Uploads et outputs locaux
+service-ocr/uploads/
+service-ocr/outputs/
+service-ged/uploads/
