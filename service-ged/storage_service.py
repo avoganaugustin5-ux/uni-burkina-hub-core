@@ -16,9 +16,9 @@ from minio import Minio
 from minio.error import S3Error
 
 # ── Connexion MinIO ─────────────────────────────────────────
-MINIO_ENDPOINT  = os.getenv("MINIO_ENDPOINT",    "localhost:9000")
-MINIO_ACCESS    = os.getenv("MINIO_ROOT_USER",    "uniburkina_admin")
-MINIO_SECRET    = os.getenv("MINIO_ROOT_PASSWORD","UTS_Minio2025!")
+MINIO_ENDPOINT  = os.getenv("MINIO_ENDPOINT",   "localhost:9000")
+MINIO_ACCESS    = os.getenv("MINIO_ACCESS_KEY",  "minioadmin")   # corrigé : était MINIO_ROOT_USER
+MINIO_SECRET    = os.getenv("MINIO_SECRET_KEY",  "minioadmin")   # corrigé : était MINIO_ROOT_PASSWORD
 MINIO_SECURE    = os.getenv("MINIO_SECURE", "false").lower() == "true"
 
 minio_client = Minio(

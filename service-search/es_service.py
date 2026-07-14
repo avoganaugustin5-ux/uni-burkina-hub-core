@@ -34,10 +34,23 @@ def creer_index_documents():
                     "id_filiere":     {"type": "integer"},
                     "id_univ":        {"type": "integer"},
                     "date_soumission":{"type": "date"},
+                    # AJOUT SECURITE UTS — poste propriétaire (via circuit), utilisé
+                    # pour le cloisonnement des documents ADMINISTRATIF en recherche.
+                    "auteur_poste_id":{"type": "keyword"},
                 }
             }
         })
         print(f"Index '{INDEX_DOCUMENTS}' cree")
+    else:
+        # AJOUT SECURITE UTS — migration additive : l'ajout d'un champ à un
+        # mapping existant est sans risque et ne nécessite pas de réindexation
+        # complète (les documents déjà indexés auront simplement ce champ vide,
+        # ce qui les exclut par défaut des résultats ADMINISTRATIF — fail-closed).
+        es.indices.put_mapping(index=INDEX_DOCUMENTS, body={
+            "properties": {
+                "auteur_poste_id": {"type": "keyword"}
+            }
+        })
 
 
 def creer_index_sujets():
@@ -98,7 +111,9 @@ def rechercher_documents(
     type_ressource: str = None,
     id_filiere: int = None,
     page: int = 1,
-    limite: int = 10
+    limite: int = 10,
+    postes_visibles: list = None,
+    is_admin: bool = False
 ) -> dict:
     must = [{"multi_match": {
         "query": q,
@@ -111,6 +126,25 @@ def rechercher_documents(
         filters.append({"term": {"type_ressource": type_ressource}})
     if id_filiere:
         filters.append({"term": {"id_filiere": id_filiere}})
+
+    # AJOUT SECURITE UTS — cloisonnement des documents ADMINISTRATIF (Point 4) :
+    # un non-admin ne voit un document ADMINISTRATIF dans les résultats que si
+    # son poste appartient au périmètre du service propriétaire (même logique
+    # que list_documents côté service-ged). Les autres types de documents ne
+    # sont pas concernés par cette restriction. ADMIN/SOUS_ADMIN : illimité.
+    if not is_admin:
+        filters.append({
+            "bool": {
+                "should": [
+                    {"bool": {"must_not": {"term": {"type_ressource": "ADMINISTRATIF"}}}},
+                    {"bool": {"must": [
+                        {"term": {"type_ressource": "ADMINISTRATIF"}},
+                        {"terms": {"auteur_poste_id": postes_visibles or []}}
+                    ]}}
+                ],
+                "minimum_should_match": 1
+            }
+        })
 
     body = {
         "query": {"bool": {"must": must, "filter": filters}},
@@ -163,9 +197,10 @@ def rechercher_sujets(
     return _formater_resultats(res)
 
 
-def recherche_globale(q: str, page: int = 1, limite: int = 10) -> dict:
+def recherche_globale(q: str, page: int = 1, limite: int = 10, postes_visibles: list = None, is_admin: bool = False) -> dict:
     """Recherche simultanee dans documents ET sujets."""
-    docs   = rechercher_documents(q, page=page, limite=limite // 2 or 5)
+    docs   = rechercher_documents(q, page=page, limite=limite // 2 or 5,
+                                   postes_visibles=postes_visibles, is_admin=is_admin)
     sujets = rechercher_sujets(q, page=page, limite=limite // 2 or 5)
     return {
         "query":     q,

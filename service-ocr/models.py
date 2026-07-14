@@ -17,8 +17,8 @@ class DocumentOCR(Base):
 
     id_ocr           = Column(Integer, primary_key=True, autoincrement=True)
     nom_fichier_orig = Column(String(300), nullable=False)
-    chemin_source    = Column(String(500), nullable=False)
-    chemin_pdf       = Column(String(500), nullable=True)
+    chemin_source    = Column(Text, nullable=False)
+    chemin_pdf       = Column(String(1000), nullable=True)
     texte_extrait    = Column(Text, nullable=True)
     nb_pages         = Column(Integer, default=1)
     taille_fichier   = Column(BigInteger, nullable=True)

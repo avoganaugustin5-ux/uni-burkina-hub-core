@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit documentaire — UniBurkina Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#F4F7FB;color:#1B2A3A;}
+.topbar{background:#185FA5;color:#fff;padding:1.1rem 2rem;display:flex;
+justify-content:space-between;align-items:center;}
+.topbar h1{font-size:1.15rem;font-weight:700;}
+.topbar .user{font-size:.82rem;opacity:.9;}
+.layout{display:flex;min-height:calc(100vh - 64px);}
+.sidebar{width:220px;background:#fff;border-right:1px solid #CDD8E4;padding:1.5rem 0;}
+.sidebar a{display:block;padding:.7rem 1.5rem;color:#5A7288;text-decoration:none;
+font-size:.86rem;font-weight:600;border-left:3px solid transparent;}
+.sidebar a:hover{background:#F4F7FB;}
+.sidebar a.active{color:#185FA5;border-left-color:#185FA5;background:#EAF1FA;}
+.main{flex:1;padding:2rem;}
+.tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;border-bottom:1px solid #CDD8E4;}
+.tab{padding:.7rem 1.3rem;font-size:.86rem;font-weight:600;color:#5A7288;
+cursor:pointer;border-bottom:3px solid transparent;}
+.tab.active{color:#185FA5;border-bottom-color:#185FA5;}
+.panel{display:none;}
+.panel.active{display:block;}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+.btn{cursor:pointer;border:none;border-radius:8px;font-weight:600;font-size:.85rem;
+padding:.6rem 1.3rem;transition:.15s;}
+.btn-primary{background:#185FA5;color:#fff;}
+.btn-primary:hover{background:#134A82;}
+.btn-success{background:#1D9E75;color:#fff;}
+.btn-danger{background:#D84315;color:#fff;}
+.btn-ghost{background:#F4F7FB;color:#5A7288;border:1px solid #CDD8E4;}
+.card-doc{background:#fff;border:1px solid #CDD8E4;border-radius:12px;padding:1.2rem 1.5rem;
+margin-bottom:.9rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;}
+.doc-info h3{font-size:.95rem;margin-bottom:.3rem;}
+.doc-meta{font-size:.78rem;color:#5A7288;display:flex;gap:1rem;flex-wrap:wrap;}
+.statut{display:inline-block;padding:.25rem .7rem;border-radius:20px;font-size:.72rem;font-weight:700;}
+.statut.en-cours{background:#FFF3E0;color:#E65100;}
+.statut.en-attente{background:#FFF8E1;color:#F57F17;}
+.statut.valide,.statut.publie{background:#E6F7F1;color:#1D9E75;}
+.statut.rejete{background:#FDEDEA;color:#D84315;}
+.empty{text-align:center;padding:3rem 1rem;color:#9DAEC2;}
+.empty .ico{font-size:2.5rem;margin-bottom:.6rem;}
+.loading{text-align:center;padding:2rem;color:#9DAEC2;font-size:.85rem;}
+.circuit-track{display:flex;align-items:center;gap:.4rem;margin-top:.6rem;flex-wrap:wrap;}
+.circuit-node{font-size:.72rem;padding:.2rem .6rem;border-radius:6px;background:#F4F7FB;
+border:1px solid #CDD8E4;color:#5A7288;}
+.circuit-node.passe{background:#E6F7F1;border-color:#1D9E75;color:#1D9E75;}
+.circuit-node.actuel{background:#EAF1FA;border-color:#185FA5;color:#185FA5;font-weight:700;}
+.circuit-arrow{color:#CDD8E4;font-size:.8rem;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(27,42,58,.5);
+align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:1.8rem;width:100%;max-width:520px;
+max-height:85vh;overflow-y:auto;}
+.modal h2{font-size:1.1rem;margin-bottom:1rem;}
+.modal label{display:block;font-size:.82rem;font-weight:600;margin:.9rem 0 .35rem;}
+.modal textarea,.modal select,.modal input{width:100%;padding:.6rem .8rem;
+border:1px solid #CDD8E4;border-radius:8px;font-size:.85rem;font-family:inherit;}
+.modal textarea{min-height:90px;resize:vertical;}
+.modal-actions{display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.4rem;}
+.histo-item{display:flex;gap:.8rem;padding:.7rem 0;border-bottom:1px solid #E2E9F0;font-size:.82rem;}
+.histo-item:last-child{border-bottom:none;}
+.histo-dot{width:8px;height:8px;border-radius:50%;background:#185FA5;margin-top:.4rem;flex-shrink:0;}
+.histo-action{font-weight:700;color:#1B2A3A;}
+.histo-meta{color:#5A7288;font-size:.76rem;}
+.alert{padding:.7rem 1rem;border-radius:8px;font-size:.82rem;margin-bottom:1rem;}
+.alert.error{background:#FDEDEA;color:#D84315;}
+.alert.ok{background:#E6F7F1;color:#1D9E75;}
+.modal p.hint{font-size:.8rem;color:#5A7288;margin-bottom:.3rem;}
+.modal input#codeAccesInput{letter-spacing:2px;font-weight:700;text-align:center;}
+.code-error{display:none;background:#FDEDEA;color:#D84315;padding:.6rem .8rem;
+border-radius:8px;font-size:.8rem;margin-top:.7rem;}
+.code-error.show{display:block;}
+.btn[disabled]{opacity:.6;cursor:not-allowed;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Circuit documentaire — UTS</h1>
+  <div class="user">{{ user.prenom if user else '' }} {{ user.nom if user else '' }}</div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <a href="/ocr-studio">Soumettre un document</a>
+    <a href="/circuit-documentaire" class="active">Circuit documentaire</a>
+    <a href="javascript:history.back()">← Retour au dashboard</a>
+  </div>
+
+  <div class="main">
+    <div id="alertZone"></div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="envoyes" onclick="switchTab('envoyes')">Mes documents envoyés</div>
+      <div class="tab" data-tab="recus" onclick="switchTab('recus')">Documents reçus</div>
+    </div>
+
+    <!-- Onglet : mes documents envoyés -->
+    <div class="panel active" data-tab-panel="envoyes">
+      <div class="toolbar">
+        <span style="font-size:.85rem;color:#5A7288;" id="countEnvoyes">Chargement…</span>
+      </div>
+      <div id="listeEnvoyes"><div class="loading">Chargement des documents…</div></div>
+    </div>
+
+    <!-- Onglet : documents reçus -->
+    <div class="panel" data-tab-panel="recus">
+      <div class="toolbar">
+        <span style="font-size:.85rem;color:#5A7288;" id="countRecus">Chargement…</span>
+      </div>
+      <div id="listeRecus"><div class="loading">Chargement des documents…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : action sur un circuit (valider / rejeter / transmettre / commenter) -->
+<div class="modal-overlay" id="modalAction">
+  <div class="modal">
+    <h2 id="modalTitle">Traiter le document</h2>
+    <div id="modalHisto"></div>
+    <label>Action</label>
+    <select id="modalActionType">
+      <option value="VALIDE">Valider</option>
+      <option value="REJETE">Rejeter</option>
+      <option value="TRANSMIS">Transmettre à l'étape suivante</option>
+      <option value="RETOURNE">Retourner à l'expéditeur</option>
+    </select>
+    <label>Commentaire <span style="font-weight:400;color:#9DAEC2;">(obligatoire si rejet ou retour)</span></label>
+    <textarea id="modalCommentaire" placeholder="Précisez votre décision…"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmerAction()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : historique d'un circuit -->
+<div class="modal-overlay" id="modalHistorique">
+  <div class="modal">
+    <h2>Historique du document</h2>
+    <div id="modalHistoriqueContenu"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modalHistorique').classList.remove('show')">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : code de sécurité requis pour ouvrir un document protégé -->
+<div class="modal-overlay" id="modalCodeAcces">
+  <div class="modal" style="max-width:400px;">
+    <h2>Code de sécurité requis</h2>
+    <p class="hint">Ce document appartient à un service protégé. Saisissez le code de sécurité pour l'ouvrir.</p>
+    <label>Code d'accès</label>
+    <input type="password" id="codeAccesInput" maxlength="12" placeholder="••••••" autocomplete="off">
+    <div class="code-error" id="codeAccesError"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModalCode()">Annuler</button>
+      <button class="btn btn-primary" id="btnValiderCode" onclick="validerCodeAcces()">Valider</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_GED = ""; // Proxy frontend /api/ged/* (token injecté auto côté serveur, cf. ocr_studio.html)
+const CURRENT_USER_ID = "{{ user.id if user else '' }}";
+let circuitsEnvoyes = [];
+let circuitsRecus = [];
+let circuitActifId = null;
+
+function showAlert(msg, type){
+  const zone = document.getElementById('alertZone');
+  zone.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+  setTimeout(()=>zone.innerHTML='', 4000);
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-tab-panel="${tab}"]`).classList.add('active');
+}
+
+function statutLabel(s){
+  return {
+    "EN_COURS":"En cours","EN_ATTENTE":"En attente","VALIDE":"Validé",
+    "REJETE":"Rejeté","PUBLIE":"Publié"
+  }[s] || s;
+}
+
+function statutClass(s){
+  return (s || "").toLowerCase().replace(/_/g,'-');
+}
+
+function renderCircuitTrack(circuit, niveauIndex){
+  if (!Array.isArray(circuit)) return '';
+  return circuit.map((poste, i)=>{
+    let cls = 'circuit-node';
+    if (i < niveauIndex) cls += ' passe';
+    else if (i === niveauIndex) cls += ' actuel';
+    const arrow = i < circuit.length - 1 ? '<span class="circuit-arrow">→</span>' : '';
+    return `<span class="${cls}">${poste}</span>${arrow}`;
+  }).join('');
+}
+
+function renderListe(containerId, countId, items, mode){
+  const container = document.getElementById(containerId);
+  const countEl = document.getElementById(countId);
+  countEl.textContent = `${items.length} document${items.length>1?'s':''}`;
+
+  if (!items.length){
+    container.innerHTML = `<div class="empty"><div class="ico">📭</div>
+      <p>${mode==='envoyes' ? "Vous n'avez encore envoyé aucun document." : "Aucun document en attente de votre action."}</p></div>`;
+    return;
+  }
+
+  container.innerHTML = items.map(item=>`
+    <div class="card-doc">
+      <div class="doc-info">
+        <h3>${item.objet || 'Document #' + item.document_id}</h3>
+        <div class="doc-meta">
+          <span>Envoyé le ${formatDate(item.date_envoi)}</span>
+          <span class="statut ${statutClass(item.statut)}">${statutLabel(item.statut)}</span>
+        </div>
+        <div class="circuit-track">${renderCircuitTrack(item.circuit, item.niveau_index)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.5rem;">
+        <button class="btn btn-ghost" onclick="ouvrirDocument(${item.document_id}, this)">Ouvrir le document</button>
+        <button class="btn btn-ghost" onclick="voirHistorique(${item.id})">Historique</button>
+        ${mode==='recus' ? `<button class="btn btn-primary" onclick="ouvrirAction(${item.id})">Traiter</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDate(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+async function chargerCircuits(){
+  try{
+    const [resEnv, resRec] = await Promise.all([
+      fetch(`${API_GED}/api/ged/circuits/mes-documents`, {credentials:'include'}),
+      fetch(`${API_GED}/api/ged/circuits/recus`, {credentials:'include'})
+    ]);
+    circuitsEnvoyes = resEnv.ok ? await resEnv.json() : [];
+    circuitsRecus   = resRec.ok ? await resRec.json() : [];
+    if (!Array.isArray(circuitsEnvoyes)) circuitsEnvoyes = [];
+    if (!Array.isArray(circuitsRecus))   circuitsRecus   = [];
+  } catch(e){
+    showAlert("Impossible de charger les circuits documentaires. Vérifiez que service-ged est démarré.", "error");
+    circuitsEnvoyes = [];
+    circuitsRecus = [];
+  }
+  renderListe('listeEnvoyes', 'countEnvoyes', circuitsEnvoyes, 'envoyes');
+  renderListe('listeRecus', 'countRecus', circuitsRecus, 'recus');
+}
+
+async function voirHistorique(circuitId){
+  try{
+    const res = await fetch(`${API_GED}/api/ged/circuits/${circuitId}`, {credentials:'include'});
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const histo = data.historique || [];
+    const html = histo.length
+      ? histo.map(h=>`
+          <div class="histo-item">
+            <div class="histo-dot"></div>
+            <div>
+              <div class="histo-action">${h.action} — ${h.acteur_poste_id || '?'}</div>
+              <div class="histo-meta">${formatDate(h.date_action)}${h.acteur_nom ? ' · ' + h.acteur_nom : ''}${h.commentaire ? ' · ' + h.commentaire : ''}</div>
+            </div>
+          </div>`).join('')
+      : '<p style="color:#9DAEC2;font-size:.85rem;">Aucun historique disponible.</p>';
+    document.getElementById('modalHistoriqueContenu').innerHTML = html;
+    document.getElementById('modalHistorique').classList.add('show');
+  } catch(e){
+    showAlert("Impossible de charger l'historique de ce document.", "error");
+  }
+}
+
+// ── Ouverture/téléchargement d'un document (avec code de sécurité si requis) ──
+let documentActifId = null;
+let fenetreActive = null;
+
+async function ouvrirDocument(documentId, btnEl){
+  // Ouverture synchrone de l'onglet, AU MOMENT du clic : évite le blocage
+  // popup des navigateurs, qui refusent tout window.open() déclenché après
+  // un await (donc en dehors du geste utilisateur direct).
+  const win = window.open('', '_blank');
+  if (!win){
+    showAlert("Votre navigateur a bloqué l'ouverture de l'onglet. Autorisez les popups pour ce site.", "error");
+    return;
+  }
+  win.document.title = 'Ouverture du document…';
+
+  if (btnEl){ btnEl.disabled = true; btnEl.textContent = 'Vérification…'; }
+  try{
+    const res = await fetch(`${API_GED}/api/ged/documents/${documentId}`, {credentials:'include'});
+    if (res.ok){
+      win.location.href = `${API_GED}/api/ged/documents/${documentId}/telecharger`;
+      return;
+    }
+    const err = await res.json().catch(()=>({detail:''}));
+    if (res.status === 403 && (err.detail || '').toLowerCase().includes('code de sécurité')){
+      win.close();
+      documentActifId = documentId;
+      document.getElementById('codeAccesInput').value = '';
+      document.getElementById('codeAccesError').classList.remove('show');
+      document.getElementById('modalCodeAcces').classList.add('show');
+    } else {
+      win.close();
+      showAlert(err.detail || "Impossible d'ouvrir ce document.", "error");
+    }
+  } catch(e){
+    win.close();
+    showAlert("Impossible de contacter le serveur.", "error");
+  } finally {
+    if (btnEl){ btnEl.disabled = false; btnEl.textContent = 'Ouvrir le document'; }
+  }
+}
+
+function closeModalCode(){
+  document.getElementById('modalCodeAcces').classList.remove('show');
+  documentActifId = null;
+}
+
+async function validerCodeAcces(){
+  if (!documentActifId) return;
+  const code = document.getElementById('codeAccesInput').value.trim();
+  const errZone = document.getElementById('codeAccesError');
+  const btn = document.getElementById('btnValiderCode');
+  if (!code){
+    errZone.textContent = "Veuillez saisir le code de sécurité.";
+    errZone.classList.add('show');
+    return;
+  }
+
+  // Même règle : ouvrir l'onglet synchroniquement, dès le clic sur "Valider".
+  const win = window.open('', '_blank');
+  if (!win){
+    errZone.textContent = "Votre navigateur a bloqué l'ouverture de l'onglet. Autorisez les popups pour ce site.";
+    errZone.classList.add('show');
+    return;
+  }
+  win.document.title = 'Ouverture du document…';
+
+  btn.disabled = true;
+  btn.textContent = 'Vérification…';
+  try{
+    const res = await fetch(`${API_GED}/api/ged/documents/${documentActifId}?code_acces=${encodeURIComponent(code)}`, {credentials:'include'});
+    if (res.ok){
+      const docId = documentActifId;
+      win.location.href = `${API_GED}/api/ged/documents/${docId}/telecharger?code_acces=${encodeURIComponent(code)}`;
+      closeModalCode();
+    } else {
+      win.close();
+      const err = await res.json().catch(()=>({detail:"Code de sécurité incorrect."}));
+      errZone.textContent = err.detail || "Code de sécurité incorrect.";
+      errZone.classList.add('show');
+    }
+  } catch(e){
+    win.close();
+    errZone.textContent = "Impossible de contacter le serveur.";
+    errZone.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Valider';
+  }
+}
+
+function ouvrirAction(circuitId){
+  circuitActifId = circuitId;
+  document.getElementById('modalCommentaire').value = '';
+  document.getElementById('modalAction').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('modalAction').classList.remove('show');
+  circuitActifId = null;
+}
+
+async function confirmerAction(){
+  if (!circuitActifId) return;
+  const action = document.getElementById('modalActionType').value;
+  const commentaire = document.getElementById('modalCommentaire').value.trim();
+
+  if ((action === 'REJETE' || action === 'RETOURNE') && !commentaire){
+    showAlert("Un commentaire est obligatoire en cas de rejet ou de retour.", "error");
+    return;
+  }
+
+  try{
+    const res = await fetch(`${API_GED}/api/ged/circuits/${circuitActifId}/action`, {
+      method: "POST",
+      credentials: "include",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ action, commentaire })
+    });
+    if (res.ok){
+      showAlert("Action enregistrée avec succès.", "ok");
+      closeModal();
+      chargerCircuits();
+    } else {
+      const err = await res.json().catch(()=>({detail:"Erreur lors du traitement."}));
+      showAlert(err.detail || "Erreur lors du traitement.", "error");
+    }
+  } catch(e){
+    showAlert("Impossible de contacter le serveur.", "error");
+  }
+}
+
+chargerCircuits();
+</script>
+</body>
+</html>

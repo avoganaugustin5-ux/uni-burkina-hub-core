@@ -646,6 +646,7 @@
     <li><a href="#comment-ca-marche">Comment ça marche</a></li>
     <li><a href="https://www.uts.bf" target="_blank" rel="noopener">Site UTS ↗</a></li>
     <li><a href="/a-propos">À propos</a></li>
+    <li><a href="/connexion" style="color:var(--or-clair);">🔐 Espace Administration</a></li>
     <li><a href="/inscription">S'inscrire</a></li>
     <li><a href="/connexion" class="nav-cta">Se connecter</a></li>
   </ul>
@@ -663,11 +664,11 @@
   <div class="hero-content">
     <div class="hero-badge">
       <span></span>
-      Mémoire de fin de cycle · Soutenance Juillet 2026
+      Mémoire de fin de cycle ·
     </div>
     <h1>
-      La bibliothèque académique<br>
-      <em>de demain</em>, aujourd'hui.
+      La Gestion Electronique<br>
+      <em>de Documents</em>, aujourd'hui.
     </h1>
     <p class="hero-desc">
       UniBurkina Hub transforme les photocopies, les fichiers épars et les réseaux informels
@@ -709,7 +710,7 @@
     <div style="overflow:hidden;flex:1;">
       <div class="ticker-track" id="ticker">
         <div class="ticker-item"><span class="dot">◆</span> UniBurkina Hub v3.0 — Moteur PaddleOCR entièrement intégré et opérationnel</div>
-        <div class="ticker-item"><span class="dot">◆</span> Soutenance de fin de cycle prévue en Juillet 2026 à l'UTS</div>
+        <div class="ticker-item"><span class="dot">◆</span> Soutenance de fin de cycle</div>
         <div class="ticker-item"><span class="dot">◆</span> 6 microservices opérationnels — Auth, GED, OCR, Search, Forum, Frontend</div>
         <div class="ticker-item"><span class="dot">◆</span> Nouveau : streaming SSE temps réel pour la progression OCR image par image</div>
         <div class="ticker-item"><span class="dot">◆</span> Score de confiance OCR par image (0–100%) disponible dans l'OCR Studio</div>
@@ -717,7 +718,7 @@
         <div class="ticker-item"><span class="dot">◆</span> Forum académique avec modération et signalements intégrés</div>
         <!-- Doublon pour boucle infinie -->
         <div class="ticker-item"><span class="dot">◆</span> UniBurkina Hub v3.0 — Moteur PaddleOCR entièrement intégré et opérationnel</div>
-        <div class="ticker-item"><span class="dot">◆</span> Soutenance de fin de cycle prévue en Juillet 2026 à l'UTS</div>
+        <div class="ticker-item"><span class="dot">◆</span> Soutenance de fin de cycle</div>
         <div class="ticker-item"><span class="dot">◆</span> 6 microservices opérationnels — Auth, GED, OCR, Search, Forum, Frontend</div>
         <div class="ticker-item"><span class="dot">◆</span> Nouveau : streaming SSE temps réel pour la progression OCR image par image</div>
         <div class="ticker-item"><span class="dot">◆</span> Score de confiance OCR par image (0–100%) disponible dans l'OCR Studio</div>
@@ -727,6 +728,28 @@
     </div>
   </div>
 </div>
+
+
+<!-- ══ GED ADMINISTRATIVE ═══════════════════════════════════ -->
+<section class="section" style="background: linear-gradient(135deg, var(--bleu-nuit) 0%, #0A3D6E 100%); padding: 4.5rem 5%; position: relative; overflow: hidden;" id="ged-administrative">
+  <div style="position:absolute; inset:0; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.03) 1px, transparent 0); background-size: 30px 30px;"></div>
+  <div style="position:relative; z-index:1; max-width: 920px; margin: 0 auto; text-align:center;">
+    <div class="section-tag" style="background: rgba(200,154,46,.2); color: var(--or-clair);">Réservé au personnel UTS</div>
+    <h2 class="section-title" style="color: var(--blanc);">GED Administrative — Université Thomas SANKARA</h2>
+    <p class="section-desc" style="color: rgba(255,255,255,.7); max-width: 640px;">
+      Un espace sécurisé dédié à la Présidence, au Cabinet, au Secrétariat Général, aux Vice-Présidences,
+      aux Directions et aux Services : recherchez instantanément le contenu de n'importe quel document
+      administratif PDF grâce à notre moteur PaddleOCR, qui lit et indexe le texte des fichiers stockés
+      en base de données.
+    </p>
+    <div class="hero-actions" style="justify-content:center; margin-top: 2rem;">
+      <a href="/connexion" class="btn-primary">🔎 Accéder à la recherche administrative</a>
+    </div>
+    <p style="color: rgba(255,255,255,.5); font-size: .8rem; margin-top: 1.2rem;">
+      L'accès est vérifié automatiquement après connexion — réservé aux membres de l'administration de l'UTS.
+    </p>
+  </div>
+</section>
 
 
 <!-- ══ FONCTIONNALITÉS ══════════════════════════════════════ -->
@@ -754,7 +777,7 @@
     <div class="feature-card fade-in">
       <div class="feature-icon" style="background: linear-gradient(135deg,#E8FFEF,#B3F5CB);">✅</div>
       <h3>Workflow de validation</h3>
-      <p>Chaque document passe par un processus de validation : délégué → sous-administrateur → classement officiel. Qualité garantie.</p>
+      <p>Chaque document passe par un processus de validation : utilisateur → sous-administrateur → classement officiel. Qualité garantie.</p>
     </div>
     <div class="feature-card fade-in">
       <div class="feature-icon" style="background: linear-gradient(135deg,#F5E8FF,#DDB3F5);">💬</div>
@@ -981,9 +1004,9 @@
     <div class="dev-visual">
       <div class="dev-avatar">A</div>
       <div class="dev-name">AVOGAN Koudjo<br>Augustin Sandaogo</div>
-      <div class="dev-ine">INE N01213620231</div>
+      <div class="dev-ine">INE N***********</div>
       <div class="dev-university">UTS — Université Thomas SANKARA</div>
-      <div class="dev-university" style="color:rgba(255,255,255,.5);font-size:.72rem;margin-top:.3rem;">Soutenance · Juillet 2026</div>
+      <div class="dev-university" style="color:rgba(255,255,255,.5);font-size:.72rem;margin-top:.3rem;">Licence 3 · SIR — Système d'Informations et Réseaux </div>
     </div>
     <div class="dev-content">
       <h3>À l'origine du projet</h3>
@@ -1009,7 +1032,7 @@
         <span class="dev-tag">SSE Streaming</span>
       </div>
       <div class="dev-links">
-        <a href="https://avoganaugustin.dev" target="_blank" rel="noopener" class="dev-link dev-link-blog">
+        <a href="https://avoganaugustin5-ux.github.io/Blog_Koudjo_Augustin_Sandaogo_AVOGAN/" target="_blank" rel="noopener" class="dev-link dev-link-blog">
           ✍️ Blog du développeur
         </a>
         <a href="mailto:avoganaugustin5@gmail.com" class="dev-link dev-link-email">
@@ -1049,7 +1072,7 @@
       <p>
         Système modulaire de Gestion Électronique de Documents académiques par OCR —
         vers une plateforme de digitalisation intégrée des universités du Burkina Faso.<br><br>
-        Mémoire de fin de cycle · Soutenance Juillet 2026.
+        Mémoire de fin de cycle · 
       </p>
     </div>
 
@@ -1069,7 +1092,7 @@
       <ul>
         <li><a href="https://www.uts.bf" target="_blank" rel="noopener">Université Thomas SANKARA ↗</a></li>
         <li><a href="https://www.messri.bf" target="_blank" rel="noopener">MESSRI ↗</a></li>
-        <li><a href="https://avoganaugustin.dev" target="_blank" rel="noopener">Blog du développeur ↗</a></li>
+        <li><a href="https://avoganaugustin5-ux.github.io/Blog_Koudjo_Augustin_Sandaogo_AVOGAN/" target="_blank" rel="noopener">Blog du développeur ↗</a></li>
         <li><a href="https://github.com/PaddlePaddle/PaddleOCR" target="_blank" rel="noopener">PaddleOCR ↗</a></li>
       </ul>
     </div>
@@ -1079,7 +1102,7 @@
       <ul>
         <li><a href="mailto:avoganaugustin5@gmail.com">📧 avoganaugustin5@gmail.com</a></li>
         <li><a href="https://www.uts.bf" target="_blank">🏛️ UTS — Ouagadougou, BF</a></li>
-        <li><a href="https://avoganaugustin.dev" target="_blank">✍️ Blog technique</a></li>
+        <li><a href="https://avoganaugustin5-ux.github.io/Blog_Koudjo_Augustin_Sandaogo_AVOGAN/" target="_blank">✍️ Blog technique</a></li>
       </ul>
     </div>
   </div>

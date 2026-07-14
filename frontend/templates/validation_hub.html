@@ -507,7 +507,10 @@ async function chargerDocsAttente() {
     const r = await fetch(API_GED + '/ged/documents?statut=EN_ATTENTE&limite=50');
     if (!r.ok) throw new Error('API GED indisponible');
     const data = await r.json();
-    docEnAttente = Array.isArray(data) ? data : (data.documents || data);
+    const brut = Array.isArray(data) ? data : (data.documents || data);
+    // AJOUT — les documents ADMINISTRATIF suivent le circuit documentaire, pas la
+    // validation centrale : ils ne doivent jamais apparaitre dans cette file.
+    docEnAttente = brut.filter(d => d.type_ressource !== 'ADMINISTRATIF');
 
     if (docEnAttente.length === 0) {
       cont.innerHTML = `

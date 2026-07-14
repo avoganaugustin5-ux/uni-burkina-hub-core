@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription Personnel — UniBurkina Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#F4F7FB;min-height:100vh;
+display:flex;align-items:center;justify-content:center;padding:2rem;}
+.wrap{width:100%;max-width:680px;}
+.card{background:#fff;border:1px solid #CDD8E4;border-radius:16px;
+box-shadow:0 4px 24px rgba(4,44,83,.08);overflow:hidden;}
+.head{background:#185FA5;color:#fff;padding:1.8rem 2.2rem;}
+.head h1{font-size:1.3rem;font-weight:700;margin-bottom:.3rem;}
+.head p{font-size:.85rem;opacity:.85;}
+.steps{display:flex;background:#F4F7FB;border-bottom:1px solid #CDD8E4;}
+.step{flex:1;text-align:center;padding:.9rem .5rem;font-size:.78rem;font-weight:600;
+color:#9DAEC2;border-bottom:3px solid transparent;transition:.2s;}
+.step.active{color:#185FA5;border-bottom-color:#185FA5;}
+.step.done{color:#1D9E75;}
+.body{padding:2.2rem;}
+.panel{display:none;}
+.panel.active{display:block;}
+label{display:block;font-size:.82rem;font-weight:600;color:#1B2A3A;margin-bottom:.35rem;margin-top:1rem;}
+label:first-child{margin-top:0;}
+input,select{width:100%;padding:.65rem .9rem;border:1px solid #CDD8E4;border-radius:8px;
+font-size:.88rem;color:#1B2A3A;background:#fff;outline:none;transition:.15s;}
+input:focus,select:focus{border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,.1);}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.hint{font-size:.75rem;color:#5A7288;margin-top:.3rem;}
+.actions{display:flex;justify-content:space-between;margin-top:2rem;gap:1rem;}
+button{cursor:pointer;border:none;border-radius:8px;font-weight:600;font-size:.88rem;
+padding:.7rem 1.5rem;transition:.15s;}
+.btn-prev{background:#F4F7FB;color:#5A7288;border:1px solid #CDD8E4;}
+.btn-prev:hover{background:#E8EEF5;}
+.btn-next{background:#185FA5;color:#fff;margin-left:auto;}
+.btn-next:hover{background:#134A82;}
+.btn-submit{background:#1D9E75;color:#fff;margin-left:auto;}
+.btn-submit:hover{background:#16805F;}
+.btn-submit:disabled{background:#9DAEC2;cursor:not-allowed;}
+.recap{background:#F4F7FB;border:1px solid #CDD8E4;border-radius:10px;padding:1.2rem;font-size:.85rem;}
+.recap div{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid #E2E9F0;}
+.recap div:last-child{border-bottom:none;}
+.recap span:first-child{color:#5A7288;}
+.recap span:last-child{font-weight:600;color:#1B2A3A;}
+.alert{padding:.8rem 1rem;border-radius:8px;font-size:.82rem;margin-bottom:1rem;display:none;}
+.alert.error{background:#FDEDEA;color:#D84315;border:1px solid #F5C6BB;}
+.alert.show{display:block;}
+.success{text-align:center;padding:1rem 0;}
+.success .ico{font-size:3.2rem;margin-bottom:1rem;}
+.success h2{color:#1D9E75;font-size:1.2rem;margin-bottom:.6rem;}
+.success p{color:#5A7288;font-size:.88rem;line-height:1.6;margin-bottom:1.5rem;}
+.badge-attente{display:inline-block;background:#FFF3E0;color:#E65100;padding:.4rem .9rem;
+border-radius:6px;font-size:.78rem;font-weight:600;margin-bottom:1rem;}
+.back-link{display:block;text-align:center;margin-top:1.2rem;color:#5A7288;font-size:.82rem;text-decoration:none;}
+.back-link:hover{color:#185FA5;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid #fff;
+border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;margin-right:.4rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="head">
+      <h1>Inscription — Personnel &amp; Direction</h1>
+      <p>Université Thomas SANKARA — Cabinet, Secrétariat Général, Directions et Services</p>
+    </div>
+
+    <div class="steps" id="stepsBar">
+      <div class="step active" data-step="1">1. Identité</div>
+      <div class="step" data-step="2">2. Poste</div>
+      <div class="step" data-step="3">3. Compte</div>
+      <div class="step" data-step="4">4. Confirmation</div>
+    </div>
+
+    <div class="body">
+      <div class="alert error" id="alertBox"></div>
+
+      <!-- Étape 1 : Identité -->
+      <div class="panel active" data-panel="1">
+        <div class="row2">
+          <div>
+            <label>Nom</label>
+            <input type="text" id="f_nom" placeholder="Ex. OUEDRAOGO">
+          </div>
+          <div>
+            <label>Prénom(s)</label>
+            <input type="text" id="f_prenom" placeholder="Ex. Awa">
+          </div>
+        </div>
+        <label>Email professionnel</label>
+        <input type="email" id="f_email" placeholder="prenom.nom@uts.bf">
+        <label>Téléphone</label>
+        <input type="tel" id="f_telephone" placeholder="+226 70 00 00 00">
+        <div class="actions">
+          <button class="btn-next" type="button" onclick="goStep(2)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : Poste -->
+      <div class="panel" data-panel="2">
+        <label>Branche</label>
+        <select id="f_branche" onchange="onBrancheChange()">
+          <option value="">— Sélectionnez une branche —</option>
+          <option value="presidence">Présidence</option>
+          <option value="cabinet">Cabinet</option>
+          <option value="vp-eip">Vice-Présidence EIP</option>
+          <option value="vp-rcu">Vice-Présidence RCU</option>
+          <option value="sg">Secrétariat Général</option>
+        </select>
+
+        <label>Service / Direction</label>
+        <select id="f_service" onchange="onServiceChange()">
+          <option value="">— Sélectionnez d'abord une branche —</option>
+        </select>
+
+        <label>Grade / Fonction <span style="font-weight:400;color:#9DAEC2;">(optionnel)</span></label>
+        <select id="f_grade">
+          <option value="" selected>— Déduit automatiquement de votre service —</option>
+          <option value="EMPLOYE">Agent / Employé de service</option>
+          <option value="DIRECTEUR">Directeur / Chef de service</option>
+          <option value="CABINET">Personnel du Cabinet</option>
+          <option value="SG">Secrétaire Général</option>
+          <option value="VP_EIP">Vice-Président EIP</option>
+          <option value="VP_RCU">Vice-Président RCU</option>
+          <option value="PRESIDENT">Président</option>
+        </select>
+        <div class="hint">Ne renseignez ce champ que si votre grade réel diffère de celui habituellement associé à ce service (ex : vous êtes le Directeur alors que le service accueille aussi de simples agents).</div>
+
+        <div class="hint" id="posteHint">Le choix du service suffit — il n'est pas nécessaire de préciser l'intitulé exact du poste.</div>
+
+        <div class="actions">
+          <button class="btn-prev" type="button" onclick="goStep(1)">← Retour</button>
+          <button class="btn-next" type="button" onclick="goStep(3)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Étape 3 : Compte -->
+      <div class="panel" data-panel="3">
+        <label>Nom d'utilisateur</label>
+        <input type="text" id="f_username" placeholder="Ex. a.ouedraogo">
+        <label>Mot de passe</label>
+        <input type="password" id="f_password" placeholder="8 caractères minimum">
+        <label>Confirmer le mot de passe</label>
+        <input type="password" id="f_password2" placeholder="Ressaisissez le mot de passe">
+        <div class="actions">
+          <button class="btn-prev" type="button" onclick="goStep(2)">← Retour</button>
+          <button class="btn-next" type="button" onclick="goStep(4)">Continuer →</button>
+        </div>
+      </div>
+
+      <!-- Étape 4 : Récapitulatif -->
+      <div class="panel" data-panel="4">
+        <div class="recap" id="recapBox"></div>
+        <div class="actions">
+          <button class="btn-prev" type="button" onclick="goStep(3)">← Retour</button>
+          <button class="btn-submit" type="button" id="btnSubmit" onclick="soumettre()">Créer le compte</button>
+        </div>
+      </div>
+
+      <!-- Écran succès -->
+      <div class="panel" data-panel="success">
+        <div class="success">
+          <div class="ico">✅</div>
+          <h2>Demande envoyée</h2>
+          <div class="badge-attente">⏳ En attente de validation manuelle</div>
+          <p>Votre compte a été créé et sera activé après vérification par un administrateur de la plateforme. Vous recevrez un message une fois votre accès validé.</p>
+          <a href="/login" class="back-link" style="background:#185FA5;color:#fff;padding:.6rem 1.4rem;border-radius:8px;display:inline-block;text-decoration:none;">Retour à la connexion</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <a href="/inscription" class="back-link">Vous êtes étudiant ou enseignant ? Inscrivez-vous ici →</a>
+</div>
+
+<script>
+const API_BASE = "{{ api_base_url }}";
+
+/* Données de secours si uts_org_data.js n'est pas encore chargé sur cette page.
+   À terme, ce bloc doit être retiré et remplacé par un <script src="/static/js/uts_org_data.js">
+   conformément au Chantier 2 du plan d'intégration. */
+const SERVICES_PAR_BRANCHE = {
+  "presidence": [{id:"president", nom:"Président"}],
+  "cabinet": [
+    {id:"ccab", nom:"Chef de Cabinet"}, {id:"cj", nom:"Conseiller Juridique"},
+    {id:"sp", nom:"Secrétariat Particulier"}, {id:"sc", nom:"Service Communication"},
+    {id:"cat", nom:"Chargé d'Appui Technique"}
+  ],
+  "vp-eip": [
+    {id:"dsi", nom:"Direction des Systèmes d'Information"},
+    {id:"dei", nom:"Direction des Enseignements et Innovations"},
+    {id:"dpe", nom:"Direction Professionnalisation et Entrepreneuriat"},
+    {id:"daoi", nom:"Direction Affaires Académiques"},
+    {id:"ssm", nom:"Service Support et Maintenance"}
+  ],
+  "vp-rcu": [
+    {id:"drv", nom:"Direction Recherche et Valorisation"},
+    {id:"dcpe", nom:"Direction Coopération Universitaire"},
+    {id:"dprue", nom:"Direction Prospective et Relations Entreprises"}
+  ],
+  "sg": [
+    {id:"daf", nom:"Direction Administration des Finances"},
+    {id:"drh", nom:"Direction Ressources Humaines"},
+    {id:"dep", nom:"Direction Études et Planification"},
+    {id:"bcmp", nom:"Bureau Comptable Matières Principal"},
+    {id:"buc", nom:"Bibliothèque Universitaire Centrale"},
+    {id:"ssac", nom:"Service Sports, Arts et Culture"},
+    {id:"sa", nom:"Service des Archives"},
+    {id:"sr", nom:"Service de la Reprographie"},
+    {id:"scc", nom:"Service Central du Courrier"}
+  ]
+};
+
+let currentStep = 1;
+const data = {};
+
+/* Déduction du rôle RoleEnum et du type_poste à partir du service sélectionné.
+   Cohérent avec models.py (commentaire AJOUT UTS) et ROLES_VALIDATION_MANUELLE
+   côté service-auth/routes.py. */
+const ROLE_PAR_SERVICE = {
+  president: "PRESIDENT",
+  ccab: "CABINET", cj: "CABINET", sp: "CABINET", sc: "CABINET", cat: "CABINET",
+  dsi: "DIRECTEUR", dei: "DIRECTEUR", dpe: "DIRECTEUR", daoi: "DIRECTEUR", ssm: "EMPLOYE",
+  drv: "DIRECTEUR", dcpe: "DIRECTEUR", dprue: "DIRECTEUR",
+  daf: "DIRECTEUR", drh: "DIRECTEUR", dep: "DIRECTEUR", bcmp: "DIRECTEUR", buc: "DIRECTEUR",
+  ssac: "EMPLOYE", sa: "EMPLOYE", sr: "EMPLOYE", scc: "EMPLOYE"
+};
+const TYPE_POSTE_PAR_ROLE = {
+  PRESIDENT: "individuel", CABINET: "service", DIRECTEUR: "directeur",
+  SG: "individuel", VP_EIP: "individuel", VP_RCU: "individuel", EMPLOYE: "service"
+};
+
+function showAlert(msg){
+  const box = document.getElementById('alertBox');
+  box.textContent = msg;
+  box.classList.add('show');
+  setTimeout(()=>box.classList.remove('show'), 5000);
+}
+
+function goStep(step){
+  if (step > currentStep && !validateStep(currentStep)) return;
+  if (step === 4) buildRecap();
+
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-panel="${step}"]`).classList.add('active');
+
+  document.querySelectorAll('.step').forEach(s=>{
+    const n = parseInt(s.dataset.step);
+    s.classList.remove('active','done');
+    if (n === step) s.classList.add('active');
+    else if (n < step) s.classList.add('done');
+  });
+  currentStep = step;
+}
+
+function validateStep(step){
+  if (step === 1){
+    data.nom = document.getElementById('f_nom').value.trim();
+    data.prenom = document.getElementById('f_prenom').value.trim();
+    data.email = document.getElementById('f_email').value.trim();
+    data.telephone = document.getElementById('f_telephone').value.trim();
+    if (!data.nom || !data.prenom || !data.email){
+      showAlert("Merci de renseigner le nom, le prénom et l'email.");
+      return false;
+    }
+  }
+  if (step === 2){
+    data.branche = document.getElementById('f_branche').value;
+    data.service = document.getElementById('f_service').value;
+    data.grade   = document.getElementById('f_grade').value;
+    if (!data.branche || !data.service){
+      showAlert("Merci de sélectionner une branche et un service.");
+      return false;
+    }
+  }
+  if (step === 3){
+    data.username = document.getElementById('f_username').value.trim();
+    data.password = document.getElementById('f_password').value;
+    const pwd2 = document.getElementById('f_password2').value;
+    if (!data.username || !data.password){
+      showAlert("Merci de renseigner un identifiant et un mot de passe.");
+      return false;
+    }
+    if (data.password.length < 8){
+      showAlert("Le mot de passe doit contenir au moins 8 caractères.");
+      return false;
+    }
+    if (data.password !== pwd2){
+      showAlert("Les deux mots de passe ne correspondent pas.");
+      return false;
+    }
+  }
+  return true;
+}
+
+function onBrancheChange(){
+  const branche = document.getElementById('f_branche').value;
+  const select = document.getElementById('f_service');
+  select.innerHTML = '<option value="">— Sélectionnez un service —</option>';
+  if (!branche || !SERVICES_PAR_BRANCHE[branche]) return;
+  SERVICES_PAR_BRANCHE[branche].forEach(s=>{
+    const opt = document.createElement('option');
+    opt.value = s.id;
+    opt.textContent = s.nom;
+    select.appendChild(opt);
+  });
+}
+
+function onServiceChange(){
+  const branche = document.getElementById('f_branche').value;
+  const serviceId = document.getElementById('f_service').value;
+  const liste = SERVICES_PAR_BRANCHE[branche] || [];
+  const found = liste.find(s=>s.id === serviceId);
+  data.service_nom = found ? found.nom : "";
+}
+
+function nomBranche(code){
+  return {
+    "presidence":"Présidence","cabinet":"Cabinet","vp-eip":"Vice-Présidence EIP",
+    "vp-rcu":"Vice-Présidence RCU","sg":"Secrétariat Général"
+  }[code] || code;
+}
+
+function buildRecap(){
+  const box = document.getElementById('recapBox');
+  box.innerHTML = `
+    <div><span>Nom complet</span><span>${data.prenom} ${data.nom}</span></div>
+    <div><span>Email</span><span>${data.email}</span></div>
+    <div><span>Téléphone</span><span>${data.telephone || '—'}</span></div>
+    <div><span>Branche</span><span>${nomBranche(data.branche)}</span></div>
+    <div><span>Service</span><span>${data.service_nom || data.service}</span></div>
+    <div><span>Grade</span><span>${data.grade || '—'}</span></div>
+    <div><span>Identifiant</span><span>${data.username}</span></div>
+  `;
+}
+
+async function soumettre(){
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Envoi en cours…';
+
+  const role = data.grade || ROLE_PAR_SERVICE[data.service] || "EMPLOYE";
+  const typePoste = TYPE_POSTE_PAR_ROLE[role] || "service";
+
+  const payload = {
+    nom: data.nom,
+    prenom: data.prenom,
+    email: data.email,
+    telephone: data.telephone || null,
+    username: data.username,
+    mot_de_passe: data.password,
+    confirm_mot_de_passe: data.password,
+    role: role,
+    poste_id: data.service,
+    branche: data.branche,
+    type_poste: typePoste,
+    sexe: null,
+    date_naissance: null,
+    nationalite: null,
+    id_univ: null,
+    id_ufr_gere: null,
+    photo_profil_url: null
+  };
+
+  try{
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok){
+      // Compte cree -> connexion automatique -> cookie HTTPOnly -> redirect dashboard
+      const loginRes = await fetch(`${API_BASE}/auth/login`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ email: payload.email, mot_de_passe: payload.mot_de_passe })
+      });
+      if (loginRes.ok){
+        const loginData = await loginRes.json();
+        const tokenRes = await fetch("/set-token", {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ token: loginData.access_token, role: loginData.role })
+        });
+        if (tokenRes.ok){
+          const tokenData = await tokenRes.json();
+          window.location.href = tokenData.redirect_url;
+          return;
+        }
+      }
+      // Fallback si auto-login echoue
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      document.querySelector('[data-panel="success"]').classList.add('active');
+      document.getElementById('stepsBar').style.display = 'none';
+    } else {
+      const err = await res.json().catch(()=>({detail:"Erreur lors de la création du compte."}));
+      let msg = "Erreur lors de la création du compte.";
+      if (typeof err.detail === "string") msg = err.detail;
+      else if (Array.isArray(err.detail)) msg = err.detail.map(e => e.msg || JSON.stringify(e)).join(" · ");
+      showAlert(msg);
+      btn.disabled = false;
+      btn.textContent = "Créer le compte";
+    }
+  } catch(e){
+    showAlert("Impossible de contacter le serveur. Vérifiez votre connexion.");
+    btn.disabled = false;
+    btn.textContent = "Créer le compte";
+  }
+}
+</script>
+</body>
+</html>

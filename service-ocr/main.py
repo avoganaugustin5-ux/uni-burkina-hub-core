@@ -85,6 +85,7 @@ from sqlalchemy import (
     create_engine, Column, Integer, String, Text,
     DateTime, Float, ForeignKey, Boolean
 )
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 from sqlalchemy.sql import func
 
@@ -102,24 +103,68 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql://uniburkina_admin:UTS_Burkina2025!@localhost:5432/uniburkina_db"
 )
-API_AUTH = os.getenv("API_AUTH", "http://localhost:8001")
-API_GED  = os.getenv("API_GED",  "http://localhost:8002")
+API_AUTH     = os.getenv("API_AUTH",     "http://localhost:8001")
+API_GED      = os.getenv("API_GED",      "http://localhost:8002")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")   # Clé Groq — optionnelle, active la correction Vision
 
-# ── Stockage MinIO — module dédié ─────────────────────────────────────────────
-from ocr_storage_minio import (
-    init_ocr_storage,
-    sauvegarder_image_minio,
-    uploader_fichier_genere,
-    telecharger_fichier_genere,
-    fichier_genere_existe,
-    get_tmp_output_dir,
-    get_tmp_upload_dir,
-)
+# ── Stockage MinIO — module dédié (optionnel) ─────────────────────────────────
+# Si ocr_storage_minio est absent ou si MinIO est arrêté, fallback stockage local.
+_MINIO_AVAILABLE = False
+try:
+    from ocr_storage_minio import (
+        init_ocr_storage,
+        sauvegarder_image_minio,
+        uploader_fichier_genere,
+        telecharger_fichier_genere,
+        fichier_genere_existe,
+        get_tmp_output_dir,
+        get_tmp_upload_dir,
+    )
+    _MINIO_AVAILABLE = True
+except ImportError:
+    logging.getLogger("service-ocr").warning(
+        "[startup] ocr_storage_minio introuvable — stockage LOCAL activé (fallback)."
+    )
 
-# UPLOAD_DIR et OUTPUT_DIR pointent vers les dossiers TEMPORAIRES LOCAUX.
-# Les fichiers finaux sont uploadés vers MinIO par uploader_fichier_genere().
-UPLOAD_DIR = get_tmp_upload_dir()
-OUTPUT_DIR = get_tmp_output_dir()
+_BASE_TMP     = Path(os.getenv("OCR_TMP_DIR", "tmp_ocr"))
+_UPLOAD_LOCAL = _BASE_TMP / "uploads"
+_OUTPUT_LOCAL = _BASE_TMP / "outputs"
+
+if _MINIO_AVAILABLE:
+    UPLOAD_DIR = get_tmp_upload_dir()
+    OUTPUT_DIR = get_tmp_output_dir()
+else:
+    UPLOAD_DIR = _UPLOAD_LOCAL
+    OUTPUT_DIR = _OUTPUT_LOCAL
+
+    def init_ocr_storage():
+        logging.getLogger("service-ocr").info("[fallback] stockage local.")
+
+    def sauvegarder_image_minio(upload, idx: int, session_id: str) -> Path:
+        import shutil
+        ext  = Path(upload.filename or "image.jpg").suffix or ".jpg"
+        dest = UPLOAD_DIR / f"{session_id}_{idx}{ext}"
+        upload.file.seek(0)
+        with open(dest, "wb") as fh:
+            shutil.copyfileobj(upload.file, fh)
+        return dest
+
+    def uploader_fichier_genere(chemin: Path) -> str:
+        import shutil
+        dest = OUTPUT_DIR / chemin.name
+        if chemin.resolve() != dest.resolve():
+            shutil.copy2(str(chemin), str(dest))
+        return str(dest)
+
+    def telecharger_fichier_genere(cle: str):
+        p = Path(cle)
+        if not p.exists():
+            raise FileNotFoundError(f"Fichier local introuvable : {cle}")
+        return p.read_bytes(), p.name
+
+    def fichier_genere_existe(cle: str) -> bool:
+        return Path(cle).exists()
+
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -133,7 +178,8 @@ IMAGE_MIMES = {
 }
 
 # Rôles autorisés à déposer sans validation
-ROLES_DEPOT_DIRECT = {"ADMIN", "SOUS_ADMIN", "CHEF_DEPARTEMENT", "PRESIDENT"}
+ROLES_DEPOT_DIRECT = {"ADMIN", "SOUS_ADMIN", "CHEF_DEPARTEMENT", "PRESIDENT",
+                      "DIRECTEUR", "EMPLOYE", "CABINET", "SG", "VP_EIP", "VP_RCU"}
 ROLES_SOUMISSION   = {"DELEGUE", "ETUDIANT", "ENSEIGNANT"} | ROLES_DEPOT_DIRECT
 
 # ==============================================================================
@@ -166,7 +212,7 @@ class DocumentOCR(Base):
     # Liaison GED
     id_doc_ged         = Column(Integer, nullable=True)
     # Métadonnées du soumetteur
-    id_utilisateur     = Column(Integer, nullable=True)
+    id_utilisateur     = Column(PG_UUID(as_uuid=True), nullable=True)  # UUID (etait Integer par erreur)
     role_soumetteur    = Column(String(50), nullable=True)
     depot_direct       = Column(Boolean, default=False)  # True = pas besoin de validation
 
@@ -255,6 +301,17 @@ async def verifier_token(
     except Exception:
         pass
     return None
+
+
+def _uuid_ou_none(valeur):
+    """Convertit une chaine UUID en objet uuid.UUID ; retourne None si invalide/absente
+    (id_utilisateur vient de /auth/me sous forme de chaine JSON, la colonne attend un UUID)."""
+    if not valeur:
+        return None
+    try:
+        return uuid.UUID(str(valeur))
+    except (ValueError, AttributeError):
+        return None
 
 
 def ameliorer_image(img: Image.Image) -> Image.Image:
@@ -868,7 +925,7 @@ async def scan_multi(
         statut            = "RETRANSCRIT",
         langue            = langue,
         date_traitement   = datetime.now(),
-        id_utilisateur    = user.get("id_utilisateur") if user else None,
+        id_utilisateur    = _uuid_ou_none(user.get("id")) if user else None,
         role_soumetteur   = user.get("role") if user else None,
     )
     db.add(doc); db.commit(); db.refresh(doc)
@@ -917,24 +974,82 @@ async def corriger_texte(
     return {"id_ocr": id_ocr, "statut": "CORRIGE", "nb_chars": len(texte_corrige)}
 
 
-# ── 2b. CORRECTION LLM MANUELLE (bouton frontend) ─────────────────────────────
+# ── 2b. CORRECTION GROQ VISION (bouton "Corriger avec IA" du frontend) ────────
 @app.post("/ocr/documents/{id_ocr}/corriger-llm",
-          summary="[Désactivé v3.0] Correction LLM retirée — Gemini supprimé")
+          summary="Correction IA via Groq Vision (llama-4-scout) — remplace Gemini")
 async def corriger_llm_manuel(
     id_ocr: int,
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db)
 ):
     """
-    Endpoint conservé pour rétro-compatibilité.
-    La correction Gemini a été supprimée en v3.0 (PaddleOCR uniquement).
-    Utilisez PATCH /ocr/documents/{id_ocr}/corriger pour corriger manuellement.
+    Réactivé en v3.1 : envoie l'image source + texte PaddleOCR à Groq Vision
+    pour correction orthographique, formules mathématiques et amélioration structure.
+
+    Requiert GROQ_API_KEY dans .env — gratuit sur groq.com.
+    Si la clé est absente ou si Groq échoue, retourne le texte PaddleOCR inchangé.
     """
-    raise HTTPException(
-        503,
-        "Correction IA désactivée en v3.0 (service Gemini retiré). "
-        "Corrigez le texte manuellement via PATCH /ocr/documents/{id_ocr}/corriger."
-    )
+    from ocr_engine import groq_vision_corriger, GROQ_AVAILABLE
+
+    doc = db.query(DocumentOCR).filter(DocumentOCR.id_ocr == id_ocr).first()
+    if not doc:
+        raise HTTPException(404, "Document OCR introuvable")
+
+    if not GROQ_AVAILABLE:
+        raise HTTPException(
+            503,
+            "GROQ_API_KEY non configurée dans service-ocr/.env. "
+            "Ajoutez GROQ_API_KEY=gsk_... et redémarrez le service."
+        )
+
+    # Récupérer la première image source depuis la BDD
+    import json as _json
+    try:
+        chemins_src = _json.loads(doc.chemin_source.replace("'", '"'))
+        chemins_valides = [Path(c) for c in chemins_src if Path(c).exists()]
+    except Exception:
+        chemins_valides = []
+
+    if not chemins_valides:
+        raise HTTPException(
+            404,
+            "Images sources introuvables (fichiers temporaires supprimés ?). "
+            "Relancez une retranscription et corrigez immédiatement après."
+        )
+
+    # Texte de base : corrigé manuellement en priorité, sinon brut PaddleOCR
+    texte_base = doc.texte_corrige or doc.texte_extrait or ""
+
+    # Appeler Groq Vision sur chaque image et consolider
+    textes_corriges = []
+    moteurs         = []
+    score_bonus_tot = 0
+
+    for chemin in chemins_valides:
+        resultat = await groq_vision_corriger(chemin, texte_base)
+        textes_corriges.append(resultat["texte_corrige"])
+        moteurs.append(resultat["moteur"])
+        score_bonus_tot += resultat["score_bonus"]
+
+    texte_final = "\n\n".join(textes_corriges).strip()
+    moteur_final = "paddleocr+groq" if any("groq" in m for m in moteurs) else "paddleocr"
+
+    # Sauvegarder en BDD
+    doc.texte_corrige = texte_final
+    doc.statut        = "CORRIGE"
+    db.commit()
+
+    log.info(f"Groq correction id_ocr={id_ocr} — {len(texte_final)} chars, moteur={moteur_final}")
+
+    return {
+        "id_ocr":         id_ocr,
+        "statut":         "CORRIGE",
+        "moteur":         moteur_final,
+        "nb_chars":       len(texte_final),
+        "texte_corrige":  texte_final,
+        "message":        "Texte corrigé par Groq Vision (llama-4-scout)." if moteur_final == "paddleocr+groq"
+                          else "Groq n'a pas pu corriger — texte PaddleOCR conservé.",
+    }
 
 
 # ── 3. GÉNÉRER LE DOCUMENT AU FORMAT VOULU ────────────────────────────────────
@@ -1083,7 +1198,7 @@ async def scan_simple(
         langue           = langue,
         id_doc_ged       = id_doc_ged,
         date_traitement  = datetime.now(),
-        id_utilisateur   = user.get("id_utilisateur") if user else None,
+        id_utilisateur   = _uuid_ou_none(user.get("id")) if user else None,
         role_soumetteur  = user.get("role") if user else None,
     )
     db.add(doc); db.commit(); db.refresh(doc)
@@ -1121,8 +1236,8 @@ async def soumettre_vers_ged(
     id_ocr:        int           = Form(...),
     titre:         str           = Form(...),
     type_ressource: str          = Form(...),   # COURS | TD | EXAMEN | ARCHIVE
-    id_filiere:    Optional[int] = Form(None),
-    id_module:     Optional[int] = Form(None),
+    id_filiere:    Optional[str] = Form(None),   # str pour accepter "" sans 422
+    id_module:     Optional[str] = Form(None),    # str pour accepter "" sans 422
     description:   str           = Form(""),
     depot_direct:  bool          = Form(False), # True = pas besoin de validation
     authorization: Optional[str] = Header(None),
@@ -1138,7 +1253,7 @@ async def soumettre_vers_ged(
         raise HTTPException(401, "Authentification requise")
 
     role = user.get("role", "")
-    id_user = user.get("id_utilisateur")
+    id_user = user.get("id")
 
     # Vérification droits de soumission
     if role not in ROLES_SOUMISSION:
@@ -1147,6 +1262,12 @@ async def soumettre_vers_ged(
     # Dépôt direct : uniquement pour les rôles privilégiés
     if depot_direct and role not in ROLES_DEPOT_DIRECT:
         depot_direct = False  # Forcer validation même si demandé
+
+    # Convertir id_filiere / id_module (reçus en string depuis FormData, "" → None)
+    id_filiere_int: Optional[int] = int(id_filiere) if id_filiere and str(id_filiere).strip().isdigit() else None
+    id_module_int:  Optional[int] = int(id_module)  if id_module  and str(id_module).strip().isdigit()  else None
+    id_filiere = id_filiere_int   # réassigner pour le reste de la fonction
+    id_module  = id_module_int
 
     doc_ocr = db.query(DocumentOCR).filter(DocumentOCR.id_ocr == id_ocr).first()
     if not doc_ocr:
@@ -1184,6 +1305,7 @@ async def soumettre_vers_ged(
                         "statut":        statut_ged,
                         "est_valide":    str(est_valide).lower(),
                         "texte_ocr":     doc_ocr.texte_corrige or doc_ocr.texte_extrait or "",
+                        "id_soumis_par": str(id_user) if id_user else "",
                     },
                     headers={"Authorization": f"Bearer {token}"}
                 )
@@ -1409,7 +1531,7 @@ async def retranscrire(
         statut           = "RETRANSCRIT",
         langue           = langue,
         date_traitement  = datetime.now(),
-        id_utilisateur   = user.get("id_utilisateur") if user else None,
+        id_utilisateur   = _uuid_ou_none(user.get("id")) if user else None,
         role_soumetteur  = user.get("role") if user else None,
     )
     db.add(doc); db.commit(); db.refresh(doc)
@@ -1517,7 +1639,7 @@ async def generer_document_direct(
         statut           = "GENERE",
         langue           = langue,
         date_traitement  = datetime.now(),
-        id_utilisateur   = user.get("id_utilisateur") if user else None,
+        id_utilisateur   = _uuid_ou_none(user.get("id")) if user else None,
         role_soumetteur  = user.get("role") if user else None,
     )
     db.add(doc); db.commit(); db.refresh(doc)
@@ -1545,6 +1667,361 @@ async def generer_document_direct(
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
+
+
+
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NOUVEAUX ENDPOINTS — SOUMISSION ET GÉNÉRATION DIRECTE (SANS OCR PRÉALABLE)
+# Permettent d'envoyer n'importe quel fichier (image, PDF, DOC, etc.)
+# directement vers la GED ou de générer un document sans passer par l'OCR.
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Tous les types MIME acceptés en soumission directe
+DIRECT_MIMES = {
+    *IMAGE_MIMES,
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "text/plain",
+    "text/markdown",
+}
+
+
+def _sauvegarder_fichier_direct(upload: UploadFile, idx: int, session_id: str) -> Path:
+    """Sauvegarde un fichier quelconque (pas seulement image) dans le répertoire upload."""
+    ext  = Path(upload.filename or f"fichier_{idx}").suffix or ".bin"
+    dest = UPLOAD_DIR / f"{session_id}_direct_{idx}{ext}"
+    import shutil
+    upload.file.seek(0)
+    with open(str(dest), "wb") as fh:
+        shutil.copyfileobj(upload.file, fh)
+    return dest
+
+
+@app.post(
+    "/ocr/generer-direct",
+    summary="Générer un document depuis fichiers bruts SANS OCR préalable",
+)
+async def generer_direct(
+    fichiers:      List[UploadFile] = File(...),
+    titre:         str              = Form("Document"),
+    format_sortie: str              = Form("pdf"),
+    texte_corrige: str              = Form(""),
+    authorization: Optional[str]   = Header(None),
+    db:            Session          = Depends(get_db),
+):
+    """
+    Génère un document (PDF, DOCX, XLSX, PPTX, TXT, MD) à partir de fichiers bruts.
+    Si les fichiers sont des images ET qu'aucun texte n'est fourni, effectue l'OCR.
+    Si les fichiers sont des non-images (PDF, DOC…), les joint directement au PDF.
+    Retourne le fichier en téléchargement direct (Content-Disposition: attachment).
+    """
+    fmt = format_sortie.lower().strip()
+    if fmt not in FORMATS_SUPPORTES:
+        raise HTTPException(400, f"Format '{fmt}' non supporte. Choisissez : {FORMATS_SUPPORTES}")
+
+    user       = await verifier_token(authorization)
+    session_id = uuid.uuid4().hex[:12]
+    chemins    = []
+    noms       = []
+
+    for i, f in enumerate(fichiers):
+        chemin = _sauvegarder_fichier_direct(f, i, session_id)
+        chemins.append(chemin)
+        noms.append(f.filename or f"fichier_{i}")
+
+    # Séparer images et autres fichiers
+    chemins_images = [
+        c for c, f in zip(chemins, fichiers)
+        if (f.content_type or "") in IMAGE_MIMES
+        or Path(f.filename or "").suffix.lower() in {".jpg", ".jpeg", ".png", ".tiff", ".bmp", ".webp"}
+    ]
+
+    # ── Génération DIRECTE : jamais d'OCR automatique ─────────────────────────
+    # Si l'utilisateur n'a pas retranscrit, on insère les images telles quelles
+    # dans le document (mode_images=True pour PDF, sinon texte minimal).
+    texte = texte_corrige.strip()  # vide si pas de retranscription préalable
+
+    if not texte and not chemins_images:
+        # Fichiers non-image sans texte : titre comme contenu minimal
+        texte = titre
+
+    # Pour les images sans texte : mode_images activé (images dans le PDF dans l'ordre)
+    mode_images_direct = bool(chemins_images) and not texte and fmt == "pdf"
+
+    # Générer le document
+    try:
+        chemin_dest = dispatcher_generation(
+            fmt, texte, titre,
+            images=chemins_images if chemins_images else None,
+            mode_images=mode_images_direct,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Erreur generation : {e}")
+
+    taille    = chemin_dest.stat().st_size if chemin_dest.exists() else 0
+    objet_key = uploader_fichier_genere(chemin_dest)
+
+    # Créer un enregistrement DocumentOCR pour le suivi
+    doc = DocumentOCR(
+        nom_fichier_orig = noms[0] if noms else "document",
+        chemin_source    = str([str(c) for c in chemins]),
+        chemin_pdf       = objet_key,
+        texte_extrait    = texte,
+        texte_corrige    = texte_corrige.strip() or None,
+        nb_pages         = len(fichiers),
+        nb_images        = len(chemins_images),
+        format_sortie    = fmt,
+        taille_fichier   = taille,
+        statut           = "GENERE",
+        langue           = "fra",
+        date_traitement  = datetime.now(),
+        id_utilisateur   = _uuid_ou_none(user.get("id")) if user else None,
+        role_soumetteur  = user.get("role") if user else None,
+    )
+    db.add(doc)
+    db.commit()
+    db.refresh(doc)
+
+    # Renvoyer le fichier en téléchargement direct
+    mime_map = {
+        "pdf":  "application/pdf",
+        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        "txt":  "text/plain; charset=utf-8",
+        "md":   "text/markdown; charset=utf-8",
+    }
+    mime     = mime_map.get(fmt, "application/octet-stream")
+    filename = (titre.replace(" ", "_")[:40] or "document") + "." + fmt
+
+    try:
+        contenu, _ = telecharger_fichier_genere(objet_key)
+    except FileNotFoundError:
+        raise HTTPException(500, "Fichier genere introuvable apres upload MinIO")
+
+    return StreamingResponse(
+        io.BytesIO(contenu),
+        media_type=mime,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "X-Id-Ocr": str(doc.id_ocr),
+        },
+    )
+
+
+@app.post(
+    "/ocr/soumettre-direct",
+    summary="Soumettre des fichiers bruts vers la GED SANS OCR préalable",
+)
+async def soumettre_direct(
+    background_tasks: BackgroundTasks,
+    fichiers:      List[UploadFile] = File(...),
+    titre:         str              = Form(...),
+    type_ressource: str             = Form(...),
+    id_filiere:    Optional[int]    = Form(None),
+    id_module:     Optional[int]    = Form(None),
+    description:   str              = Form(""),
+    format_sortie: str              = Form("pdf"),
+    texte_corrige: str              = Form(""),
+    depot_direct:  bool             = Form(False),
+    authorization: Optional[str]    = Header(None),
+    db:            Session          = Depends(get_db),
+):
+    """
+    Soumet N fichiers (images, PDF, DOC, PPT, XLS, TXT…) directement vers la GED
+    sans OCR préalable.
+    Workflow :
+      1. Sauvegarde les fichiers localement
+      2. Génère un PDF composite (ou utilise le premier PDF brut si un seul PDF fourni)
+      3. Upload vers MinIO
+      4. Crée l'entrée DocumentOCR en BDD (statut GENERE)
+      5. Envoie vers service-ged pour validation
+    """
+    user = await verifier_token(authorization)
+    if not user:
+        raise HTTPException(401, "Authentification requise")
+
+    role    = user.get("role", "")
+    id_user = user.get("id")
+
+    if role not in ROLES_SOUMISSION:
+        raise HTTPException(403, f"Role '{role}' non autorise a soumettre des documents")
+
+    if depot_direct and role not in ROLES_DEPOT_DIRECT:
+        depot_direct = False
+
+    session_id = uuid.uuid4().hex[:12]
+    chemins    = []
+    noms       = []
+
+    for i, f in enumerate(fichiers):
+        chemin = _sauvegarder_fichier_direct(f, i, session_id)
+        chemins.append(chemin)
+        noms.append(f.filename or f"fichier_{i}")
+
+    # Séparer images des autres
+    chemins_images = [
+        c for c, f in zip(chemins, fichiers)
+        if (f.content_type or "") in IMAGE_MIMES
+        or Path(f.filename or "").suffix.lower() in {".jpg", ".jpeg", ".png", ".tiff", ".bmp", ".webp"}
+    ]
+
+    # Cas particulier : un seul PDF fourni → on l'utilise directement
+    chemins_pdf_bruts = [
+        c for c, f in zip(chemins, fichiers)
+        if (f.content_type or "") == "application/pdf"
+        or Path(f.filename or "").suffix.lower() == ".pdf"
+    ]
+
+    # ── Soumission DIRECTE : jamais d'OCR automatique ─────────────────────────
+    # Si l'utilisateur n'a pas retranscrit, on soumet les images telles quelles.
+    texte = texte_corrige.strip()  # vide si pas de retranscription préalable
+
+    if not texte and not chemins_images:
+        texte = titre
+
+    # Choisir le fichier à envoyer à la GED
+    fmt = format_sortie.lower().strip() if format_sortie.lower().strip() in FORMATS_SUPPORTES else "pdf"
+
+    # Mode images : PDF contenant les images dans l'ordre, sans OCR
+    mode_images_direct = bool(chemins_images) and not texte and fmt == "pdf"
+
+    if len(chemins_pdf_bruts) == 1 and len(fichiers) == 1:
+        # Un seul PDF brut → l'envoyer tel quel sans re-génération
+        chemin_dest = chemins_pdf_bruts[0]
+        taille      = chemin_dest.stat().st_size
+        objet_key   = uploader_fichier_genere(chemin_dest)
+        mime_envoi  = "application/pdf"
+        nom_envoi   = chemin_dest.name
+        fmt         = "pdf"
+    else:
+        # Générer un PDF composite (images dans l'ordre, sans OCR)
+        try:
+            chemin_dest = dispatcher_generation(
+                fmt, texte, titre,
+                images=chemins_images if chemins_images else None,
+                mode_images=mode_images_direct,
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(500, f"Erreur generation document : {e}")
+
+        taille     = chemin_dest.stat().st_size if chemin_dest.exists() else 0
+        objet_key  = uploader_fichier_genere(chemin_dest)
+        mime_map   = {
+            "pdf":  "application/pdf",
+            "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "txt":  "text/plain; charset=utf-8",
+            "md":   "text/markdown; charset=utf-8",
+        }
+        mime_envoi = mime_map.get(fmt, "application/pdf")
+        nom_envoi  = (titre.replace(" ", "_")[:40] or "document") + "." + fmt
+
+    # Créer l'entrée BDD
+    doc = DocumentOCR(
+        nom_fichier_orig = noms[0] if noms else "document",
+        chemin_source    = str([str(c) for c in chemins]),
+        chemin_pdf       = objet_key,
+        texte_extrait    = texte,
+        texte_corrige    = texte_corrige.strip() or None,
+        nb_pages         = len(fichiers),
+        nb_images        = len(chemins_images),
+        format_sortie    = fmt,
+        taille_fichier   = taille,
+        statut           = "GENERE",
+        langue           = "fra",
+        date_traitement  = datetime.now(),
+        id_utilisateur   = _uuid_ou_none(id_user),
+        role_soumetteur  = role,
+        depot_direct     = depot_direct,
+    )
+    db.add(doc)
+    db.commit()
+    db.refresh(doc)
+    id_ocr = doc.id_ocr
+
+    # Télécharger le contenu pour l'envoyer au service-ged
+    try:
+        contenu_fichier, _ = telecharger_fichier_genere(objet_key)
+    except FileNotFoundError:
+        raise HTTPException(500, "Fichier introuvable apres upload MinIO")
+
+    statut_ged = "VALIDE" if depot_direct else "EN_ATTENTE"
+    est_valide = depot_direct
+    token      = (authorization or "").replace("Bearer ", "")
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            r = await client.post(
+                f"{API_GED}/ged/documents/upload",
+                files={"file": (nom_envoi, io.BytesIO(contenu_fichier), mime_envoi)},
+                data={
+                    "titre":          titre,
+                    "type_ressource": type_ressource,
+                    "id_filiere":     str(id_filiere) if id_filiere else "",
+                    "id_module":      str(id_module)  if id_module  else "",
+                    "description":    description,
+                    "statut":         statut_ged,
+                    "est_valide":     str(est_valide).lower(),
+                    "texte_ocr":      texte,
+                    "id_soumis_par":  str(id_user) if id_user else "",
+                },
+                headers={"Authorization": f"Bearer {token}"},
+            )
+        if r.status_code not in (200, 201):
+            raise HTTPException(r.status_code, f"Erreur GED : {r.text[:200]}")
+        doc_ged    = r.json()
+        id_doc_ged = doc_ged.get("id_document") or doc_ged.get("id_doc")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(502, f"Service GED inaccessible : {e}")
+
+    # Mettre à jour le statut OCR
+    doc.id_doc_ged = id_doc_ged
+    doc.statut     = "SOUMIS" if not depot_direct else "VALIDE"
+    db.commit()
+
+    # Notification en arrière-plan
+    if id_user and token:
+        msg = (
+            f"Votre document '{titre}' a ete depose directement et est maintenant disponible."
+            if depot_direct else
+            f"Votre document '{titre}' a ete soumis avec succes et est en attente de validation."
+        )
+        background_tasks.add_task(
+            notifier_utilisateur,
+            id_user,
+            "Soumission confirmee" if not depot_direct else "Document publie",
+            msg,
+            token,
+        )
+
+    return {
+        "id_ocr":       id_ocr,
+        "id_doc_ged":   id_doc_ged,
+        "statut_ocr":   doc.statut,
+        "statut_ged":   statut_ged,
+        "depot_direct": depot_direct,
+        "nb_fichiers":  len(fichiers),
+        "message": (
+            "Document depose directement — disponible immediatement."
+            if depot_direct else
+            "Document soumis — en attente de validation."
+        ),
+    }
 
 
 # ── 8. SCAN SIMPLE + GED (rétro-compatibilité) ────────────────────────────────
@@ -1584,7 +2061,7 @@ async def scan_et_ged(
         langue           = langue,
         id_doc_ged       = id_doc_ged,
         date_traitement  = datetime.now(),
-        id_utilisateur   = user.get("id_utilisateur") if user else None,
+        id_utilisateur   = _uuid_ou_none(user.get("id")) if user else None,
         role_soumetteur  = user.get("role") if user else None,
     )
     db.add(doc); db.commit(); db.refresh(doc)
@@ -1837,7 +2314,7 @@ async def retranscrire_stream(
                 statut           = "RETRANSCRIT",
                 langue           = langue,
                 date_traitement  = datetime.now(),
-                id_utilisateur   = user.get("id_utilisateur") if user else None,
+                id_utilisateur   = _uuid_ou_none(user.get("id")) if user else None,
                 role_soumetteur  = user.get("role") if user else None,
             )
             db.add(doc); db.commit(); db.refresh(doc)
@@ -1865,21 +2342,25 @@ async def retranscrire_stream(
 @app.get("/health")
 @app.get("/ocr/health")   # alias pour le proxy frontend /api/ocr/health
 def health():
+    from ocr_engine import GROQ_AVAILABLE as _groq
     return {
         "status":  "ok" if PADDLE_AVAILABLE else "degraded",
         "service": "uniburkina-ocr-v3",
-        "version": "3.0.0",
+        "version": "3.1.0",
         "moteur_principal":  "paddleocr",
+        "moteur_correction": "groq-vision (llama-4-scout)" if _groq else "désactivé (GROQ_API_KEY manquante)",
         "paddle_available":  PADDLE_AVAILABLE,
+        "groq_available":    _groq,
         "cv2_available":     CV2_AVAILABLE,
         "docx_disponible":   DOCX_AVAILABLE,
         "xlsx_disponible":   XLSX_AVAILABLE,
         "pptx_disponible":   PPTX_AVAILABLE,
         "formats_supportes": FORMATS_SUPPORTES,
         "capacites": {
-            "texte":    True,
-            "layout":   CV2_AVAILABLE,
-            "figures":  CV2_AVAILABLE,
+            "texte":      True,
+            "layout":     CV2_AVAILABLE,
+            "figures":    CV2_AVAILABLE,
+            "correction": _groq,
         },
         "avertissement": (
             None if PADDLE_AVAILABLE else

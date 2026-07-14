@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administration — Groupes de service — UniBurkina Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#F4F7FB;color:#1B2A3A;}
+.topbar{background:#185FA5;color:#fff;padding:1.1rem 2rem;display:flex;
+justify-content:space-between;align-items:center;}
+.topbar h1{font-size:1.15rem;font-weight:700;}
+.topbar .user{font-size:.82rem;opacity:.9;display:flex;align-items:center;gap:.8rem;}
+.topbar a{color:#fff;text-decoration:none;font-size:.8rem;opacity:.85;}
+.topbar a:hover{opacity:1;text-decoration:underline;}
+.main{padding:2rem;max-width:1100px;margin:0 auto;}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.3rem;}
+.toolbar h2{font-size:1.15rem;}
+.toolbar p{color:#5A7288;font-size:.85rem;margin-top:.2rem;}
+.btn{cursor:pointer;border:none;border-radius:8px;font-weight:600;font-size:.85rem;
+padding:.6rem 1.3rem;transition:.15s;}
+.btn-primary{background:#185FA5;color:#fff;}
+.btn-primary:hover{background:#134A82;}
+.btn-ghost{background:#fff;color:#5A7288;border:1px solid #CDD8E4;}
+.btn-ghost:hover{background:#F4F7FB;}
+.btn-sm{padding:.4rem .9rem;font-size:.78rem;}
+.groupe-card{background:#fff;border:1px solid #CDD8E4;border-radius:12px;padding:1.2rem 1.5rem;
+margin-bottom:.9rem;}
+.groupe-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;}
+.groupe-titre{display:flex;align-items:center;gap:.6rem;}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.groupe-titre h3{font-size:.95rem;}
+.role-code{font-family:monospace;font-size:.72rem;color:#5A7288;background:#F4F7FB;
+padding:.1rem .5rem;border-radius:6px;margin-left:.5rem;}
+.groupe-desc{color:#5A7288;font-size:.82rem;margin-top:.3rem;}
+.groupe-meta{display:flex;gap:.6rem;margin-top:.7rem;flex-wrap:wrap;}
+.badge{display:inline-block;padding:.22rem .65rem;border-radius:20px;font-size:.7rem;font-weight:700;}
+.badge.branche{background:#EAF1FA;color:#185FA5;}
+.badge.code-ok{background:#E6F7F1;color:#1D9E75;}
+.badge.code-non{background:#FFF3E0;color:#E65100;}
+.badge.nb-membres{background:#F4F7FB;color:#5A7288;}
+.groupe-actions{display:flex;gap:.5rem;flex-shrink:0;}
+.membres-list{margin-top:.9rem;display:flex;flex-wrap:wrap;gap:.4rem;}
+.membre-chip{background:#F4F7FB;border:1px solid #CDD8E4;border-radius:6px;padding:.2rem .6rem;
+font-size:.74rem;color:#1B2A3A;}
+.membre-chip .pid{font-family:monospace;color:#185FA5;font-weight:700;}
+.empty{text-align:center;padding:3rem 1rem;color:#9DAEC2;}
+.loading{text-align:center;padding:2rem;color:#9DAEC2;font-size:.85rem;}
+.alert{padding:.7rem 1rem;border-radius:8px;font-size:.82rem;margin-bottom:1rem;}
+.alert.error{background:#FDEDEA;color:#D84315;}
+.alert.ok{background:#E6F7F1;color:#1D9E75;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(27,42,58,.5);
+align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.show{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:1.8rem;width:100%;max-width:560px;
+max-height:85vh;overflow-y:auto;}
+.modal h2{font-size:1.1rem;margin-bottom:.3rem;}
+.modal .sub{color:#5A7288;font-size:.8rem;margin-bottom:1rem;}
+.modal label{display:block;font-size:.82rem;font-weight:600;margin:.9rem 0 .35rem;}
+.modal textarea,.modal select,.modal input{width:100%;padding:.6rem .8rem;
+border:1px solid #CDD8E4;border-radius:8px;font-size:.85rem;font-family:inherit;}
+.modal textarea{min-height:110px;resize:vertical;font-family:monospace;font-size:.8rem;}
+.modal .hint{color:#9DAEC2;font-size:.74rem;margin-top:.3rem;}
+.modal-actions{display:flex;justify-content:flex-end;gap:.6rem;margin-top:1.4rem;}
+.couleur-row{display:flex;align-items:center;gap:.6rem;}
+.couleur-row input[type=color]{width:44px;height:38px;padding:.2rem;flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>UniBurkina Hub — Groupes de service</h1>
+  <div class="user">
+    {{ user.prenom if user else '' }} {{ user.nom if user else '' }}
+    <a href="javascript:history.back()">← Retour</a>
+    <a href="/deconnexion">Déconnexion</a>
+  </div>
+</div>
+
+<div class="main">
+  <div id="alertZone"></div>
+
+  <div class="toolbar">
+    <div>
+      <h2>Cloisonnement documentaire par service</h2>
+      <p>Chaque poste appartient à exactement un groupe. Un code de sécurité partagé protège l'accès aux documents de chaque groupe.</p>
+    </div>
+    <button class="btn btn-primary" onclick="ouvrirModalGroupe(null)">+ Nouveau groupe</button>
+  </div>
+
+  <div id="listeGroupes"><div class="loading">Chargement des groupes…</div></div>
+</div>
+
+<!-- Modal : creer / editer un groupe -->
+<div class="modal-overlay" id="modalGroupe">
+  <div class="modal">
+    <h2 id="modalGroupeTitre">Nouveau groupe de service</h2>
+    <div class="sub">Le rôle (role_code) identifie le groupe côté API ; il ne peut plus être modifié une fois créé.</div>
+
+    <label>Rôle (role_code) <span style="font-weight:400;color:#9DAEC2;">— ex. EMPLOYE_DSI</span></label>
+    <input type="text" id="fRoleCode" placeholder="EMPLOYE_XXX" style="font-family:monospace;">
+
+    <label>Libellé affiché</label>
+    <input type="text" id="fLabel" placeholder="VP-EIP — Direction des Systèmes d'Information (DSI)">
+
+    <label>Description</label>
+    <input type="text" id="fDescription" placeholder="Informatique &amp; Réseaux">
+
+    <label>Branche</label>
+    <select id="fBranche">
+      <option value="">— Aucune (ex. Direction, instances) —</option>
+      <option value="Cabinet">Cabinet</option>
+      <option value="VP-EIP">VP-EIP</option>
+      <option value="VP-RCU">VP-RCU</option>
+      <option value="SG">SG</option>
+    </select>
+
+    <label>Couleur</label>
+    <div class="couleur-row">
+      <input type="color" id="fCouleur" value="#185FA5">
+      <input type="text" id="fCouleurHex" placeholder="#185FA5">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fermerModal('modalGroupe')">Annuler</button>
+      <button class="btn btn-primary" onclick="soumettreGroupe()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : gerer les membres (poste_id) -->
+<div class="modal-overlay" id="modalMembres">
+  <div class="modal">
+    <h2>Postes membres — <span id="membresGroupeLabel"></span></h2>
+    <div class="sub">Un poste_id par ligne. Remplace la liste actuelle. Un poste déjà affecté à un autre groupe sera refusé par le serveur.</div>
+    <textarea id="fMembres" placeholder="dsi&#10;seap&#10;srss&#10;ssm&#10;sp-vpeip"></textarea>
+    <div class="hint">Postes actuels : <span id="membresActuels">—</span></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fermerModal('modalMembres')">Annuler</button>
+      <button class="btn btn-primary" onclick="soumettreMembres()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : definir le code de securite -->
+<div class="modal-overlay" id="modalCode">
+  <div class="modal">
+    <h2>Code de sécurité — <span id="codeGroupeLabel"></span></h2>
+    <div class="sub">Ce code sera demandé à tout membre du groupe avant d'ouvrir ou télécharger un document administratif. 6 caractères minimum.</div>
+    <label>Nouveau code</label>
+    <input type="text" id="fCode" placeholder="Au moins 6 caractères" minlength="6">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fermerModal('modalCode')">Annuler</button>
+      <button class="btn btn-primary" onclick="soumettreCode()">Définir le code</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api/auth"; // proxy frontend — injecte automatiquement le token depuis le cookie
+let groupes = [];
+let groupeActifId = null;
+
+function showAlert(msg, type){
+  const zone = document.getElementById('alertZone');
+  zone.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+  setTimeout(()=>zone.innerHTML='', 5000);
+}
+
+function fermerModal(id){ document.getElementById(id).classList.remove('show'); }
+
+async function chargerGroupes(){
+  try{
+    const res = await fetch(`${API}/groupes-service`, {credentials:'include'});
+    if (!res.ok) throw new Error();
+    groupes = await res.json();
+    if (!Array.isArray(groupes)) groupes = [];
+  } catch(e){
+    showAlert("Impossible de charger les groupes de service. Vérifiez vos droits et que service-auth est démarré.", "error");
+    groupes = [];
+  }
+  renderGroupes();
+}
+
+function renderGroupes(){
+  const container = document.getElementById('listeGroupes');
+  if (!groupes.length){
+    container.innerHTML = `<div class="empty">Aucun groupe de service pour le moment.</div>`;
+    return;
+  }
+  container.innerHTML = groupes.map(g => `
+    <div class="groupe-card">
+      <div class="groupe-head">
+        <div>
+          <div class="groupe-titre">
+            <span class="dot" style="background:${g.couleur || '#185FA5'}"></span>
+            <h3>${g.label}</h3>
+            <span class="role-code">${g.role_code}</span>
+          </div>
+          ${g.description ? `<div class="groupe-desc">${g.description}</div>` : ''}
+          <div class="groupe-meta">
+            ${g.branche ? `<span class="badge branche">${g.branche}</span>` : ''}
+            <span class="badge ${g.code_defini ? 'code-ok' : 'code-non'}">${g.code_defini ? '✓ Code défini' : '⚠ Code non défini'}</span>
+            <span class="badge nb-membres">${g.membres.length} poste${g.membres.length>1?'s':''}</span>
+          </div>
+          <div class="membres-list">
+            ${g.membres.map(m => `<span class="membre-chip"><span class="pid">${m.poste_id}</span>${m.label ? ' — ' + m.label : ''}${m.branche_supervisee ? ' (supervise ' + m.branche_supervisee + ')' : ''}</span>`).join('') || '<span style="color:#9DAEC2;font-size:.78rem;">Aucun poste rattaché</span>'}
+          </div>
+        </div>
+        <div class="groupe-actions">
+          <button class="btn btn-ghost btn-sm" onclick="ouvrirModalGroupe(${g.id})">Modifier</button>
+          <button class="btn btn-ghost btn-sm" onclick="ouvrirModalMembres(${g.id})">Postes</button>
+          <button class="btn btn-primary btn-sm" onclick="ouvrirModalCode(${g.id})">Code</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function ouvrirModalGroupe(id){
+  groupeActifId = id;
+  const g = id ? groupes.find(x => x.id === id) : null;
+  document.getElementById('modalGroupeTitre').textContent = g ? "Modifier le groupe" : "Nouveau groupe de service";
+  document.getElementById('fRoleCode').value = g ? g.role_code : '';
+  document.getElementById('fRoleCode').disabled = !!g;
+  document.getElementById('fLabel').value = g ? g.label : '';
+  document.getElementById('fDescription').value = g ? (g.description || '') : '';
+  document.getElementById('fBranche').value = g ? (g.branche || '') : '';
+  const couleur = g ? (g.couleur || '#185FA5') : '#185FA5';
+  document.getElementById('fCouleur').value = couleur;
+  document.getElementById('fCouleurHex').value = couleur;
+  document.getElementById('modalGroupe').classList.add('show');
+}
+
+document.getElementById('fCouleur').addEventListener('input', e => {
+  document.getElementById('fCouleurHex').value = e.target.value;
+});
+document.getElementById('fCouleurHex').addEventListener('input', e => {
+  if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) document.getElementById('fCouleur').value = e.target.value;
+});
+
+async function soumettreGroupe(){
+  const roleCode = document.getElementById('fRoleCode').value.trim();
+  const label = document.getElementById('fLabel').value.trim();
+  const payload = {
+    label,
+    description: document.getElementById('fDescription').value.trim() || null,
+    branche: document.getElementById('fBranche').value || null,
+    couleur: document.getElementById('fCouleurHex').value.trim() || null,
+  };
+  if (!label){ showAlert("Le libellé est obligatoire.", "error"); return; }
+
+  try{
+    let res;
+    if (groupeActifId){
+      res = await fetch(`${API}/groupes-service/${groupeActifId}`, {
+        method: "PUT", credentials: "include",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
+    } else {
+      if (!roleCode){ showAlert("Le rôle (role_code) est obligatoire.", "error"); return; }
+      res = await fetch(`${API}/groupes-service`, {
+        method: "POST", credentials: "include",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ role_code: roleCode, ...payload })
+      });
+    }
+    if (res.ok){
+      showAlert("Groupe enregistré avec succès.", "ok");
+      fermerModal('modalGroupe');
+      chargerGroupes();
+    } else {
+      const err = await res.json().catch(()=>({detail:"Erreur lors de l'enregistrement."}));
+      showAlert(err.detail || "Erreur lors de l'enregistrement.", "error");
+    }
+  } catch(e){
+    showAlert("Impossible de contacter le serveur.", "error");
+  }
+}
+
+function ouvrirModalMembres(id){
+  groupeActifId = id;
+  const g = groupes.find(x => x.id === id);
+  document.getElementById('membresGroupeLabel').textContent = g.label;
+  document.getElementById('fMembres').value = g.membres.map(m => m.poste_id).join('\n');
+  document.getElementById('membresActuels').textContent = g.membres.length
+    ? g.membres.map(m => m.poste_id).join(', ')
+    : 'aucun';
+  document.getElementById('modalMembres').classList.add('show');
+}
+
+async function soumettreMembres(){
+  const raw = document.getElementById('fMembres').value;
+  const posteIds = raw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  try{
+    const res = await fetch(`${API}/groupes-service/${groupeActifId}/membres`, {
+      method: "PUT", credentials: "include",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ poste_ids: posteIds })
+    });
+    if (res.ok){
+      showAlert("Postes du groupe mis à jour avec succès.", "ok");
+      fermerModal('modalMembres');
+      chargerGroupes();
+    } else {
+      const err = await res.json().catch(()=>({detail:"Erreur lors de la mise à jour."}));
+      showAlert(err.detail || "Erreur lors de la mise à jour.", "error");
+    }
+  } catch(e){
+    showAlert("Impossible de contacter le serveur.", "error");
+  }
+}
+
+function ouvrirModalCode(id){
+  groupeActifId = id;
+  const g = groupes.find(x => x.id === id);
+  document.getElementById('codeGroupeLabel').textContent = g.label;
+  document.getElementById('fCode').value = '';
+  document.getElementById('modalCode').classList.add('show');
+}
+
+async function soumettreCode(){
+  const code = document.getElementById('fCode').value;
+  if (code.length < 6){ showAlert("Le code doit contenir au moins 6 caractères.", "error"); return; }
+
+  try{
+    const res = await fetch(`${API}/groupes-service/${groupeActifId}/code`, {
+      method: "PUT", credentials: "include",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ code })
+    });
+    if (res.ok){
+      showAlert("Code de sécurité mis à jour avec succès.", "ok");
+      fermerModal('modalCode');
+      chargerGroupes();
+    } else {
+      const err = await res.json().catch(()=>({detail:"Erreur lors de la définition du code."}));
+      showAlert(err.detail || "Erreur lors de la définition du code.", "error");
+    }
+  } catch(e){
+    showAlert("Impossible de contacter le serveur.", "error");
+  }
+}
+
+chargerGroupes();
+</script>
+</body>
+</html>

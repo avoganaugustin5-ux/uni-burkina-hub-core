@@ -1,0 +1,7 @@
+﻿{
+  "venvPath": "C:/projets/UniBurkina_Hub/frontend",
+  "venv": "venv",
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Windows",
+  "include": ["frontend"]
+}

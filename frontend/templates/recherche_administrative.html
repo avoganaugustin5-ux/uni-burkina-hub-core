@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recherche administrative — UniBurkina Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#F4F7FB;color:#1B2A3A;}
+.topbar{background:#185FA5;color:#fff;padding:1.1rem 2rem;display:flex;
+justify-content:space-between;align-items:center;}
+.topbar h1{font-size:1.15rem;font-weight:700;}
+.topbar a{color:#fff;text-decoration:none;font-size:.8rem;opacity:.85;}
+.topbar a:hover{opacity:1;text-decoration:underline;}
+.main{padding:2rem;max-width:900px;margin:0 auto;}
+.search-box{background:#fff;border:1px solid #CDD8E4;border-radius:14px;padding:1.5rem;
+margin-bottom:1.5rem;}
+.search-row{display:flex;gap:.7rem;}
+.search-row input{flex:1;padding:.8rem 1rem;border:1px solid #CDD8E4;border-radius:8px;
+font-size:.95rem;}
+.search-row select{padding:.8rem 1rem;border:1px solid #CDD8E4;border-radius:8px;font-size:.85rem;}
+.search-row button{cursor:pointer;border:none;border-radius:8px;background:#185FA5;color:#fff;
+font-weight:600;padding:.8rem 1.6rem;font-size:.9rem;}
+.search-row button:hover{background:#134A82;}
+.results-count{font-size:.82rem;color:#5A7288;margin-bottom:1rem;}
+.result-card{background:#fff;border:1px solid #CDD8E4;border-radius:12px;padding:1.2rem 1.5rem;
+margin-bottom:.9rem;}
+.result-card h3{font-size:.98rem;margin-bottom:.4rem;color:#185FA5;}
+.result-meta{font-size:.74rem;color:#9DAEC2;margin-bottom:.6rem;}
+.result-snippet{font-size:.85rem;color:#3A4D63;line-height:1.5;}
+.result-snippet em{background:#FFF3D6;font-style:normal;padding:0 .15rem;border-radius:3px;}
+.empty{text-align:center;padding:3rem 1rem;color:#9DAEC2;}
+.empty .ico{font-size:2.5rem;margin-bottom:.6rem;}
+.loading{text-align:center;padding:2rem;color:#9DAEC2;font-size:.85rem;}
+.alert{padding:.7rem 1rem;border-radius:8px;font-size:.82rem;margin-bottom:1rem;background:#FDEDEA;color:#D84315;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🔐 GED Administrative — Recherche</h1>
+  <a href="javascript:history.back()">← Retour</a>
+</div>
+
+<div class="main">
+  <div class="search-box">
+    <div class="search-row">
+      <input type="text" id="q" placeholder="Rechercher dans le contenu des documents administratifs…" autofocus>
+      <select id="type">
+        <option value="ADMINISTRATIF" selected>Administratif</option>
+        <option value="">Tous types</option>
+        <option value="ARCHIVE">Archive</option>
+        <option value="COURS">Cours</option>
+        <option value="TD">TD</option>
+        <option value="EXAMEN">Examen</option>
+      </select>
+      <button onclick="lancerRecherche(1)">Rechercher</button>
+    </div>
+  </div>
+
+  <div id="alertZone"></div>
+  <div class="results-count" id="resultsCount"></div>
+  <div id="resultsList"></div>
+</div>
+
+<script>
+const API_SEARCH = "{{ api_search }}";
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function formatDate(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('fr-FR', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+async function lancerRecherche(page){
+  const q = document.getElementById('q').value.trim();
+  const type = document.getElementById('type').value;
+  const listEl = document.getElementById('resultsList');
+  const countEl = document.getElementById('resultsCount');
+  const alertZone = document.getElementById('alertZone');
+  alertZone.innerHTML = '';
+
+  if (q.length < 2){
+    alertZone.innerHTML = '<div class="alert">Saisissez au moins 2 caractères.</div>';
+    return;
+  }
+
+  listEl.innerHTML = '<div class="loading">Recherche en cours…</div>';
+  countEl.textContent = '';
+
+  const params = new URLSearchParams({ q, page: page || 1, limite: 10 });
+  if (type) params.append('type_ressource', type);
+
+  try{
+    const res = await fetch(`${API_SEARCH}/search/documents?${params.toString()}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    afficherResultats(data);
+  } catch(e){
+    listEl.innerHTML = '';
+    alertZone.innerHTML = '<div class="alert">Impossible de contacter le service de recherche. Vérifiez que service-search et Elasticsearch sont démarrés.</div>';
+  }
+}
+
+function afficherResultats(data){
+  const listEl = document.getElementById('resultsList');
+  const countEl = document.getElementById('resultsCount');
+  const resultats = data.resultats || [];
+
+  countEl.textContent = `${data.total || 0} résultat${(data.total||0) > 1 ? 's' : ''}`;
+
+  if (!resultats.length){
+    listEl.innerHTML = `<div class="empty"><div class="ico">🔍</div>
+      <p>Aucun document administratif ne correspond à cette recherche.</p></div>`;
+    return;
+  }
+
+  listEl.innerHTML = resultats.map(item=>{
+    const titreHl = (item._highlight && item._highlight.titre && item._highlight.titre[0])
+      || escapeHtml(item.titre);
+    const snippetHl = (item._highlight && item._highlight.texte_ocr && item._highlight.texte_ocr.join(' … '))
+      || (item.texte_ocr ? escapeHtml(item.texte_ocr.slice(0, 200)) + '…' : 'Aucun extrait disponible.');
+    return `
+      <div class="result-card">
+        <h3>${titreHl}</h3>
+        <div class="result-meta">${item.type_ressource || ''} · Soumis le ${formatDate(item.date_soumission)}</div>
+        <div class="result-snippet">${snippetHl}</div>
+      </div>`;
+  }).join('');
+}
+
+document.getElementById('q').addEventListener('keydown', e=>{
+  if (e.key === 'Enter') lancerRecherche(1);
+});
+</script>
+</body>
+</html>

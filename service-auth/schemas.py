@@ -6,7 +6,7 @@ from models import RoleEnum, SexeEnum, TypeIdentiteEnum
 
 # ── Auth ───────────────────────────────────────────────────
 class LoginRequest(BaseModel):
-    email: str          # Email ou username (comme dans ta maquette)
+    email: str
     mot_de_passe: str
 
 class TokenResponse(BaseModel):
@@ -16,9 +16,9 @@ class TokenResponse(BaseModel):
     user_id: UUID
     nom: str
     prenom: str
-    redirect_url: str   # URL du dashboard selon le rôle
+    redirect_url: str
 
-# ── Inscription (formulaire Création de Compte) ────────────
+# ── Inscription ────────────────────────────────────────────
 class RegisterRequest(BaseModel):
     username: str
     nom: str
@@ -31,6 +31,17 @@ class RegisterRequest(BaseModel):
     id_univ: Optional[int] = None
     photo_profil_url: Optional[str] = None
     role: RoleEnum = RoleEnum.ETUDIANT
+    # ── AJOUT UTS ──────────────────────────────────────────────
+    # poste_id/branche/type_poste : remplis automatiquement par le frontend a partir de
+    # UTS_ORG (uts_org_data.js) quand role appartient a {VP_EIP,VP_RCU,SG,CABINET,DIRECTEUR,EMPLOYE,PRESIDENT}.
+    poste_id:    Optional[str] = None
+    branche:     Optional[str] = None
+    type_poste:  Optional[str] = None
+    # id_ufr_gere : uniquement si role == CHEF_DEPARTEMENT — l'UFR dont la personne est chef.
+    id_ufr_gere: Optional[int] = None
+    # ── AJOUT UTS — inscription académique (étudiant/délégué) ──
+    id_filiere:   Optional[int] = None   # filière choisie lors de l'inscription
+    niveau_etude: Optional[str] = None   # L1, L2, L3, M1, M2
 
     @field_validator("confirm_mot_de_passe")
     @classmethod
@@ -43,10 +54,10 @@ class RegisterRequest(BaseModel):
     @classmethod
     def password_strength(cls, v):
         if len(v) < 8:
-            raise ValueError("Le mot de passe doit contenir au moins 8 caractères")
+            raise ValueError("Le mot de passe doit contenir au moins 8 caracteres")
         return v
 
-# ── Réponses utilisateur ───────────────────────────────────
+# ── Reponses utilisateur ───────────────────────────────────
 class UserResponse(BaseModel):
     id: UUID
     nom: str
@@ -58,6 +69,11 @@ class UserResponse(BaseModel):
     photo_profil_url: Optional[str]
     actif: bool
     date_inscription: datetime
+    # ── AJOUT UTS — necessaire pour que service-ged sache QUI agit via /auth/me ──
+    poste_id:    Optional[str] = None
+    branche:     Optional[str] = None
+    type_poste:  Optional[str] = None
+    id_ufr_gere: Optional[int] = None
     derniere_connexion: Optional[datetime]
     id_univ: Optional[int]
 
@@ -71,7 +87,21 @@ class UserUpdate(BaseModel):
     ville_actuelle: Optional[str] = None
     photo_profil_url: Optional[str] = None
 
-# ── Mot de passe oublié ────────────────────────────────────
+# ── AJOUT — Annuaire minimal (choix de destinataire dans un circuit) ──────
+# Volontairement restreint : ni email, ni username, ni téléphone — accessible
+# à tout utilisateur connecté, contrairement à /utilisateurs (réservé admin).
+class AnnuaireEntry(BaseModel):
+    id: UUID
+    nom: str
+    prenom: str
+    role: RoleEnum
+    poste_id: Optional[str] = None
+    branche: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+# ── Mot de passe oublie ────────────────────────────────────
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
@@ -80,7 +110,27 @@ class ResetPasswordRequest(BaseModel):
     nouveau_mot_de_passe: str
     confirm_mot_de_passe: str
 
-# ── Structures académiques ─────────────────────────────────
+# ── Changement de mot de passe (utilisateur connecte) ──────
+class ChangePasswordRequest(BaseModel):
+    mot_de_passe_actuel: str
+    nouveau_mot_de_passe: str
+    confirmer_mot_de_passe: str
+
+    @field_validator("nouveau_mot_de_passe")
+    @classmethod
+    def password_strength(cls, v):
+        if len(v) < 8:
+            raise ValueError("Le nouveau mot de passe doit contenir au moins 8 caracteres")
+        return v
+
+    @field_validator("confirmer_mot_de_passe")
+    @classmethod
+    def passwords_match(cls, v, info):
+        if "nouveau_mot_de_passe" in info.data and v != info.data["nouveau_mot_de_passe"]:
+            raise ValueError("Les nouveaux mots de passe ne correspondent pas")
+        return v
+
+# ── Structures academiques ─────────────────────────────────
 class UniversiteCreate(BaseModel):
     nom_univ: str
     localisation: Optional[str] = None
@@ -135,6 +185,11 @@ class ModuleResponse(BaseModel):
         from_attributes = True
 
 # ── Notification ───────────────────────────────────────────
+class NotificationCreate(BaseModel):
+    titre:   str
+    message: str
+    user_id: UUID
+
 class NotificationResponse(BaseModel):
     id_notif: int
     titre: str
@@ -143,3 +198,77 @@ class NotificationResponse(BaseModel):
     date_envoi: datetime
     class Config:
         from_attributes = True
+
+
+# ══════════════════════════════════════════════════════════
+# AJOUT SECURITE UTS — Cloisonnement documentaire par service (Point 4/5)
+# ══════════════════════════════════════════════════════════
+
+class PerimetreResponse(BaseModel):
+    """
+    Perimetre documentaire d'un utilisateur : la liste des poste_id dont il
+    peut voir/consulter les documents administratifs, calculee a partir de
+    son groupe de service (et, pour un chef de branche, des groupes places
+    sous son autorite).
+    """
+    poste_ids:            list[str]
+    groupe_role_code:     Optional[str] = None
+    vision_globale:       bool = False
+    branches_supervisees: list[str] = []
+
+
+class VerifierCodeRequest(BaseModel):
+    role_code: str   # le groupe_role_code du service proprietaire du document consulte
+    code:      str
+
+
+class VerifierCodeResponse(BaseModel):
+    valide:    bool
+    role_code: str
+
+
+class GroupeServiceMembreOut(BaseModel):
+    poste_id: str
+    label: Optional[str] = None
+    branche_supervisee: Optional[str] = None
+
+
+class GroupeServiceOut(BaseModel):
+    id: int
+    role_code: str
+    label: str
+    description: Optional[str] = None
+    branche: Optional[str] = None
+    couleur: Optional[str] = None
+    code_defini: bool
+    membres: list[GroupeServiceMembreOut] = []
+
+
+class GroupeServiceCreate(BaseModel):
+    role_code: str
+    label: str
+    description: Optional[str] = None
+    branche: Optional[str] = None
+    couleur: Optional[str] = None
+
+
+class GroupeServiceUpdate(BaseModel):
+    label: Optional[str] = None
+    description: Optional[str] = None
+    branche: Optional[str] = None
+    couleur: Optional[str] = None
+
+
+class DefinirCodeRequest(BaseModel):
+    code: str
+
+    @field_validator("code")
+    @classmethod
+    def code_min_length(cls, v):
+        if len(v) < 6:
+            raise ValueError("Le code de securite doit contenir au moins 6 caracteres")
+        return v
+
+
+class MembresGroupeRequest(BaseModel):
+    poste_ids: list[str]

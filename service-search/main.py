@@ -1,8 +1,8 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Header
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from typing import Optional
-import os
+import os, httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,6 +20,64 @@ from schemas import (
     IndexationDocument, IndexationSujet, SearchStats
 )
 
+API_AUTH = os.getenv("API_AUTH", "http://localhost:8001")
+API_GED  = os.getenv("API_GED", "http://localhost:8002")
+API_FORUM = os.getenv("API_FORUM", "http://localhost:8005")
+
+
+# ══════════════════════════════════════════════════════════
+# AJOUT SECURITE UTS — authentification + périmètre (même pattern que service-ged)
+# ══════════════════════════════════════════════════════════
+
+async def verifier_token(authorization: Optional[str]) -> Optional[dict]:
+    """Vérifie le JWT via service-auth et retourne le profil utilisateur."""
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.split(" ", 1)[1]
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.get(
+                f"{API_AUTH}/auth/me",
+                headers={"Authorization": f"Bearer {token}"}
+            )
+            if r.status_code == 200:
+                return r.json()
+    except Exception:
+        pass
+    return None
+
+
+async def get_perimetre(authorization: Optional[str]) -> dict:
+    """Interroge service-auth pour le périmètre documentaire de l'utilisateur."""
+    if not authorization:
+        return {"poste_ids": [], "groupe_role_code": None, "vision_globale": False}
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.get(f"{API_AUTH}/auth/mon-perimetre",
+                                  headers={"Authorization": authorization})
+            if r.status_code == 200:
+                return r.json()
+    except Exception:
+        pass
+    return {"poste_ids": [], "groupe_role_code": None, "vision_globale": False}
+
+
+async def exiger_utilisateur(authorization: Optional[str]) -> dict:
+    """Exige une authentification valide ou lève 401."""
+    user = await verifier_token(authorization)
+    if not user:
+        raise HTTPException(401, "Authentification requise")
+    return user
+
+
+async def exiger_admin(authorization: Optional[str]) -> dict:
+    """Exige un utilisateur ADMIN/SOUS_ADMIN ou lève 403 (usage interne/admin)."""
+    user = await exiger_utilisateur(authorization)
+    if user.get("role") not in ("ADMIN", "SOUS_ADMIN"):
+        raise HTTPException(403, "Réservé aux administrateurs.")
+    return user
+
+
 # ── Lifespan : init ES au démarrage sans bloquer ───────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,7 +93,15 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_methods=["*"], allow_headers=["*"],
+    # "allow_origins=['*']" est incompatible avec credentials:include côté browser.
+    # On liste les origines autorisées explicitement (frontend + accès direct local).
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ],
+    allow_credentials=True,   # indispensable pour les cookies JWT HTTPOnly
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ══════════════════════════════════════════════════════════
@@ -44,41 +110,59 @@ app.add_middleware(
 
 @app.get("/search", response_model=RechercheGlobaleResponse,
          summary="Recherche globale (documents + sujets forum)")
-def search_global(
+async def search_global(
     q:      str = Query(..., min_length=2, description="Terme de recherche"),
     page:   int = Query(1, ge=1),
-    limite: int = Query(10, ge=1, le=50)
+    limite: int = Query(10, ge=1, le=50),
+    authorization: Optional[str] = Header(None),
 ):
+    user = await exiger_utilisateur(authorization)
+    is_admin = user.get("role") in ("ADMIN", "SOUS_ADMIN")
+    postes_visibles = []
+    if not is_admin:
+        perimetre = await get_perimetre(authorization)
+        postes_visibles = perimetre.get("poste_ids", [])
     try:
-        return recherche_globale(q, page=page, limite=limite)
+        return recherche_globale(q, page=page, limite=limite,
+                                  postes_visibles=postes_visibles, is_admin=is_admin)
     except Exception as e:
         raise HTTPException(503, f"Elasticsearch indisponible : {str(e)}")
 
 
 @app.get("/search/documents", response_model=ResultatRecherche,
          summary="Rechercher dans les documents GED")
-def search_documents(
+async def search_documents(
     q:              str = Query(..., min_length=2),
     type_ressource: Optional[str] = None,
     id_filiere:     Optional[int] = None,
     page:           int = Query(1, ge=1),
-    limite:         int = Query(10, ge=1, le=50)
+    limite:         int = Query(10, ge=1, le=50),
+    authorization:  Optional[str] = Header(None),
 ):
+    user = await exiger_utilisateur(authorization)
+    is_admin = user.get("role") in ("ADMIN", "SOUS_ADMIN")
+    postes_visibles = []
+    if not is_admin:
+        perimetre = await get_perimetre(authorization)
+        postes_visibles = perimetre.get("poste_ids", [])
     try:
-        return rechercher_documents(q, type_ressource, id_filiere, page, limite)
+        return rechercher_documents(q, type_ressource, id_filiere, page, limite,
+                                     postes_visibles=postes_visibles, is_admin=is_admin)
     except Exception as e:
         raise HTTPException(503, f"Erreur recherche : {str(e)}")
 
 
 @app.get("/search/sujets", response_model=ResultatRecherche,
          summary="Rechercher dans les sujets du forum")
-def search_sujets(
+async def search_sujets(
     q:          str = Query(..., min_length=2),
     categorie:  Optional[str] = None,
     id_filiere: Optional[int] = None,
     page:       int = Query(1, ge=1),
-    limite:     int = Query(10, ge=1, le=50)
+    limite:     int = Query(10, ge=1, le=50),
+    authorization: Optional[str] = Header(None),
 ):
+    await exiger_utilisateur(authorization)
     try:
         return rechercher_sujets(q, categorie, id_filiere, page, limite)
     except Exception as e:
@@ -91,7 +175,8 @@ def search_sujets(
 
 @app.post("/search/index/document", status_code=201,
           summary="Indexer un document GED dans Elasticsearch")
-def index_document(data: IndexationDocument):
+async def index_document(data: IndexationDocument, authorization: Optional[str] = Header(None)):
+    await exiger_admin(authorization)
     try:
         indexer_document(data.model_dump())
         return {"message": f"Document {data.id_doc} indexe"}
@@ -101,7 +186,8 @@ def index_document(data: IndexationDocument):
 
 @app.post("/search/index/sujet", status_code=201,
           summary="Indexer un sujet forum dans Elasticsearch")
-def index_sujet(data: IndexationSujet):
+async def index_sujet(data: IndexationSujet, authorization: Optional[str] = Header(None)):
+    await exiger_admin(authorization)
     try:
         indexer_sujet(data.model_dump())
         return {"message": f"Sujet {data.id_sujet} indexe"}
@@ -111,14 +197,16 @@ def index_sujet(data: IndexationSujet):
 
 @app.delete("/search/index/document/{id_doc}",
             summary="Supprimer un document de l'index")
-def delete_document(id_doc: int):
+async def delete_document(id_doc: int, authorization: Optional[str] = Header(None)):
+    await exiger_admin(authorization)
     supprimer_document(id_doc)
     return {"message": f"Document {id_doc} supprime de l'index"}
 
 
 @app.delete("/search/index/sujet/{id_sujet}",
             summary="Supprimer un sujet de l'index")
-def delete_sujet(id_sujet: int):
+async def delete_sujet(id_sujet: int, authorization: Optional[str] = Header(None)):
+    await exiger_admin(authorization)
     supprimer_sujet(id_sujet)
     return {"message": f"Sujet {id_sujet} supprime de l'index"}
 
@@ -129,16 +217,22 @@ def delete_sujet(id_sujet: int):
 
 @app.post("/search/reindex",
           summary="Reindexer tous les documents et sujets depuis les autres services")
-async def reindex_tout():
+async def reindex_tout(authorization: Optional[str] = Header(None)):
     import httpx
+    await exiger_admin(authorization)
     compte_docs = 0
     compte_sujets = 0
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
+            # AJOUT SECURITE UTS — l'Authorization est désormais transmise :
+            # GET /ged/documents exige une authentification côté service-ged,
+            # et le rôle admin garantit ici une vue non restreinte (tous les
+            # documents, auteur_poste_id inclus pour le cloisonnement en recherche).
             r = await client.get(
-                "http://localhost:8002/ged/documents",
-                params={"statut": "VALIDE", "limite": 500}
+                f"{API_GED}/ged/documents",
+                params={"statut": "VALIDE", "limite": 500},
+                headers={"Authorization": authorization},
             )
             if r.status_code == 200:
                 for doc in r.json():
@@ -151,12 +245,14 @@ async def reindex_tout():
                         "id_filiere":      doc.get("id_filiere"),
                         "id_univ":         doc.get("id_univ"),
                         "date_soumission": doc.get("date_soumission"),
+                        "auteur_poste_id": doc.get("auteur_poste_id"),
                     })
                     compte_docs += 1
 
             r = await client.get(
-                "http://localhost:8005/forum/sujets",
-                params={"limite": 500}
+                f"{API_FORUM}/forum/sujets",
+                params={"limite": 500},
+                headers={"Authorization": authorization},
             )
             if r.status_code == 200:
                 for sujet in r.json():
@@ -188,7 +284,8 @@ async def reindex_tout():
 
 @app.get("/search/stats", response_model=SearchStats,
          summary="Statistiques des index Elasticsearch")
-def get_stats():
+async def get_stats(authorization: Optional[str] = Header(None)):
+    await exiger_utilisateur(authorization)
     try:
         nb_docs   = es.count(index=INDEX_DOCUMENTS)["count"]
         nb_sujets = es.count(index=INDEX_SUJETS)["count"]

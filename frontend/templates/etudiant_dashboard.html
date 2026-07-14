@@ -1315,7 +1315,7 @@
   let allSujets = SUJETS || [];
   let notifications = [];
   let currentFilter = 'ALL';
-  let searchDebounce = null;
+  // searchDebounce retiré d'ici — géré dans le bloc RECHERCHE UNIFIÉE (IIFE isolée)
 
   // ── INIT ──
   document.addEventListener('DOMContentLoaded', () => {
@@ -1328,7 +1328,8 @@
     renderAnnoncesAll();
     renderForumAll();
     loadNotifications();
-    setupSearch();
+    // setupSearch() retiré — remplacé par le bloc RECHERCHE UNIFIÉE en fin de fichier
+    // pour éviter le double listener sur #searchInput (cause du comportement chaotique)
   });
 
   // ── USER ──
@@ -1391,7 +1392,7 @@
     const div = document.createElement('div');
     div.className = 'doc-item';
     div.innerHTML = `
-      <div class="doc-type-badge ${typeBadgeClass(doc.type_document)}">${typeLabel(doc.type_document)}</div>
+      <div class="doc-type-badge ${typeBadgeClass(doc.type_ressource || doc.type_document)}">${typeLabel(doc.type_ressource || doc.type_document)}</div>
       <div class="doc-info">
         <div class="doc-title">${escHtml(doc.titre)}</div>
         <div class="doc-meta">
@@ -1399,7 +1400,7 @@
           <span><i class="fas fa-file-pdf" style="margin-right:4px;"></i>${escHtml(doc.nom_fichier || '')}</span>
         </div>
       </div>
-      <button class="doc-download-btn" title="Télécharger" onclick="telechargerDoc(${doc.id_document}, '${escHtml(doc.nom_fichier||'')}')">
+      <button class="doc-download-btn" title="Télécharger" onclick="telechargerDoc(${doc.id_doc || doc.id_document || ''}, '${escHtml(doc.nom_fichier||doc.titre||'')}')">
         <i class="fas fa-download"></i>
       </button>`;
     return div;
@@ -1427,7 +1428,7 @@
     });
     const container = document.getElementById('docsFull');
     container.innerHTML = '';
-    const filtered = type === 'ALL' ? allDocs : allDocs.filter(d => d.type_document === type);
+    const filtered = type === 'ALL' ? allDocs : allDocs.filter(d => (d.type_ressource || d.type_document) === type);
     document.getElementById('docsCount').textContent = `${filtered.length} document(s)`;
     if (!filtered.length) {
       container.innerHTML = `<div class="empty-state"><div class="empty-icon"><i class="fas fa-file-slash"></i></div><div class="empty-title">Aucun document</div><div class="empty-text">Aucun document de type "${type}" disponible.</div></div>`;
@@ -1440,20 +1441,16 @@
   async function telechargerDoc(id, filename) {
     try {
       showToast(`<i class="fas fa-spinner fa-spin"></i> Téléchargement en cours…`);
-      const resp = await fetch(`${API_GED}/ged/documents/${id}/telecharger`, {
-        credentials: 'include'
-      });
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
+      // Passe par le proxy frontend — jamais MinIO direct
+      const url = `/api/ged/documents/${id}/telecharger`;
       const a = document.createElement('a');
       a.href = url;
       a.download = filename || `document_${id}.pdf`;
+      a.target = '_blank';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      showToast(`<i class="fas fa-check"></i> Téléchargement réussi`, 'success');
+      showToast(`<i class="fas fa-check"></i> Téléchargement lancé`, 'success');
     } catch (err) {
       showToast(`<i class="fas fa-exclamation-circle"></i> Erreur de téléchargement`, 'error');
       console.error('Téléchargement:', err);
@@ -1545,7 +1542,9 @@
   // ── NOTIFICATIONS ──
   async function loadNotifications() {
     try {
-      const resp = await fetch(`${API_AUTH}/auth/notifications`, { credentials: 'include' });
+      // Passe par le proxy frontend — le cookie JWT HTTPOnly est sur :8000,
+      // un fetch direct vers :8001 ne l'envoie jamais (401 garanti)
+      const resp = await fetch(`/api/auth/notifications`, { credentials: 'include' });
       if (!resp.ok) return;
       const data = await resp.json();
       notifications = data.notifications || data || [];
@@ -1610,106 +1609,12 @@
   function markAllRead() {
     notifications.forEach(n => n.lu = true);
     renderNotifications();
-    fetch(`${API_AUTH}/auth/notifications/read-all`, { method: 'POST', credentials: 'include' }).catch(() => {});
+    fetch(`/api/auth/notifications/read-all`, { method: 'POST', credentials: 'include' }).catch(() => {});
   }
 
   // ── RECHERCHE ──
-  function setupSearch() {
-    const input    = document.getElementById('searchInput');
-    const dropdown = document.getElementById('searchDropdown');
-
-    input.addEventListener('input', () => {
-      clearTimeout(searchDebounce);
-      const q = input.value.trim();
-      if (!q) { dropdown.classList.remove('visible'); return; }
-      dropdown.innerHTML = `<div class="search-loading"><i class="fas fa-circle-notch fa-spin"></i>Recherche en cours…</div>`;
-      dropdown.classList.add('visible');
-      searchDebounce = setTimeout(() => runSearch(q), 400);
-    });
-
-    input.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { dropdown.classList.remove('visible'); input.blur(); }
-    });
-
-    document.addEventListener('click', e => {
-      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.classList.remove('visible');
-      }
-    });
-  }
-
-  async function runSearch(q) {
-    const dropdown = document.getElementById('searchDropdown');
-    try {
-      const resp = await fetch(`${API_SEARCH}/search?q=${encodeURIComponent(q)}`, {
-        credentials: 'include'
-      });
-
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      const data = await resp.json();
-      const results = data.results || data.hits || data || [];
-      renderSearchResults(results, dropdown);
-    } catch (err) {
-      // Fallback : recherche locale
-      const localResults = searchLocal(q);
-      renderSearchResults(localResults, dropdown);
-    }
-  }
-
-  function searchLocal(q) {
-    const lq = q.toLowerCase();
-    const results = [];
-
-    allDocs.filter(d => d.titre.toLowerCase().includes(lq)).slice(0, 3).forEach(d => {
-      results.push({ type: 'document', id: d.id_document, titre: d.titre, meta: d.type_document, icon: 'fa-file-alt', color: '#EAF3FF', colorText: '#2E86C1' });
-    });
-    allAnnonces.filter(a => a.titre.toLowerCase().includes(lq)).slice(0, 2).forEach(a => {
-      results.push({ type: 'annonce', id: a.id_annonce, titre: a.titre, meta: 'Annonce', icon: 'fa-bullhorn', color: 'var(--accent-light)', colorText: 'var(--accent)' });
-    });
-    allSujets.filter(s => s.titre.toLowerCase().includes(lq)).slice(0, 2).forEach(s => {
-      results.push({ type: 'sujet', id: s.id_sujet, titre: s.titre, meta: 'Forum', icon: 'fa-comments', color: '#F0EBFF', colorText: '#6C3EC1' });
-    });
-    return results;
-  }
-
-  function renderSearchResults(results, dropdown) {
-    if (!results.length) {
-      dropdown.innerHTML = `<div class="search-loading">Aucun résultat trouvé</div>`;
-      return;
-    }
-    dropdown.innerHTML = '';
-    results.slice(0, 7).forEach(r => {
-      const icon  = r.icon || r._source?.icon || 'fa-file';
-      const titre = r.titre || r._source?.titre || r.title || '';
-      const meta  = r.meta  || r._source?.type  || r.type  || '';
-      const color = r.color || 'var(--accent-light)';
-      const colorText = r.colorText || 'var(--accent)';
-      const div = document.createElement('div');
-      div.className = 'search-result-item';
-      div.innerHTML = `
-        <div class="search-result-icon" style="background:${color}; color:${colorText};">
-          <i class="fas ${icon}"></i>
-        </div>
-        <div class="search-result-info">
-          <div class="search-result-title">${escHtml(titre)}</div>
-          <div class="search-result-meta">${escHtml(meta)}</div>
-        </div>`;
-      div.onclick = () => handleSearchClick(r);
-      dropdown.appendChild(div);
-    });
-  }
-
-  function handleSearchClick(result) {
-    document.getElementById('searchDropdown').classList.remove('visible');
-    document.getElementById('searchInput').value = '';
-    if (result.type === 'document') {
-      showSection('documents');
-    } else if (result.type === 'annonce') {
-      showSection('annonces');
-    } else if (result.type === 'sujet') {
-      window.location.href = `/forum/sujets/${result.id}`;
-    }
-  }
+  // Bloc retiré : remplacé par le système "RECHERCHE UNIFIÉE" en fin de fichier
+  // (évite le double listener sur #searchInput qui causait un rendu chaotique)
 
   // ── NAVIGATION ──
   function showSection(name) {
@@ -1772,5 +1677,245 @@
   </a>
 </div>
 <!-- OCR_STUDIO_BTN_END -->
+<!-- ══ RECHERCHE UNIFIÉE — NE PAS MODIFIER ══ -->
+<script>
+(function() {
+  // Utilise le proxy frontend /api/search/ — jamais localhost:8004 direct
+  var SEARCH_PROXY = '/api/search';
+  var searchDebounce  = null;
+  var searchReqId     = 0;   // anti-race : ignore les réponses obsolètes
+
+  function initSearch() {
+    var input    = document.getElementById('searchInput');
+    var dropdown = document.getElementById('searchDropdown');
+    if (!input || !dropdown) return;
+
+    input.addEventListener('input', function() {
+      clearTimeout(searchDebounce);
+      var q = input.value.trim();
+      if (!q || q.length < 2) { dropdown.classList.remove('visible'); searchReqId++; return; }
+      dropdown.innerHTML = '<div class="search-loading"><i class="fas fa-circle-notch fa-spin"></i> Recherche en cours\u2026</div>';
+      dropdown.classList.add('visible');
+      searchDebounce = setTimeout(function() { runSearchUnified(q); }, 350);
+    });
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { dropdown.classList.remove('visible'); input.blur(); }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('visible');
+      }
+    });
+  }
+
+  async function runSearchUnified(q) {
+    var dropdown = document.getElementById('searchDropdown');
+    var results  = [];
+    var esOk     = false;
+    var myReqId  = ++searchReqId;   // identifiant de cette requête précise
+
+    // Sécurité supplémentaire : q peut avoir grandi/changé pendant le debounce
+    if (q.length < 2) return;
+
+    // 1. Essai Elasticsearch via proxy
+    try {
+      var resp = await fetch(SEARCH_PROXY + '?q=' + encodeURIComponent(q) + '&limite=8', {
+        credentials: 'include'
+      });
+      // Une recherche plus récente a déjà été lancée → on jette ce résultat
+      if (myReqId !== searchReqId) return;
+      if (resp.ok) {
+        var data = await resp.json();
+        results  = data.resultats || data.results || data.hits || [];
+        esOk     = true;
+      }
+    } catch(e) {}
+
+    if (myReqId !== searchReqId) return;   // re-vérifie après l'await JSON aussi
+
+    // 2. Fallback : recherche locale sur allDocs si ES indisponible
+    if (!esOk || !results.length) {
+      var local = searchLocalUnified(q);
+      if (local.length) results = local;
+    }
+
+    renderUnifiedResults(results, dropdown, q, esOk);
+  }
+
+  function searchLocalUnified(q) {
+    var lq = q.toLowerCase();
+    var out = [];
+    // allDocs est défini dans chaque dashboard
+    if (typeof allDocs !== 'undefined' && Array.isArray(allDocs)) {
+      allDocs.filter(function(d) {
+        var titre = (d.titre || d.nom_fichier || '').toLowerCase();
+        return titre.includes(lq);
+      }).slice(0, 6).forEach(function(d) {
+        out.push({
+          id_doc: d.id_doc || d.id_document || null,
+          titre: d.titre || d.nom_fichier || 'Sans titre',
+          type:  d.type_ressource || d.type_document || 'Document',
+          nom_fichier: d.nom_fichier || '',
+          icon:  'fa-file-alt',
+          color: '#EAF3FF', colorText: '#2E86C1',
+          source: 'local'
+        });
+      });
+    }
+    if (typeof allAnnonces !== 'undefined' && Array.isArray(allAnnonces)) {
+      allAnnonces.filter(function(a) {
+        return (a.titre||'').toLowerCase().includes(lq);
+      }).slice(0, 2).forEach(function(a) {
+        out.push({ titre: a.titre, type: 'Annonce', icon: 'fa-bullhorn',
+          color: '#E8F7F2', colorText: '#1D9E75', source: 'local' });
+      });
+    }
+    if (typeof allSujets !== 'undefined' && Array.isArray(allSujets)) {
+      allSujets.filter(function(s) {
+        return (s.titre||'').toLowerCase().includes(lq);
+      }).slice(0, 2).forEach(function(s) {
+        out.push({ titre: s.titre, type: 'Forum', icon: 'fa-comments',
+          color: '#F0EBFF', colorText: '#6C3EC1', source: 'local' });
+      });
+    }
+    return out;
+  }
+
+  function escH(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Téléchargement réutilisable depuis la recherche — passe par le proxy frontend
+  function telechargerDocRecherche(id, filename) {
+    if (!id) return;
+    var url = '/api/ged/documents/' + id + '/telecharger';
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename || ('document_' + id + '.pdf');
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // Lecture (ouvre le fichier dans un nouvel onglet, le navigateur l'affiche nativement)
+  function voirDocRecherche(id) {
+    if (!id) return;
+    window.open('/api/ged/documents/' + id + '/telecharger', '_blank');
+  }
+
+  function renderUnifiedResults(results, dropdown, q, esOk) {
+    if (!results.length) {
+      dropdown.innerHTML =
+        '<div class="search-loading" style="flex-direction:column;gap:6px;padding:18px 16px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;color:var(--danger,#e05c5c)">' +
+            '<i class="fas fa-search" style="font-size:16px;opacity:.5"></i>' +
+            '<span style="font-weight:600;font-size:13px;">Aucun r\u00e9sultat pour \u00ab\u00a0' + escH(q) + '\u00a0\u00bb</span>' +
+          '</div>' +
+          '<div style="font-size:11.5px;color:var(--text-muted,#8aa39b);padding-left:24px;">' +
+            'V\u00e9rifiez l\u2019orthographe ou essayez un autre mot-cl\u00e9.' +
+          '</div>' +
+        '</div>';
+      return;
+    }
+
+    var badge = esOk
+      ? '<span style="font-size:10px;background:#E8F7F2;color:#137a58;padding:1px 6px;border-radius:10px;margin-left:6px;">Elasticsearch</span>'
+      : '<span style="font-size:10px;background:#FFF8E1;color:#7a5c00;padding:1px 6px;border-radius:10px;margin-left:6px;">Local</span>';
+
+    var html = '<div style="padding:8px 14px 4px;font-size:10.5px;font-weight:700;color:var(--text-muted,#8aa39b);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border,#dde8e4);display:flex;align-items:center;">'
+      + results.length + ' r\u00e9sultat' + (results.length > 1 ? 's' : '') + badge
+      + '</div>';
+
+    results.slice(0, 8).forEach(function(r, idx) {
+      var titre     = r.titre      || (r._source && r._source.titre)  || r.title || 'Sans titre';
+      var type      = r.type       || (r._source && r._source.type_ressource) || r.type_ressource || '';
+      var icon      = r.icon       || 'fa-file-alt';
+      var color     = r.color      || 'var(--accent-light,#E8F7F2)';
+      var colorText = r.colorText  || 'var(--accent,#1D9E75)';
+      var idDoc     = r.id_doc     || (r._source && r._source.id_doc) || null;
+      var nomFichier= r.nom_fichier|| (r._source && r._source.nom_fichier) || '';
+      var estDoc    = !!idDoc;   // seuls les vrais documents GED ont un id_doc
+
+      // Normaliser selon format ES
+      if (r._source) {
+        titre = r._source.titre || titre;
+        type  = r._source.type_ressource || r._source.categorie || type;
+        icon  = r._source.type_ressource === 'COURS'  ? 'fa-book'     :
+                r._source.type_ressource === 'TD'     ? 'fa-tasks'    :
+                r._source.type_ressource === 'EXAMEN' ? 'fa-file-medical-alt' :
+                r._source.categorie                   ? 'fa-comments' : 'fa-file-alt';
+        color     = r._source.categorie ? '#F0EBFF' : '#EAF3FF';
+        colorText = r._source.categorie ? '#6C3EC1' : '#2E86C1';
+      }
+
+      // Surligner le terme recherché
+      var qRe   = new RegExp('(' + escH(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+      var titreH = escH(titre).replace(qRe, '<mark style="background:#FFF3CD;border-radius:2px;padding:0 1px;">$1</mark>');
+
+      // Boutons lire/télécharger uniquement si c'est un document GED identifié
+      var actionsHtml = '';
+      if (estDoc) {
+        actionsHtml =
+          '<div class="search-result-actions" style="display:flex;gap:4px;flex-shrink:0;">' +
+            '<button type="button" class="search-action-btn" data-action="voir" data-id="' + idDoc + '" title="Lire" ' +
+              'style="border:none;background:transparent;color:' + colorText + ';width:28px;height:28px;border-radius:6px;cursor:pointer;">' +
+              '<i class="fas fa-eye"></i></button>' +
+            '<button type="button" class="search-action-btn" data-action="telecharger" data-id="' + idDoc + '" data-filename="' + escH(nomFichier || titre) + '" title="T\u00e9l\u00e9charger" ' +
+              'style="border:none;background:transparent;color:' + colorText + ';width:28px;height:28px;border-radius:6px;cursor:pointer;">' +
+              '<i class="fas fa-download"></i></button>' +
+          '</div>';
+      }
+
+      html += '<div class="search-result-item" data-idx="' + idx + '" style="cursor:' + (estDoc ? 'default' : 'pointer') + ';display:flex;align-items:center;gap:10px;">'
+        + '<div class="search-result-icon" style="background:' + color + ';color:' + colorText + ';">'
+        + '<i class="fas ' + icon + '"></i></div>'
+        + '<div class="search-result-info" style="flex:1;min-width:0;">'
+        + '<div class="search-result-title">' + titreH + '</div>'
+        + '<div class="search-result-meta">' + escH(type) + '</div>'
+        + '</div>'
+        + actionsHtml
+        + '</div>';
+    });
+
+    dropdown.innerHTML = html;
+
+    // Boutons lire / télécharger
+    dropdown.querySelectorAll('.search-action-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var id     = btn.getAttribute('data-id');
+        var action = btn.getAttribute('data-action');
+        if (action === 'voir') {
+          voirDocRecherche(id);
+        } else if (action === 'telecharger') {
+          telechargerDocRecherche(id, btn.getAttribute('data-filename'));
+        }
+        dropdown.classList.remove('visible');
+      });
+    });
+
+    // Clic sur le reste de l'item (annonces/forum sans actions) : fermer dropdown
+    dropdown.querySelectorAll('.search-result-item').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (e.target.closest('.search-action-btn')) return;
+        dropdown.classList.remove('visible');
+        document.getElementById('searchInput').value = '';
+      });
+    });
+  }
+
+  // Démarrage
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearch);
+  } else {
+    initSearch();
+  }
+})();
+</script>
+<!-- ══ FIN RECHERCHE UNIFIÉE ══ -->
+
 </body>
 </html>

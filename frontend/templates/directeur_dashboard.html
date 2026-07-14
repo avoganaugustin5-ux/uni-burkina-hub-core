@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tableau de bord — Direction — UniBurkina Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#F4F7FB;color:#1B2A3A;}
+.topbar{background:#185FA5;color:#fff;padding:1.1rem 2rem;display:flex;
+justify-content:space-between;align-items:center;}
+.topbar h1{font-size:1.15rem;font-weight:700;}
+.topbar .user{font-size:.82rem;opacity:.9;display:flex;align-items:center;gap:.8rem;}
+.topbar a{color:#fff;text-decoration:none;font-size:.8rem;opacity:.85;}
+.topbar a:hover{opacity:1;text-decoration:underline;}
+.main{padding:2rem;max-width:1200px;margin:0 auto;}
+.welcome{margin-bottom:1.6rem;}
+.welcome h2{font-size:1.3rem;margin-bottom:.2rem;}
+.welcome .badge{display:inline-block;background:#EAF1FA;color:#185FA5;padding:.2rem .7rem;
+border-radius:6px;font-size:.74rem;font-weight:700;margin-top:.4rem;}
+.welcome p{color:#5A7288;font-size:.88rem;margin-top:.4rem;}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:2rem;}
+.stat-card{background:#fff;border:1px solid #CDD8E4;border-radius:12px;padding:1.3rem;}
+.stat-card .num{font-size:1.7rem;font-weight:700;color:#185FA5;}
+.stat-card .label{font-size:.78rem;color:#5A7288;margin-top:.2rem;}
+.stat-card.alert .num{color:#E65100;}
+.grid2{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;}
+.section{background:#fff;border:1px solid #CDD8E4;border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;}
+.section h3{font-size:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;}
+.section h3 a{font-size:.78rem;color:#185FA5;text-decoration:none;font-weight:600;}
+.doc-row{display:flex;justify-content:space-between;align-items:center;padding:.8rem 0;
+border-bottom:1px solid #E2E9F0;font-size:.85rem;}
+.doc-row:last-child{border-bottom:none;}
+.doc-row .titre{font-weight:600;}
+.doc-row .meta{color:#5A7288;font-size:.76rem;}
+.statut{display:inline-block;padding:.22rem .65rem;border-radius:20px;font-size:.7rem;font-weight:700;}
+.statut.en-cours,.statut.en-attente{background:#FFF3E0;color:#E65100;}
+.statut.valide,.statut.publie{background:#E6F7F1;color:#1D9E75;}
+.statut.rejete{background:#FDEDEA;color:#D84315;}
+.empty{text-align:center;padding:2rem 1rem;color:#9DAEC2;font-size:.85rem;}
+.quick-actions{display:flex;flex-direction:column;gap:.6rem;}
+.quick-actions a{display:flex;align-items:center;gap:.7rem;padding:.8rem 1rem;
+background:#F4F7FB;border-radius:10px;text-decoration:none;color:#1B2A3A;font-size:.86rem;
+font-weight:600;transition:.15s;}
+.quick-actions a:hover{background:#EAF1FA;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>UniBurkina Hub — Direction</h1>
+  <div class="user">
+    {{ user.prenom if user else '' }} {{ user.nom if user else '' }}
+    <a href="/directeur/profil">Mon profil</a>
+    <a href="/deconnexion">Déconnexion</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="welcome">
+    <h2>Bonjour, {{ user.prenom if user else '' }} {{ user.nom if user else '' }}</h2>
+    <span class="badge">Directeur — {{ user.poste_id|upper if user and user.poste_id else 'Direction' }}</span>
+    <p>Université Thomas SANKARA — 2025-2026</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card alert">
+      <div class="num">{{ circuits_recus|length if circuits_recus else 0 }}</div>
+      <div class="label">Documents reçus en attente</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ circuits_envoyes|length if circuits_envoyes else 0 }}</div>
+      <div class="label">Documents envoyés</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ compte_service if compte_service else 0 }}</div>
+      <div class="label">Documents validés (service)</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <div class="section">
+        <h3>Documents reçus <a href="/circuit-documentaire">Voir tout →</a></h3>
+        {% if circuits_recus and circuits_recus|length > 0 %}
+          {% for c in circuits_recus[:6] %}
+          <div class="doc-row">
+            <div>
+              <div class="titre">{{ c.objet if c.objet else 'Document #' ~ c.document_id }}</div>
+              <div class="meta">Reçu le {{ c.date_derniere_action if c.date_derniere_action else '—' }}</div>
+            </div>
+            <span class="statut {{ c.statut|lower|replace('_','-') if c.statut else 'en-attente' }}">{{ c.statut if c.statut else 'EN_ATTENTE' }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">Aucun document en attente de votre action.</div>
+        {% endif %}
+      </div>
+
+      <div class="section">
+        <h3>Documents envoyés</h3>
+        {% if circuits_envoyes and circuits_envoyes|length > 0 %}
+          {% for c in circuits_envoyes[:4] %}
+          <div class="doc-row">
+            <div>
+              <div class="titre">{{ c.objet if c.objet else 'Document #' ~ c.document_id }}</div>
+              <div class="meta">Envoyé le {{ c.date_envoi if c.date_envoi else '—' }}</div>
+            </div>
+            <span class="statut {{ c.statut|lower|replace('_','-') if c.statut else 'en-cours' }}">{{ c.statut if c.statut else 'EN_COURS' }}</span>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">Vous n'avez encore envoyé aucun document.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div>
+      <div class="section">
+        <h3>Accès rapides</h3>
+        <div class="quick-actions">
+          <a href="/circuit-documentaire">📋 Circuit documentaire</a>
+          <a href="/ocr-studio">📄 Soumettre un document</a>
+          <a href="/recherche-administrative">🔍 Recherche administrative</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

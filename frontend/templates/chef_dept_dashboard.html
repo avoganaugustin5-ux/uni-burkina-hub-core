@@ -553,6 +553,16 @@ tbody td { padding: 12px 16px; }
       </div>
       <button class="refresh-btn" onclick="refreshAll()">↻ Actualiser</button>
     </div>
+  
+    <div class="topbar-search" style="position:relative;flex:1;max-width:420px;margin:0 16px;">
+      <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;pointer-events:none;"></i>
+      <input type="text" id="searchInput" placeholder="Rechercher documents, annonces…"
+        autocomplete="off"
+        style="width:100%;height:36px;border:1px solid var(--border,#dde8e4);border-radius:9px;padding:0 12px 0 34px;font-size:13px;font-family:inherit;background:var(--bg,#f4f6f5);color:var(--text-primary,#12221d);outline:none;"
+        onfocus="this.style.borderColor='var(--accent,#1D9E75)';this.style.background='#fff'"
+        onblur="this.style.borderColor='';this.style.background=''">
+      <div id="searchDropdown" class="search-results-dropdown"></div>
+    </div>
   </header>
 
   <main class="content">
@@ -1000,6 +1010,15 @@ const API_OCR    = "http://localhost:8003";
 const API_FORUM  = "http://localhost:8005";
 const API_AUTH   = "http://localhost:8001";
 const API_SEARCH = "http://localhost:8004";
+// AJOUT SECURITE UTS — les appels de DONNÉES doivent passer par le proxy
+// frontend /api/* (qui injecte l'Authorization depuis le cookie JWT
+// HTTPOnly) ; les services n'acceptent pas l'authentification par cookie.
+// Les constantes API_* ci-dessus restent utilisées UNIQUEMENT par
+// checkServices() pour le ping direct de santé (/health, sans auth).
+const GED_PROXY    = "/api/ged";
+const OCR_PROXY    = "/api/ocr";
+const FORUM_PROXY  = "/api/forum";
+const AUTH_PROXY   = "/api/auth";
 </script>
 
 <script>
@@ -1132,9 +1151,9 @@ async function refreshAll() {
   btn.disabled = true;
   try {
     const [rGed, rOcr, rForum] = await Promise.allSettled([
-      fetch(`${API_GED}/ged/stats`,     { credentials: 'include' }),
-      fetch(`${API_OCR}/ocr/stats`,     { credentials: 'include' }),
-      fetch(`${API_FORUM}/forum/stats`, { credentials: 'include' }),
+      fetch(`${GED_PROXY}/stats`,     { credentials: 'include' }),
+      fetch(`${OCR_PROXY}/stats`,     { credentials: 'include' }),
+      fetch(`${FORUM_PROXY}/stats`, { credentials: 'include' }),
     ]);
     if (rGed.status   === 'fulfilled' && rGed.value.ok)   applyGedStats(await rGed.value.json());
     if (rOcr.status   === 'fulfilled' && rOcr.value.ok)   applyOcrStats(await rOcr.value.json());
@@ -1192,7 +1211,7 @@ async function checkServices() {
 async function loadActivity() {
   const timeline = document.getElementById('activityTimeline');
   try {
-    const r = await fetch(`${API_GED}/ged/documents?limite=8`, { credentials: 'include' });
+    const r = await fetch(`${GED_PROXY}/documents?limite=8`, { credentials: 'include' });
     if (!r.ok) throw new Error();
     const docs = await r.json();
     if (!Array.isArray(docs) || !docs.length) {
@@ -1223,7 +1242,7 @@ async function loadActivity() {
 // ─────────────────────────────────────────
 async function chargerDocuments() {
   try {
-    const r = await fetch(`${API_GED}/ged/documents?limite=100`, { credentials: 'include' });
+    const r = await fetch(`${GED_PROXY}/documents?limite=100`, { credentials: 'include' });
     if (!r.ok) throw new Error();
     allDocs = await r.json();
     if (!Array.isArray(allDocs)) allDocs = [];
@@ -1265,7 +1284,7 @@ function renderDocs(list) {
       <td style="font-size:12px;color:var(--muted);">${fmtSize(d.taille_fichier)}</td>
       <td style="font-size:12px;color:var(--muted);">${fmtDate(d.date_creation||d.date_soumission)}</td>
       <td>
-        <a href="${API_GED}/ged/documents/${id}/telecharger" target="_blank"
+        <a href="${GED_PROXY}/documents/${id}/telecharger" target="_blank"
            class="btn btn-outline btn-xs">↓ Voir</a>
       </td>
     </tr>`;
@@ -1277,7 +1296,7 @@ function renderDocs(list) {
 // ─────────────────────────────────────────
 async function chargerUtilisateurs() {
   try {
-    const r = await fetch(`${API_AUTH}/auth/utilisateurs`, { credentials: 'include' });
+    const r = await fetch(`${AUTH_PROXY}/utilisateurs`, { credentials: 'include' });
     if (!r.ok) throw new Error();
     const users = await r.json();
     if (!Array.isArray(users)) return;
@@ -1317,8 +1336,8 @@ function renderUsers(tbodyId, list) {
 async function chargerForum() {
   try {
     const [rSujets, rSigs] = await Promise.allSettled([
-      fetch(`${API_FORUM}/forum/sujets?limite=30`, { credentials: 'include' }),
-      fetch(`${API_FORUM}/forum/signalements`,       { credentials: 'include' }),
+      fetch(`${FORUM_PROXY}/sujets?limite=30`, { credentials: 'include' }),
+      fetch(`${FORUM_PROXY}/signalements`,       { credentials: 'include' }),
     ]);
     if (rSujets.status==='fulfilled' && rSujets.value.ok) {
       const data = await rSujets.value.json();
@@ -1351,7 +1370,7 @@ function renderForumSujets(list) {
     EXAMEN:'<span class="badge badge-amber">Examen</span>',
     STAGE:'<span class="badge badge-teal">Stage</span>',
     VIE_UNI:'<span class="badge badge-emerald">Vie Uni</span>',
-  }[c]||`<span class="badge badge-slate">${c||'—'}</span>`;
+  }[c]||`<span class="badge badge-slate">${c||'—'}</span>`);
   tbody.innerHTML = list.map(s => `
     <tr>
       <td>
@@ -1396,8 +1415,8 @@ function renderSignalements(list) {
 async function chargerPlannings() {
   try {
     const [rPlan, rAnn] = await Promise.allSettled([
-      fetch(`${API_GED}/ged/plannings`, { credentials: 'include' }),
-      fetch(`${API_GED}/ged/annonces`,  { credentials: 'include' }),
+      fetch(`${GED_PROXY}/plannings`, { credentials: 'include' }),
+      fetch(`${GED_PROXY}/annonces`,  { credentials: 'include' }),
     ]);
     if (rPlan.status==='fulfilled' && rPlan.value.ok) renderPlannings(await rPlan.value.json());
     if (rAnn.status==='fulfilled'  && rAnn.value.ok)  renderAnnonces(await rAnn.value.json());
@@ -1537,5 +1556,245 @@ function showToast(msg, type='info', ms=4000) {
   </a>
 </div>
 <!-- VALIDATION_HUB_BTN_END -->
+<!-- ══ RECHERCHE UNIFIÉE — NE PAS MODIFIER ══ -->
+<script>
+(function() {
+  // Utilise le proxy frontend /api/search/ — jamais localhost:8004 direct
+  var SEARCH_PROXY = '/api/search';
+  var searchDebounce  = null;
+  var searchReqId     = 0;   // anti-race : ignore les réponses obsolètes
+
+  function initSearch() {
+    var input    = document.getElementById('searchInput');
+    var dropdown = document.getElementById('searchDropdown');
+    if (!input || !dropdown) return;
+
+    input.addEventListener('input', function() {
+      clearTimeout(searchDebounce);
+      var q = input.value.trim();
+      if (!q || q.length < 2) { dropdown.classList.remove('visible'); searchReqId++; return; }
+      dropdown.innerHTML = '<div class="search-loading"><i class="fas fa-circle-notch fa-spin"></i> Recherche en cours\u2026</div>';
+      dropdown.classList.add('visible');
+      searchDebounce = setTimeout(function() { runSearchUnified(q); }, 350);
+    });
+
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') { dropdown.classList.remove('visible'); input.blur(); }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+        dropdown.classList.remove('visible');
+      }
+    });
+  }
+
+  async function runSearchUnified(q) {
+    var dropdown = document.getElementById('searchDropdown');
+    var results  = [];
+    var esOk     = false;
+    var myReqId  = ++searchReqId;   // identifiant de cette requête précise
+
+    // Sécurité supplémentaire : q peut avoir grandi/changé pendant le debounce
+    if (q.length < 2) return;
+
+    // 1. Essai Elasticsearch via proxy
+    try {
+      var resp = await fetch(SEARCH_PROXY + '?q=' + encodeURIComponent(q) + '&limite=8', {
+        credentials: 'include'
+      });
+      // Une recherche plus récente a déjà été lancée → on jette ce résultat
+      if (myReqId !== searchReqId) return;
+      if (resp.ok) {
+        var data = await resp.json();
+        results  = data.resultats || data.results || data.hits || [];
+        esOk     = true;
+      }
+    } catch(e) {}
+
+    if (myReqId !== searchReqId) return;   // re-vérifie après l'await JSON aussi
+
+    // 2. Fallback : recherche locale sur allDocs si ES indisponible
+    if (!esOk || !results.length) {
+      var local = searchLocalUnified(q);
+      if (local.length) results = local;
+    }
+
+    renderUnifiedResults(results, dropdown, q, esOk);
+  }
+
+  function searchLocalUnified(q) {
+    var lq = q.toLowerCase();
+    var out = [];
+    // allDocs est défini dans chaque dashboard
+    if (typeof allDocs !== 'undefined' && Array.isArray(allDocs)) {
+      allDocs.filter(function(d) {
+        var titre = (d.titre || d.nom_fichier || '').toLowerCase();
+        return titre.includes(lq);
+      }).slice(0, 6).forEach(function(d) {
+        out.push({
+          id_doc: d.id_doc || d.id_document || null,
+          titre: d.titre || d.nom_fichier || 'Sans titre',
+          type:  d.type_ressource || d.type_document || 'Document',
+          nom_fichier: d.nom_fichier || '',
+          icon:  'fa-file-alt',
+          color: '#EAF3FF', colorText: '#2E86C1',
+          source: 'local'
+        });
+      });
+    }
+    if (typeof allAnnonces !== 'undefined' && Array.isArray(allAnnonces)) {
+      allAnnonces.filter(function(a) {
+        return (a.titre||'').toLowerCase().includes(lq);
+      }).slice(0, 2).forEach(function(a) {
+        out.push({ titre: a.titre, type: 'Annonce', icon: 'fa-bullhorn',
+          color: '#E8F7F2', colorText: '#1D9E75', source: 'local' });
+      });
+    }
+    if (typeof allSujets !== 'undefined' && Array.isArray(allSujets)) {
+      allSujets.filter(function(s) {
+        return (s.titre||'').toLowerCase().includes(lq);
+      }).slice(0, 2).forEach(function(s) {
+        out.push({ titre: s.titre, type: 'Forum', icon: 'fa-comments',
+          color: '#F0EBFF', colorText: '#6C3EC1', source: 'local' });
+      });
+    }
+    return out;
+  }
+
+  function escH(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // Téléchargement réutilisable depuis la recherche — passe par le proxy frontend
+  function telechargerDocRecherche(id, filename) {
+    if (!id) return;
+    var url = '/api/ged/documents/' + id + '/telecharger';
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename || ('document_' + id + '.pdf');
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // Lecture (ouvre le fichier dans un nouvel onglet, le navigateur l'affiche nativement)
+  function voirDocRecherche(id) {
+    if (!id) return;
+    window.open('/api/ged/documents/' + id + '/telecharger', '_blank');
+  }
+
+  function renderUnifiedResults(results, dropdown, q, esOk) {
+    if (!results.length) {
+      dropdown.innerHTML =
+        '<div class="search-loading" style="flex-direction:column;gap:6px;padding:18px 16px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;color:var(--danger,#e05c5c)">' +
+            '<i class="fas fa-search" style="font-size:16px;opacity:.5"></i>' +
+            '<span style="font-weight:600;font-size:13px;">Aucun r\u00e9sultat pour \u00ab\u00a0' + escH(q) + '\u00a0\u00bb</span>' +
+          '</div>' +
+          '<div style="font-size:11.5px;color:var(--text-muted,#8aa39b);padding-left:24px;">' +
+            'V\u00e9rifiez l\u2019orthographe ou essayez un autre mot-cl\u00e9.' +
+          '</div>' +
+        '</div>';
+      return;
+    }
+
+    var badge = esOk
+      ? '<span style="font-size:10px;background:#E8F7F2;color:#137a58;padding:1px 6px;border-radius:10px;margin-left:6px;">Elasticsearch</span>'
+      : '<span style="font-size:10px;background:#FFF8E1;color:#7a5c00;padding:1px 6px;border-radius:10px;margin-left:6px;">Local</span>';
+
+    var html = '<div style="padding:8px 14px 4px;font-size:10.5px;font-weight:700;color:var(--text-muted,#8aa39b);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border,#dde8e4);display:flex;align-items:center;">'
+      + results.length + ' r\u00e9sultat' + (results.length > 1 ? 's' : '') + badge
+      + '</div>';
+
+    results.slice(0, 8).forEach(function(r, idx) {
+      var titre     = r.titre      || (r._source && r._source.titre)  || r.title || 'Sans titre';
+      var type      = r.type       || (r._source && r._source.type_ressource) || r.type_ressource || '';
+      var icon      = r.icon       || 'fa-file-alt';
+      var color     = r.color      || 'var(--accent-light,#E8F7F2)';
+      var colorText = r.colorText  || 'var(--accent,#1D9E75)';
+      var idDoc     = r.id_doc     || (r._source && r._source.id_doc) || null;
+      var nomFichier= r.nom_fichier|| (r._source && r._source.nom_fichier) || '';
+      var estDoc    = !!idDoc;   // seuls les vrais documents GED ont un id_doc
+
+      // Normaliser selon format ES
+      if (r._source) {
+        titre = r._source.titre || titre;
+        type  = r._source.type_ressource || r._source.categorie || type;
+        icon  = r._source.type_ressource === 'COURS'  ? 'fa-book'     :
+                r._source.type_ressource === 'TD'     ? 'fa-tasks'    :
+                r._source.type_ressource === 'EXAMEN' ? 'fa-file-medical-alt' :
+                r._source.categorie                   ? 'fa-comments' : 'fa-file-alt';
+        color     = r._source.categorie ? '#F0EBFF' : '#EAF3FF';
+        colorText = r._source.categorie ? '#6C3EC1' : '#2E86C1';
+      }
+
+      // Surligner le terme recherché
+      var qRe   = new RegExp('(' + escH(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+      var titreH = escH(titre).replace(qRe, '<mark style="background:#FFF3CD;border-radius:2px;padding:0 1px;">$1</mark>');
+
+      // Boutons lire/télécharger uniquement si c'est un document GED identifié
+      var actionsHtml = '';
+      if (estDoc) {
+        actionsHtml =
+          '<div class="search-result-actions" style="display:flex;gap:4px;flex-shrink:0;">' +
+            '<button type="button" class="search-action-btn" data-action="voir" data-id="' + idDoc + '" title="Lire" ' +
+              'style="border:none;background:transparent;color:' + colorText + ';width:28px;height:28px;border-radius:6px;cursor:pointer;">' +
+              '<i class="fas fa-eye"></i></button>' +
+            '<button type="button" class="search-action-btn" data-action="telecharger" data-id="' + idDoc + '" data-filename="' + escH(nomFichier || titre) + '" title="T\u00e9l\u00e9charger" ' +
+              'style="border:none;background:transparent;color:' + colorText + ';width:28px;height:28px;border-radius:6px;cursor:pointer;">' +
+              '<i class="fas fa-download"></i></button>' +
+          '</div>';
+      }
+
+      html += '<div class="search-result-item" data-idx="' + idx + '" style="cursor:' + (estDoc ? 'default' : 'pointer') + ';display:flex;align-items:center;gap:10px;">'
+        + '<div class="search-result-icon" style="background:' + color + ';color:' + colorText + ';">'
+        + '<i class="fas ' + icon + '"></i></div>'
+        + '<div class="search-result-info" style="flex:1;min-width:0;">'
+        + '<div class="search-result-title">' + titreH + '</div>'
+        + '<div class="search-result-meta">' + escH(type) + '</div>'
+        + '</div>'
+        + actionsHtml
+        + '</div>';
+    });
+
+    dropdown.innerHTML = html;
+
+    // Boutons lire / télécharger
+    dropdown.querySelectorAll('.search-action-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var id     = btn.getAttribute('data-id');
+        var action = btn.getAttribute('data-action');
+        if (action === 'voir') {
+          voirDocRecherche(id);
+        } else if (action === 'telecharger') {
+          telechargerDocRecherche(id, btn.getAttribute('data-filename'));
+        }
+        dropdown.classList.remove('visible');
+      });
+    });
+
+    // Clic sur le reste de l'item (annonces/forum sans actions) : fermer dropdown
+    dropdown.querySelectorAll('.search-result-item').forEach(function(el) {
+      el.addEventListener('click', function(e) {
+        if (e.target.closest('.search-action-btn')) return;
+        dropdown.classList.remove('visible');
+        document.getElementById('searchInput').value = '';
+      });
+    });
+  }
+
+  // Démarrage
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearch);
+  } else {
+    initSearch();
+  }
+})();
+</script>
+<!-- ══ FIN RECHERCHE UNIFIÉE ══ -->
+
 </body>
 </html>

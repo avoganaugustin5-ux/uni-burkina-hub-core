@@ -1,5 +1,15 @@
-# UniBurkina Hub - Script d'arret complet
+# UniBurkina Hub - Script d'arret complet (v2 - ciblage precis par port)
 # Usage : .\stop_uniburkina.ps1
+#
+# Changement par rapport a la v1 :
+#   - L'ancienne version tuait TOUS les processus nommes "python" et TOUTES
+#     les fenetres "powershell" de la machine (Get-Process -Name "python" / "powershell"
+#     sans filtre) -> risque reel de fermer d'autres projets Python, Jupyter,
+#     VS Code, ou fenetres PowerShell sans rapport avec UniBurkina Hub.
+#   - Cette version arrete UNIQUEMENT les processus qui ecoutent reellement
+#     sur les ports du projet (8000-8005, 9000, 9001, 9200), et ferme en plus
+#     la fenetre PowerShell "wrapper" qui les a lances (si elle existe),
+#     sans toucher a quoi que ce soit d'autre sur la machine.
 
 Write-Host ""
 Write-Host "=================================================" -ForegroundColor Red
@@ -7,46 +17,72 @@ Write-Host "   UniBurkina Hub - Arret des services           " -ForegroundColor 
 Write-Host "=================================================" -ForegroundColor Red
 Write-Host ""
 
-# 1 - Arreter les processus uvicorn (tous les services Python)
-Write-Host "[1/3] Arret des services Python (uvicorn)..." -ForegroundColor Yellow
-$uvicorn = Get-Process -Name "python" -ErrorAction SilentlyContinue
-if ($uvicorn) {
-    $uvicorn | Stop-Process -Force
-    Write-Host "      OK - $($uvicorn.Count) processus Python arretes." -ForegroundColor Green
-} else {
-    Write-Host "      Aucun processus Python en cours." -ForegroundColor DarkGray
+# Ports utilises par le projet UniBurkina Hub
+$ports = [ordered]@{
+    8000 = "frontend"
+    8001 = "service-auth"
+    8002 = "service-ged"
+    8003 = "service-ocr"
+    8004 = "service-search"
+    8005 = "service-forum"
+    9000 = "MinIO (API)"
+    9001 = "MinIO (Console)"
+    9200 = "Elasticsearch"
 }
 
-# 2 - Arreter Elasticsearch (java)
-Write-Host "[2/3] Arret d'Elasticsearch..." -ForegroundColor Yellow
-$elastic = Get-Process -Name "java" -ErrorAction SilentlyContinue
-if ($elastic) {
-    $elastic | Stop-Process -Force
-    Write-Host "      OK - Elasticsearch arrete." -ForegroundColor Green
-} else {
-    Write-Host "      Elasticsearch n'etait pas en cours." -ForegroundColor DarkGray
+$arretes = 0
+
+foreach ($port in $ports.Keys) {
+    $label = $ports[$port]
+    try {
+        $connexions = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+    } catch {
+        $connexions = $null
+    }
+
+    if (-not $connexions) {
+        Write-Host "[$label :$port] Rien a l'ecoute sur ce port - deja arrete." -ForegroundColor DarkGray
+        continue
+    }
+
+    foreach ($conn in $connexions) {
+        $procId = $conn.OwningProcess
+        $proc = Get-Process -Id $procId -ErrorAction SilentlyContinue
+        if (-not $proc) { continue }
+
+        Write-Host "[$label :$port] Arret de $($proc.ProcessName) (PID $procId)..." -ForegroundColor Yellow
+
+        # Retrouver la fenetre PowerShell "wrapper" qui a lance ce processus,
+        # pour la fermer aussi (sinon la fenetre reste ouverte, vide).
+        $parentId = $null
+        try {
+            $parentId = (Get-CimInstance Win32_Process -Filter "ProcessId=$procId" -ErrorAction SilentlyContinue).ParentProcessId
+        } catch {}
+
+        Stop-Process -Id $procId -Force -ErrorAction SilentlyContinue
+
+        if ($parentId) {
+            $parentProc = Get-Process -Id $parentId -ErrorAction SilentlyContinue
+            if ($parentProc -and $parentProc.ProcessName -match "powershell") {
+                Stop-Process -Id $parentId -Force -ErrorAction SilentlyContinue
+                Write-Host "        (fenetre PowerShell associee egalement fermee)" -ForegroundColor DarkGray
+            }
+        }
+
+        $arretes++
+    }
 }
 
-# 3 - Arreter MinIO
-Write-Host "[3/3] Arret de MinIO..." -ForegroundColor Yellow
-$minio = Get-Process -Name "minio*" -ErrorAction SilentlyContinue
-if ($minio) {
-    $minio | Stop-Process -Force
-    Write-Host "      OK - MinIO arrete." -ForegroundColor Green
-} else {
-    Write-Host "      MinIO n'etait pas en cours." -ForegroundColor DarkGray
-}
-
-# Fermer toutes les fenetres PowerShell du projet (sauf celle-ci)
 Write-Host ""
-Write-Host "Fermeture des fenetres PowerShell des services..." -ForegroundColor Yellow
-$currentPID = $PID
-Get-Process -Name "powershell" -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $currentPID } | Stop-Process -Force
-Write-Host "      OK - Fenetres fermees." -ForegroundColor Green
+if ($arretes -gt 0) {
+    Write-Host "OK - $arretes processus UniBurkina Hub arretes." -ForegroundColor Green
+} else {
+    Write-Host "Aucun service UniBurkina Hub n'etait en cours d'execution." -ForegroundColor DarkGray
+}
 
 Write-Host ""
 Write-Host "=================================================" -ForegroundColor Green
-Write-Host "  Tous les services sont arretes.                " -ForegroundColor Green
+Write-Host "  Arret termine (aucun autre processus de la machine touche).  " -ForegroundColor Green
 Write-Host "=================================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Appuyez sur Entree pour fermer cette fenetre." -ForegroundColor DarkGray

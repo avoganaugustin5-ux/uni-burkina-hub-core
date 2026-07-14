@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UniBurkina Hub — Connexion</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
@@ -145,30 +145,30 @@
   <!-- ══ LEFT PANEL ══ -->
   <div class="panel-left">
     <div>
-      <div class="brand-logo"><i class="ti ti-school"></i></div>
+      <div class="brand-logo"><i class="fas fa-university"></i></div>
       <div class="brand-name">UniBurkina<br>Hub</div>
       <div class="brand-tagline">Plateforme universitaire</div>
       <div class="brand-divider"></div>
       <div class="feat-list">
         <div class="feat-item">
-          <div class="feat-icon"><i class="ti ti-file-certificate"></i></div>
+          <div class="feat-icon"><i class="fas fa-file-alt"></i></div>
           <div class="feat-text"><strong>GED Académique</strong><span>Dépôt & validation de documents officiels</span></div>
         </div>
         <div class="feat-item">
-          <div class="feat-icon"><i class="ti ti-scan"></i></div>
+          <div class="feat-icon"><i class="fas fa-magic"></i></div>
           <div class="feat-text"><strong>Paddle OCR</strong><span>Numérisation automatique des documents</span></div>
         </div>
         <div class="feat-item">
-          <div class="feat-icon"><i class="ti ti-messages"></i></div>
+          <div class="feat-icon"><i class="fas fa-comments"></i></div>
           <div class="feat-text"><strong>Forum par filière</strong><span>Questions, réponses & modération</span></div>
         </div>
         <div class="feat-item">
-          <div class="feat-icon"><i class="ti ti-search"></i></div>
+          <div class="feat-icon"><i class="fas fa-search"></i></div>
           <div class="feat-text"><strong>Recherche full-text</strong><span>Indexation Elasticsearch 8</span></div>
         </div>
       </div>
     </div>
-    <div class="panel-footer"><strong>UTS Burkina Faso</strong><br>Université Thierno Saïdou — 2025–2026</div>
+    <div class="panel-footer"><strong>UTS Burkina Faso</strong><br>Université Thomas SANKARA - 62025–2026</div>
   </div>
 
   <!-- ══ RIGHT PANEL ══ -->
@@ -178,10 +178,10 @@
       <!-- Tabs -->
       <div class="auth-tabs" role="tablist">
         <button class="tab-btn active" id="tab-login" role="tab" aria-selected="true" onclick="switchTab('login')">
-          <i class="ti ti-login"></i>Connexion
+          <i class="fas fa-sign-in-alt"></i>Connexion
         </button>
         <button class="tab-btn" id="tab-register" role="tab" aria-selected="false" onclick="switchTab('register')">
-          <i class="ti ti-user-plus"></i>Inscription
+          <i class="fas fa-user-plus"></i>Inscription
         </button>
       </div>
 
@@ -189,25 +189,25 @@
       <div class="form-panel active" id="panel-login">
         <h1 class="form-title">Bon retour</h1>
         <p class="form-subtitle">Connectez-vous à votre espace universitaire</p>
-        <div class="alert-auth error" id="login-error"><i class="ti ti-alert-circle"></i><span id="login-error-msg">Identifiants incorrects.</span></div>
-        <div class="alert-auth success" id="login-success"><i class="ti ti-circle-check"></i><span>Connexion réussie. Redirection en cours…</span></div>
+        <div class="alert-auth error" id="login-error"><i class="fas fa-exclamation-circle"></i><span id="login-error-msg">Identifiants incorrects.</span></div>
+        <div class="alert-auth success" id="login-success"><i class="fas fa-circle-check"></i><span>Connexion réussie. Redirection en cours…</span></div>
         <form id="form-login" onsubmit="doLogin(event)" novalidate>
           <label class="field-label" for="login-email">Adresse email</label>
           <div class="input-wrap">
-            <i class="ti ti-mail input-icon"></i>
+            <i class="fas fa-envelope input-icon"></i>
             <input type="email" id="login-email" placeholder="prenom.nom@universite.bf" autocomplete="email" required>
           </div>
           <label class="field-label" for="login-pwd">Mot de passe</label>
           <div class="input-wrap">
-            <i class="ti ti-lock input-icon"></i>
+            <i class="fas fa-lock input-icon"></i>
             <input type="password" id="login-pwd" placeholder="••••••••" autocomplete="current-password" required>
-            <button type="button" class="eye-toggle" onclick="togglePwd('login-pwd', this)"><i class="ti ti-eye"></i></button>
+            <button type="button" class="eye-toggle" onclick="togglePwd('login-pwd', this)"><i class="fas fa-eye"></i></button>
           </div>
-          <a href="#" class="forgot-link">Mot de passe oublié ?</a>
+          <a href="#" class="forgot-link" onclick="ouvrirModalForgot(); return false;">Mot de passe oublié ?</a>
           <button type="submit" class="btn-primary-auth" id="login-btn">
             <div class="spinner" id="login-spinner"></div>
             <span id="login-btn-label">Se connecter</span>
-            <i class="ti ti-arrow-right" id="login-btn-icon"></i>
+            <i class="fas fa-arrow-right" id="login-btn-icon"></i>
           </button>
         </form>
         <div class="link-row">Pas encore de compte ? <a href="#" onclick="switchTab('register'); return false;">S'inscrire →</a></div>
@@ -223,30 +223,30 @@
           </div>
           <h2 class="form-title">Votre identité</h2>
           <p class="form-subtitle">Étape 1 sur 3 — Informations personnelles</p>
-          <div class="alert-auth error" id="step1-error"><i class="ti ti-alert-circle"></i><span id="step1-error-msg">Veuillez remplir tous les champs.</span></div>
+          <div class="alert-auth error" id="step1-error"><i class="fas fa-exclamation-circle"></i><span id="step1-error-msg">Veuillez remplir tous les champs.</span></div>
           <div class="field-row">
             <div>
               <label class="field-label" for="reg-prenom">Prénom</label>
-              <div class="input-wrap"><i class="ti ti-user input-icon"></i><input type="text" id="reg-prenom" placeholder="Koudjo" required></div>
+              <div class="input-wrap"><i class="fas fa-user input-icon"></i><input type="text" id="reg-prenom" placeholder="Koudjo" required></div>
             </div>
             <div>
               <label class="field-label" for="reg-nom">Nom</label>
-              <div class="input-wrap"><i class="ti ti-user input-icon"></i><input type="text" id="reg-nom" placeholder="AVOGAN" required></div>
+              <div class="input-wrap"><i class="fas fa-user input-icon"></i><input type="text" id="reg-nom" placeholder="AVOGAN" required></div>
             </div>
           </div>
           <label class="field-label" for="reg-username">Nom d'utilisateur</label>
-          <div class="input-wrap"><i class="ti ti-at input-icon"></i><input type="text" id="reg-username" placeholder="k.avogan" autocomplete="username" required></div>
+          <div class="input-wrap"><i class="fas fa-at input-icon"></i><input type="text" id="reg-username" placeholder="k.avogan" autocomplete="username" required></div>
           <label class="field-label" for="reg-email">Adresse email institutionnelle</label>
-          <div class="input-wrap"><i class="ti ti-mail input-icon"></i><input type="email" id="reg-email" placeholder="prenom.nom@universite.bf" required></div>
+          <div class="input-wrap"><i class="fas fa-envelope input-icon"></i><input type="email" id="reg-email" placeholder="prenom.nom@universite.bf" required></div>
           <label class="field-label" for="reg-pwd">Mot de passe</label>
           <div class="input-wrap">
-            <i class="ti ti-lock input-icon"></i>
+            <i class="fas fa-lock input-icon"></i>
             <input type="password" id="reg-pwd" placeholder="8 caractères minimum" required>
-            <button type="button" class="eye-toggle" onclick="togglePwd('reg-pwd', this)"><i class="ti ti-eye"></i></button>
+            <button type="button" class="eye-toggle" onclick="togglePwd('reg-pwd', this)"><i class="fas fa-eye"></i></button>
           </div>
           <label class="field-label" for="reg-pwd2">Confirmer le mot de passe</label>
-          <div class="input-wrap"><i class="ti ti-lock input-icon"></i><input type="password" id="reg-pwd2" placeholder="••••••••" required></div>
-          <button type="button" class="btn-primary-auth" onclick="goStep2()">Continuer <i class="ti ti-arrow-right"></i></button>
+          <div class="input-wrap"><i class="fas fa-lock input-icon"></i><input type="password" id="reg-pwd2" placeholder="••••••••" required></div>
+          <button type="button" class="btn-primary-auth" onclick="goStep2()">Continuer <i class="fas fa-arrow-right"></i></button>
           <div class="link-row">Déjà inscrit ? <a href="#" onclick="switchTab('login'); return false;">Se connecter →</a></div>
         </div>
 
@@ -257,43 +257,45 @@
           </div>
           <h2 class="form-title">Votre affiliation</h2>
           <p class="form-subtitle">Étape 2 sur 3 — Rôle & établissement</p>
-          <div class="alert-auth error" id="step2-error"><i class="ti ti-alert-circle"></i><span id="step2-error-msg">Veuillez sélectionner un rôle.</span></div>
+          <div class="alert-auth error" id="step2-error"><i class="fas fa-exclamation-circle"></i><span id="step2-error-msg">Veuillez sélectionner un rôle.</span></div>
 
           <label class="field-label">Rôle</label>
           <div class="role-grid" id="role-grid">
             <div class="role-card" data-role="ETUDIANT" onclick="selectRole(this)" tabindex="0">
-              <i class="ti ti-books"></i><span>Étudiant</span>
+              <i class="fas fa-book"></i><span>Étudiant</span>
             </div>
             <div class="role-card" data-role="ENSEIGNANT" onclick="selectRole(this)" tabindex="0">
-              <i class="ti ti-chalkboard"></i><span>Enseignant</span>
+              <i class="fas fa-chalkboard-teacher"></i><span>Enseignant</span>
             </div>
             <div class="role-card" data-role="DELEGUE" onclick="selectRole(this)" tabindex="0">
-              <i class="ti ti-users"></i><span>Délégué</span>
+              <i class="fas fa-users"></i><span>Délégué</span>
             </div>
             <div class="role-card" data-role="SOUS_ADMIN" onclick="selectRole(this)" tabindex="0">
-              <i class="ti ti-shield-half"></i><span>Sous-admin</span>
+              <i class="fas fa-shield-alt-half"></i><span>Sous-admin</span>
             </div>
             <!-- Chef de département — pleine largeur, style teal -->
             <div class="role-card" data-role="CHEF_DEPARTEMENT" onclick="selectRole(this)" tabindex="0">
-              <i class="ti ti-chart-bar"></i><span>Chef de département</span>
+              <i class="fas fa-chart-bar"></i><span>Chef de département</span>
             </div>
           </div>
+
+          <div class="link-row">Vous êtes Direction / Personnel UTS ? <a href="/inscription-personnel">Inscription personnel →</a></div>
 
           <!-- Champ département — visible uniquement si rôle CHEF_DEPARTEMENT -->
           <div class="field-chef" id="field-chef">
             <label class="field-label">
-              <span class="chef-badge"><i class="ti ti-chart-bar" style="font-size:10px"></i>Chef de département</span><br>
+              <span class="chef-badge"><i class="fas fa-chart-bar" style="font-size:10px"></i>Chef de département</span><br>
               Département supervisé
             </label>
             <div class="input-wrap">
-              <i class="ti ti-building input-icon"></i>
+              <i class="fas fa-building input-icon"></i>
               <select id="reg-dept"><option value="">Sélectionnez d'abord une université</option></select>
             </div>
           </div>
 
           <label class="field-label" for="reg-univ">Université</label>
           <div class="input-wrap">
-            <i class="ti ti-building-community input-icon"></i>
+            <i class="fas fa-building-community input-icon"></i>
             <select id="reg-univ" onchange="onUnivChange()" required>
               <option value="">Chargement…</option>
             </select>
@@ -303,15 +305,15 @@
           <div id="field-filiere">
             <label class="field-label" for="reg-filiere">Filière</label>
             <div class="input-wrap">
-              <i class="ti ti-certificate input-icon"></i>
+              <i class="fas fa-certificate input-icon"></i>
               <select id="reg-filiere">
                 <option value="">Sélectionnez d'abord une université</option>
               </select>
             </div>
           </div>
 
-          <button type="button" class="btn-primary-auth" onclick="goStep3()">Continuer <i class="ti ti-arrow-right"></i></button>
-          <button type="button" class="btn-secondary-auth" onclick="goStep(1)"><i class="ti ti-arrow-left"></i> Retour</button>
+          <button type="button" class="btn-primary-auth" onclick="goStep3()">Continuer <i class="fas fa-arrow-right"></i></button>
+          <button type="button" class="btn-secondary-auth" onclick="goStep(1)"><i class="fas fa-arrow-left"></i> Retour</button>
         </div>
 
         <!-- Étape 3 — Confirmation -->
@@ -321,8 +323,8 @@
           </div>
           <h2 class="form-title">Confirmation</h2>
           <p class="form-subtitle">Étape 3 sur 3 — Vérification & création du compte</p>
-          <div class="alert-auth error" id="step3-error"><i class="ti ti-alert-circle"></i><span id="step3-error-msg">Une erreur est survenue.</span></div>
-          <div class="alert-auth success" id="reg-success"><i class="ti ti-circle-check"></i><span>Compte créé avec succès ! Connexion en cours…</span></div>
+          <div class="alert-auth error" id="step3-error"><i class="fas fa-exclamation-circle"></i><span id="step3-error-msg">Une erreur est survenue.</span></div>
+          <div class="alert-auth success" id="reg-success"><i class="fas fa-circle-check"></i><span>Compte créé avec succès ! Connexion en cours…</span></div>
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:1rem;">
             <div style="font-size:.72rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem;">Récapitulatif</div>
             <div style="display:grid;gap:.4rem;font-size:.82rem;">
@@ -334,13 +336,13 @@
             </div>
           </div>
           <label class="field-label" for="reg-ine">Numéro INE (optionnel)</label>
-          <div class="input-wrap"><i class="ti ti-id-badge input-icon"></i><input type="text" id="reg-ine" placeholder="N01213620231"></div>
+          <div class="input-wrap"><i class="fas fa-id-badge input-icon"></i><input type="text" id="reg-ine" placeholder="N01213620231"></div>
           <button type="button" class="btn-primary-auth" id="reg-btn" onclick="doRegister()">
             <div class="spinner" id="reg-spinner"></div>
             <span id="reg-btn-label">Créer mon compte</span>
-            <i class="ti ti-check" id="reg-btn-icon"></i>
+            <i class="fas fa-check" id="reg-btn-icon"></i>
           </button>
-          <button type="button" class="btn-secondary-auth" onclick="goStep(2)"><i class="ti ti-arrow-left"></i> Retour</button>
+          <button type="button" class="btn-secondary-auth" onclick="goStep(2)"><i class="fas fa-arrow-left"></i> Retour</button>
         </div>
 
       </div><!-- END register panel -->
@@ -374,8 +376,8 @@
   function togglePwd(inputId, btn) {
     const inp = document.getElementById(inputId);
     const icon = btn.querySelector('i');
-    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'ti ti-eye-off'; }
-    else { inp.type = 'password'; icon.className = 'ti ti-eye'; }
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fas fa-eye-off'; }
+    else { inp.type = 'password'; icon.className = 'fas fa-eye'; }
   }
 
   /* ══ TABS ══ */
@@ -709,6 +711,134 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Enter' && e.target.classList.contains('role-card')) selectRole(e.target);
   });
+
+  /* ══ MOT DE PASSE OUBLIÉ ══ */
+  function ouvrirModalForgot() {
+    document.getElementById('forgot-email').value = document.getElementById('login-email').value || '';
+    document.getElementById('forgot-result').style.display = 'none';
+    document.getElementById('forgot-result').className = 'alert-auth';
+    document.getElementById('forgot-email').disabled = false;
+    document.getElementById('forgot-btn').disabled = false;
+    document.getElementById('forgot-btn-label').textContent = 'Envoyer le nouveau mot de passe';
+    document.getElementById('forgot-spinner').style.display = 'none';
+    document.getElementById('modal-forgot').style.display = 'flex';
+    setTimeout(() => document.getElementById('forgot-email').focus(), 100);
+  }
+
+  function fermerModalForgot() {
+    document.getElementById('modal-forgot').style.display = 'none';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') fermerModalForgot();
+  });
+
+  async function envoyerReset() {
+    const email = document.getElementById('forgot-email').value.trim();
+    const result = document.getElementById('forgot-result');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      result.className = 'alert-auth error show';
+      result.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Veuillez entrer une adresse email valide.</span>';
+      result.style.display = 'flex';
+      return;
+    }
+
+    document.getElementById('forgot-btn').disabled = true;
+    document.getElementById('forgot-email').disabled = true;
+    document.getElementById('forgot-spinner').style.display = 'block';
+    document.getElementById('forgot-btn-label').textContent = 'Envoi en cours…';
+    result.style.display = 'none';
+
+    try {
+      const res  = await fetch(API_BASE + '/auth/mot-de-passe-oublie', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        // Mode dev : SMTP non configuré → afficher le MDP temporaire
+        if (data.dev_password) {
+          result.className = 'alert-auth success show';
+          result.innerHTML = `<i class="fas fa-circle-check"></i><span>
+            <strong>Mode développement</strong> — SMTP non configuré.<br>
+            Mot de passe temporaire : <code style="background:#E8F7F2;padding:2px 8px;border-radius:4px;font-weight:700;color:#137a58;">${data.dev_password}</code><br>
+            <small>Connectez-vous puis changez-le dans votre profil.</small>
+          </span>`;
+        } else {
+          result.className = 'alert-auth success show';
+          result.innerHTML = `<i class="fas fa-envelope-circle-check"></i><span>
+            <strong>Email envoyé !</strong><br>
+            Un nouveau mot de passe temporaire a été envoyé à <strong>${email}</strong>.<br>
+            <small>Vérifiez vos spams si vous ne le recevez pas dans 2 minutes.</small>
+          </span>`;
+        }
+        result.style.display = 'flex';
+        document.getElementById('forgot-btn-label').textContent = 'Envoyé ✓';
+      } else {
+        throw new Error(data.detail || 'Erreur serveur');
+      }
+    } catch (err) {
+      result.className = 'alert-auth error show';
+      result.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${err.message || 'Impossible de contacter le serveur.'}</span>`;
+      result.style.display = 'flex';
+      document.getElementById('forgot-btn').disabled = false;
+      document.getElementById('forgot-email').disabled = false;
+      document.getElementById('forgot-btn-label').textContent = 'Réessayer';
+    } finally {
+      document.getElementById('forgot-spinner').style.display = 'none';
+    }
+  }
 </script>
+
+<!-- ══ MODAL MOT DE PASSE OUBLIÉ ══ -->
+<div id="modal-forgot" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);" onclick="if(event.target===this)fermerModalForgot()">
+  <div style="background:#fff;border-radius:16px;padding:36px 36px 32px;max-width:420px;width:calc(100vw - 2rem);box-shadow:0 8px 40px rgba(4,44,83,.18);position:relative;animation:slideInModal .25s ease;">
+    <button onclick="fermerModalForgot()" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:22px;color:var(--text-3);cursor:pointer;line-height:1;" title="Fermer">&times;</button>
+
+    <!-- Icône -->
+    <div style="width:56px;height:56px;background:var(--blue-50);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;">
+      <i class="fas fa-key" style="font-size:26px;color:var(--blue-700);"></i>
+    </div>
+
+    <h2 style="font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:600;color:var(--text);text-align:center;margin:0 0 6px;">Mot de passe oublié ?</h2>
+    <p style="font-size:.8rem;color:var(--text-3);text-align:center;margin:0 0 22px;line-height:1.5;">
+      Entrez votre adresse email. Nous vous enverrons un nouveau mot de passe temporaire que vous pourrez changer dans votre profil.
+    </p>
+
+    <!-- Résultat (succès / erreur) -->
+    <div id="forgot-result" class="alert-auth" style="display:none;margin-bottom:16px;"></div>
+
+    <!-- Champ email -->
+    <label class="field-label" for="forgot-email">Adresse email</label>
+    <div class="input-wrap" style="margin-bottom:18px;">
+      <i class="fas fa-envelope input-icon"></i>
+      <input type="email" id="forgot-email" placeholder="prenom.nom@universite.bf"
+             onkeydown="if(event.key==='Enter')envoyerReset()"
+             style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;background:#fff;padding:0 .85rem 0 2.1rem;font-family:'Source Sans 3',sans-serif;font-size:.85rem;color:var(--text);">
+    </div>
+
+    <!-- Bouton envoyer -->
+    <button id="forgot-btn" onclick="envoyerReset()" class="btn-primary-auth" style="margin-bottom:10px;">
+      <div class="spinner" id="forgot-spinner" style="display:none;"></div>
+      <i class="fas fa-paper-plane" style="font-size:15px;"></i>
+      <span id="forgot-btn-label">Envoyer le nouveau mot de passe</span>
+    </button>
+
+    <!-- Lien retour -->
+    <button onclick="fermerModalForgot()" style="width:100%;background:none;border:none;color:var(--text-3);font-size:.8rem;cursor:pointer;padding:6px;border-radius:6px;" onmouseover="this.style.color='#185FA5'" onmouseout="this.style.color=''">
+      ← Retour à la connexion
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes slideInModal {
+  from { opacity:0; transform:translateY(-20px) scale(.97); }
+  to   { opacity:1; transform:none; }
+}
+</style>
+
 </body>
 </html>

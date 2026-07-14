@@ -20,6 +20,7 @@ class IndexationDocument(BaseModel):
     id_filiere:     Optional[int] = None
     id_univ:        Optional[int] = None
     date_soumission: Optional[str] = None
+    auteur_poste_id: Optional[str] = None  # AJOUT SECURITE UTS — cloisonnement recherche
 
 class IndexationSujet(BaseModel):
     id_sujet:      int

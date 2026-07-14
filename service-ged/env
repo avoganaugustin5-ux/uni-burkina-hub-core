@@ -1,0 +1,17 @@
+# ==============================================================================
+# service-ged/.env — UniBurkina Hub
+# IMPORTANT : sauvegarder sous le nom ".env" dans C:\projets\UniBurkina_Hub\service-ged\
+# Encodage : UTF-8 SANS BOM
+# ==============================================================================
+
+# ── Base de données ────────────────────────────────────────────────────────────
+DATABASE_URL=postgresql://uniburkina_admin:UTS_Burkina2025!@localhost:5432/uniburkina_db
+
+# ── Services internes ──────────────────────────────────────────────────────────
+API_AUTH=http://localhost:8001
+
+# ── MinIO — credentials RÉELS ─────────────────────────────────────────────────
+MINIO_ENDPOINT=localhost:9000
+MINIO_ACCESS_KEY=uniburkina_admin
+MINIO_SECRET_KEY=UTS_Minio2025!
+MINIO_SECURE=false

@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import Base
+from dotenv import load_dotenv
+load_dotenv()
 from routes import router
 
 # Crée toutes les tables au démarrage

@@ -1,63 +1,104 @@
-import pytesseract
-from PIL import Image
+# ==============================================================================
+# service-ocr/ocr_service.py — UniBurkina Hub
+# Remplace l'ancien ocr_service.py basé sur Tesseract.
+# Ce fichier n'est plus le moteur principal (c'est main.py qui appelle
+# PaddleOCR directement via ocr_image() et extraire_regions()).
+# Il expose des helpers de validation et de sauvegarde réutilisables,
+# et la fonction haute-niveau `traiter_image_complete` qui orchestre
+# PaddleOCR → Groq Vision en un seul appel.
+# ==============================================================================
+
+import os
+import uuid
+import logging
 from pathlib import Path
-from datetime import datetime
-import uuid, os
+from typing import Optional
 
-# ── Chemin Tesseract (adapter si different) ────────────────
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+log = logging.getLogger("service-ocr.service")
 
-OUTPUT_DIR = Path(os.getenv("LOCAL_STORAGE_PATH", "C:/projets/UniBurkina_Hub/storage")) / "ocr"
+# ── Répertoire de sortie (cohérent avec main.py) ─────────────────────────────
+OUTPUT_DIR = Path(os.getenv("OCR_TMP_DIR", "tmp_ocr")) / "outputs"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-TYPES_AUTORISES = {".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".pdf"}
+# Extensions acceptées
+TYPES_AUTORISES = {".png", ".jpg", ".jpeg", ".bmp", ".tiff", ".tif", ".webp"}
+
 
 def valider_fichier_ocr(nom: str) -> tuple[bool, str]:
+    """Valide l'extension d'un fichier image avant traitement OCR."""
     ext = Path(nom).suffix.lower()
     if ext not in TYPES_AUTORISES:
-        return False, f"Type non autorise : {ext}"
+        return False, f"Type non autorisé : {ext}. Acceptés : {', '.join(sorted(TYPES_AUTORISES))}"
     return True, "OK"
 
-def extraire_texte(chemin_image: str, langue: str = "fra") -> dict:
-    """Extrait le texte d'une image via Tesseract."""
+
+async def traiter_image_complete(
+    chemin: Path,
+    ocr_image_fn,          # fonction ocr_image() de main.py
+    extraire_regions_fn,   # fonction extraire_regions() de main.py
+    nettoyer_fn,           # fonction _nettoyer_texte_ocr() de main.py
+    score_fn,              # fonction _score_confiance() de main.py
+    utiliser_groq: bool = True,
+) -> dict:
+    """
+    Pipeline complet sur une image :
+      1. PaddleOCR + layout OpenCV (via les fonctions de main.py)
+      2. Optionnel : Groq Vision pour correction et amélioration
+
+    Retourne :
+        {
+            "texte_extrait":  str,   # texte PaddleOCR brut nettoyé
+            "texte_corrige":  str,   # texte après correction Groq (ou identique si Groq KO)
+            "has_figures":    bool,
+            "moteur":         str,   # "paddleocr" | "paddleocr+layout" | "paddleocr+groq"
+            "score_confiance": int,
+            "groq_succes":    bool,
+        }
+    """
+    # ── Étape 1 : PaddleOCR ──────────────────────────────────────────────────
+    texte_paddle = ""
+    has_figures  = False
+    moteur       = "paddleocr"
+
     try:
-        img = Image.open(chemin_image)
-        texte = pytesseract.image_to_string(img, lang=langue)
-        return {"succes": True, "texte": texte.strip(), "erreur": None}
+        layout = extraire_regions_fn(chemin)
+        blocs  = layout["blocs"]
+        has_figures  = any(b["type"] == "figure" for b in blocs)
+        texte_paddle = "\n".join(b["texte"] for b in blocs if b["type"] == "texte")
+        texte_paddle = nettoyer_fn(texte_paddle)
+        moteur       = "paddleocr+layout" if has_figures else "paddleocr"
     except Exception as e:
-        return {"succes": False, "texte": None, "erreur": str(e)}
+        log.error(f"PaddleOCR échoué sur {chemin.name} : {e}")
+        moteur = "echec"
 
-def generer_pdf_depuis_texte(texte: str, nom_base: str) -> str:
-    """Génère un PDF à partir du texte extrait via ReportLab."""
-    from reportlab.lib.pagesizes import A4
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib.units import cm
+    score = score_fn(texte_paddle, moteur, has_figures)
 
-    nom_pdf = OUTPUT_DIR / f"{uuid.uuid4().hex}_{nom_base}.pdf"
-    doc = SimpleDocTemplate(str(nom_pdf), pagesize=A4,
-                             leftMargin=2*cm, rightMargin=2*cm,
-                             topMargin=2*cm, bottomMargin=2*cm)
-    styles = getSampleStyleSheet()
-    story  = []
+    # ── Étape 2 : Groq Vision (correction post-OCR) ───────────────────────────
+    groq_succes   = False
+    texte_corrige = texte_paddle
 
-    story.append(Paragraph(f"Document numerise — {nom_base}", styles["Title"]))
-    story.append(Spacer(1, 12))
+    if utiliser_groq and moteur != "echec":
+        try:
+            from ocr_engine import groq_vision_corriger, GROQ_AVAILABLE
+            if GROQ_AVAILABLE:
+                resultat_groq = await groq_vision_corriger(chemin, texte_paddle)
+                if resultat_groq["succes"]:
+                    texte_corrige = resultat_groq["texte_corrige"]
+                    moteur        = resultat_groq["moteur"]
+                    score         = min(100, score + resultat_groq["score_bonus"])
+                    groq_succes   = True
+                else:
+                    log.warning(f"Groq non utilisé : {resultat_groq['erreur']}")
+        except ImportError:
+            log.warning("ocr_engine.py introuvable — Groq désactivé")
+        except Exception as e:
+            log.error(f"Groq exception inattendue : {e}")
 
-    for ligne in texte.split("\n"):
-        ligne = ligne.strip()
-        if ligne:
-            story.append(Paragraph(ligne, styles["Normal"]))
-            story.append(Spacer(1, 4))
-
-    doc.build(story)
-    return str(nom_pdf)
-
-def sauvegarder_fichier(contenu: bytes, nom_original: str) -> str:
-    """Sauvegarde le fichier uploadé sur disque."""
-    ext = Path(nom_original).suffix.lower()
-    nom_unique = f"{uuid.uuid4().hex}{ext}"
-    chemin = OUTPUT_DIR / nom_unique
-    with open(chemin, "wb") as f:
-        f.write(contenu)
-    return str(chemin)
+    return {
+        "texte_extrait":   texte_paddle,
+        "texte_corrige":   texte_corrige,
+        "has_figures":     has_figures,
+        "moteur":          moteur,
+        "score_confiance": score,
+        "groq_succes":     groq_succes,
+    }
